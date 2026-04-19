@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dwinity Drop — Dateien senden. Verschlüsselt. Dezentral.</title>
+<meta name="description" content="Wie WeTransfer — aber Ende-zu-Ende verschlüsselt, dezentral auf Storj, ohne Login. Deine Dateien gehören dir, nicht einem Server in San Francisco." />
+<meta property="og:title" content="Dwinity Drop — Zero-Knowledge File Transfer" />
+<meta property="og:description" content="Ende-zu-Ende verschlüsselt. Dezentral gespeichert. Niemand außer dem Empfänger kann den Inhalt lesen." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://drop.mkwt-strategy.tech" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void: { 950: '#05060A', 900: '#0A0B10', 800: '#13141B', 700: '#1E2029', 600: '#2A2D3A' },
+          neon: { 500: '#00FF9D', 600: '#00D684', 400: '#4DFFB8' },
+        },
+        fontFamily: {
+          sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { background: #05060A; }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .glow {
+    box-shadow: 0 0 40px rgba(0,255,157,0.15), 0 0 80px rgba(0,255,157,0.08);
+  }
+  .text-glow { text-shadow: 0 0 24px rgba(0,255,157,0.35); }
+  .chip { display:inline-flex; align-items:center; gap:0.4rem; padding: 0.3rem 0.7rem; font-size: 0.75rem; font-weight: 600; border-radius: 999px; }
+  .dropzone { transition: all 0.3s cubic-bezier(.4,0,.2,1); }
+  .dropzone:hover { border-color: rgba(0,255,157,0.5); background: rgba(0,255,157,0.03); }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+</style>
+</head>
+<body class="font-sans text-white antialiased min-h-screen">
+
+<!-- NAV -->
+<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
+      <span class="w-7 h-7 rounded-md bg-neon-500 text-void-950 grid place-items-center font-bold">D</span>
+      <span>Dwinity <span class="text-neon-500">Drop</span></span>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm text-white/70">
+      <a href="#how" class="hover:text-white">So funktioniert's</a>
+      <a href="#compare" class="hover:text-white">Vergleich</a>
+      <a href="#preise" class="hover:text-white">Preise</a>
+    </nav>
+    <a href="#waitlist" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neon-500 text-void-950 text-sm font-bold hover:bg-neon-600 transition">
+      Early Access
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-24 overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-60"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-void-950/80 to-void-950"></div>
+  <div class="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-neon-500/10 rounded-full blur-[120px]"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6">
+    <div class="text-center max-w-4xl mx-auto">
+      <span class="chip bg-neon-500/10 text-neon-500 border border-neon-500/30 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
+        Private Beta · Einladung per Warteliste
+      </span>
+
+      <h1 class="font-sans text-5xl md:text-7xl lg:text-8xl font-600 leading-[1.02] tracking-tight">
+        Send files.<br/>
+        <span class="text-neon-500 text-glow">They can't read them.</span>
+      </h1>
+
+      <p class="mt-8 text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
+        Wie WeTransfer — nur Ende-zu-Ende verschlüsselt, dezentral gespeichert,
+        ohne Login, ohne Tracker, ohne „Wir trainieren unsere KI mit deinen Dateien".
+      </p>
+    </div>
+
+    <!-- DROPZONE MOCK -->
+    <div class="mt-16 max-w-2xl mx-auto">
+      <div class="dropzone relative rounded-3xl border-2 border-dashed border-white/20 bg-void-900/50 backdrop-blur p-12 md:p-16 text-center">
+        <div class="absolute top-4 right-4 flex items-center gap-2 text-xs font-mono text-white/40">
+          <span class="w-2 h-2 rounded-full bg-neon-500 pulse-dot"></span>
+          E2E · AES-256-GCM
+        </div>
+        <svg class="w-16 h-16 mx-auto mb-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5l4.5-4.5m0 0l4.5 4.5M12 3v13.5M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5"/>
+        </svg>
+        <div class="text-xl md:text-2xl font-600 mb-2">Dateien hierher ziehen</div>
+        <div class="text-white/50 text-sm mb-6">bis 2 GB kostenfrei · 7 Tage Aufbewahrung</div>
+        <button disabled class="px-6 py-3 rounded-full bg-neon-500/30 text-neon-500 font-bold cursor-not-allowed">
+          Verfügbar in Private Beta
+        </button>
+        <div class="mt-8 pt-8 border-t border-white/10 grid grid-cols-3 gap-4 text-xs font-mono text-white/50">
+          <div><div class="text-white/70 mb-1">Schlüssel</div>X25519 + AES-256-GCM</div>
+          <div><div class="text-white/70 mb-1">Speicherung</div>Storj DCS · Erasure 29/80</div>
+          <div><div class="text-white/70 mb-1">Server-Zugriff</div>Zero</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WAITLIST INLINE -->
+    <form id="waitlist-hero" class="mt-10 max-w-lg mx-auto flex flex-col sm:flex-row gap-3">
+      <input type="email" required placeholder="name@example.com"
+        class="flex-1 px-5 py-4 rounded-xl bg-void-800 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-neon-500/50 focus:ring-2 focus:ring-neon-500/20" />
+      <button type="submit" class="px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition whitespace-nowrap">
+        Auf die Liste →
+      </button>
+    </form>
+    <p class="mt-3 text-center text-sm text-white/40 font-mono">#2847 Anmeldungen · Beta-Zugang Sommer 2026</p>
+  </div>
+</section>
+
+<!-- PRINCIPLES -->
+<section id="how" class="py-24 border-t border-white/5">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="max-w-2xl mb-16">
+      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4">Drei Prinzipien</span>
+      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight">
+        Wir können deine Dateien <span class="text-neon-500">nicht</span> lesen.
+        Auch wenn wir wollten.
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Zero-Knowledge -->
+      <div class="p-8 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/30 transition">
+        <div class="font-mono text-xs text-neon-500 mb-4">01 / ZERO-KNOWLEDGE</div>
+        <h3 class="font-sans text-2xl font-600 mb-4">Nur der Empfänger hat den Schlüssel.</h3>
+        <p class="text-white/60 leading-relaxed">
+          Dein Browser verschlüsselt die Datei, bevor sie unseren Server auch nur sieht.
+          Der Link enthält den Schlüssel als Hash-Fragment — der geht technisch nie an unseren Server.
+          Wir können Inhalte weder lesen, noch herausgeben, noch versehentlich leaken.
+        </p>
+      </div>
+
+      <!-- Decentralized -->
+      <div class="p-8 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/30 transition">
+        <div class="font-mono text-xs text-neon-500 mb-4">02 / DEZENTRAL</div>
+        <h3 class="font-sans text-2xl font-600 mb-4">Verteilt über tausende Knoten.</h3>
+        <p class="text-white/60 leading-relaxed">
+          Gespeichert auf Storj DCS — Erasure-Coding 29-of-80. Deine Datei liegt auf 80
+          unabhängigen Knoten weltweit, für den Download reichen 29. Kein Single Point of Failure,
+          kein Rechenzentrum, das „mal aus" ist.
+        </p>
+      </div>
+
+      <!-- Ephemeral -->
+      <div class="p-8 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/30 transition">
+        <div class="font-mono text-xs text-neon-500 mb-4">03 / FLÜCHTIG</div>
+        <h3 class="font-sans text-2xl font-600 mb-4">Standardmäßig 7 Tage. Danach weg.</h3>
+        <p class="text-white/60 leading-relaxed">
+          Kein „Wir haben einen Backup, aber wir sagen's dir nicht". Ablaufzeit ist im Manifest
+          kryptografisch eingebettet — nach Ablauf wird der Chunk-Index gelöscht und die
+          Entschlüsselung ist nicht mehr möglich, auch nicht für uns.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="py-24 border-t border-white/5 bg-void-900/40">
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight mb-16 text-center">
+      In 4 Schritten verschickt.
+    </h2>
+
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="relative">
+        <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">01</div>
+        <div class="font-600 text-xl mb-2">Datei wählen</div>
+        <p class="text-white/60 text-sm">Drop, Tap, Paste — egal woher. Bis 2 GB frei, darüber Pro.</p>
+      </div>
+      <div class="relative">
+        <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">02</div>
+        <div class="font-600 text-xl mb-2">Im Browser verschlüsseln</div>
+        <p class="text-white/60 text-sm">AES-256-GCM in WebCrypto. Schlüssel wird lokal generiert und nie gesendet.</p>
+      </div>
+      <div class="relative">
+        <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">03</div>
+        <div class="font-600 text-xl mb-2">Upload zu Storj</div>
+        <p class="text-white/60 text-sm">Chunks werden parallel auf 80 Knoten verteilt. Schnell und zensurresistent.</p>
+      </div>
+      <div class="relative">
+        <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">04</div>
+        <div class="font-600 text-xl mb-2">Link teilen</div>
+        <p class="text-white/60 text-sm">Der Link enthält den Schlüssel hinter dem #. Nur wer ihn hat, liest.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section id="compare" class="py-24 border-t border-white/5">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4">Im Vergleich</span>
+      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight">
+        Was WeTransfer nicht sagt.
+      </h2>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 overflow-hidden bg-void-900">
+      <table class="w-full text-left">
+        <thead class="bg-void-800">
+          <tr class="text-sm font-mono uppercase tracking-widest text-white/50">
+            <th class="px-6 py-4">Feature</th>
+            <th class="px-6 py-4">WeTransfer</th>
+            <th class="px-6 py-4 text-neon-500">Dwinity Drop</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5 text-sm">
+          <tr><td class="px-6 py-4 text-white/80">E2E-Verschlüsselung</td><td class="px-6 py-4 text-red-400">✗ Nein</td><td class="px-6 py-4 text-neon-500">✓ AES-256-GCM</td></tr>
+          <tr><td class="px-6 py-4 text-white/80">Dezentral gespeichert</td><td class="px-6 py-4 text-red-400">✗ AWS S3</td><td class="px-6 py-4 text-neon-500">✓ Storj 29/80</td></tr>
+          <tr><td class="px-6 py-4 text-white/80">Ohne Login</td><td class="px-6 py-4 text-neon-500">✓ Ja</td><td class="px-6 py-4 text-neon-500">✓ Ja</td></tr>
+          <tr><td class="px-6 py-4 text-white/80">Tracking via E-Mail</td><td class="px-6 py-4 text-red-400">⚠ Ja, detailliert</td><td class="px-6 py-4 text-neon-500">✓ Nur „geöffnet"</td></tr>
+          <tr><td class="px-6 py-4 text-white/80">KI-Training mit Dateien</td><td class="px-6 py-4 text-red-400">⚠ Ja (per ToS)</td><td class="px-6 py-4 text-neon-500">✗ Technisch unmöglich</td></tr>
+          <tr><td class="px-6 py-4 text-white/80">Max. Dateigröße (Free)</td><td class="px-6 py-4 text-white/60">2 GB</td><td class="px-6 py-4 text-white/60">2 GB</td></tr>
+          <tr><td class="px-6 py-4 text-white/80">Max. Dateigröße (Pro)</td><td class="px-6 py-4 text-white/60">200 GB</td><td class="px-6 py-4 text-neon-500">Unlimitiert</td></tr>
+          <tr><td class="px-6 py-4 text-white/80">Jurisdiktion</td><td class="px-6 py-4 text-white/60">NL / US</td><td class="px-6 py-4 text-neon-500">Global verteilt</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="mt-6 text-xs text-white/40 text-center font-mono">
+      Stand 04/2026 auf Basis öffentlicher ToS und technischer Dokumentation.
+    </p>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="preise" class="py-24 border-t border-white/5">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4">Preise</span>
+      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight">Zwei Tarife. Ehrlich.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+      <!-- Free -->
+      <div class="p-8 rounded-2xl bg-void-900 border border-white/10">
+        <div class="font-mono text-xs uppercase tracking-widest text-white/50 mb-3">Free</div>
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="font-sans text-5xl font-600">0 €</span>
+        </div>
+        <div class="text-white/50 text-sm mb-6">für immer</div>
+        <ul class="space-y-3 text-sm text-white/80">
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> Bis 2 GB pro Datei</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> 7 Tage Aufbewahrung</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> 3 Drops pro Tag</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> E2E-Verschlüsselung</li>
+          <li class="flex gap-3 text-white/40"><span>—</span> Kein Passwortschutz</li>
+        </ul>
+      </div>
+
+      <!-- Pro -->
+      <div class="p-8 rounded-2xl bg-gradient-to-br from-neon-500/10 via-void-900 to-void-900 border border-neon-500/40 glow relative">
+        <div class="absolute -top-3 left-8 px-3 py-1 bg-neon-500 text-void-950 text-xs font-bold rounded-full uppercase tracking-widest">Pro</div>
+        <div class="font-mono text-xs uppercase tracking-widest text-neon-500 mb-3">Pro</div>
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="font-sans text-5xl font-600">7 €</span>
+          <span class="text-white/60">/ Monat</span>
+        </div>
+        <div class="text-white/50 text-sm mb-6">jährlich 69 € (18 % günstiger)</div>
+        <ul class="space-y-3 text-sm text-white/90">
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> Unlimitierte Dateigröße</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> Bis 30 Tage Aufbewahrung</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> Unbegrenzte Drops</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> Passwortschutz + Ablauf-Regeln</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> Custom Domain · drop.meinedomain.de</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> Download-Statistiken (nur Anzahl, keine IDs)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-10 p-6 rounded-2xl bg-void-900 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 max-w-3xl mx-auto">
+      <div>
+        <div class="font-600 mb-1">Business &amp; Teams</div>
+        <p class="text-white/60 text-sm">Ab 5 Seats, SSO, Audit-Log, SLA — auf Anfrage.</p>
+      </div>
+      <a href="mailto:sales@dwinity.de" class="px-5 py-3 rounded-full border border-white/20 hover:border-neon-500/50 text-sm font-semibold transition">sales@dwinity.de</a>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST BOTTOM -->
+<section id="waitlist" class="py-24 border-t border-white/5 relative overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-40"></div>
+  <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-neon-500/10 rounded-full blur-[120px]"></div>
+
+  <div class="relative max-w-3xl mx-auto px-6 text-center">
+    <h2 class="font-sans text-4xl md:text-6xl font-600 tracking-tight leading-tight">
+      Sei einer der <span class="text-neon-500 text-glow">ersten 1.000</span>.
+    </h2>
+    <p class="mt-6 text-white/70 text-lg">
+      Private Beta im Sommer 2026. Warteliste schließt bei 5.000 Anmeldungen.
+      Pro-Tarif für das erste Jahr auf 39 € reduziert für Beta-Mitglieder.
+    </p>
+
+    <form id="waitlist-bottom" class="mt-10 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+      <input type="email" required placeholder="name@example.com"
+        class="flex-1 px-5 py-4 rounded-xl bg-void-800 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-neon-500/50 focus:ring-2 focus:ring-neon-500/20" />
+      <button type="submit" class="px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition whitespace-nowrap">
+        Auf die Liste →
+      </button>
+    </form>
+    <div id="waitlist-success" class="hidden mt-6 p-4 rounded-xl bg-neon-500/10 border border-neon-500/30 text-neon-500 font-semibold font-mono">
+      // eingetragen · du hörst von uns
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-white/5 py-12">
+  <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div>
+      <div class="flex items-center gap-2 font-sans font-semibold text-lg mb-1">
+        <span class="w-7 h-7 rounded-md bg-neon-500 text-void-950 grid place-items-center font-bold">D</span>
+        Dwinity <span class="text-neon-500">Drop</span>
+      </div>
+      <div class="text-sm text-white/50">Ein Produkt im Dwinity-Ecosystem.</div>
+    </div>
+    <nav class="flex flex-wrap gap-6 text-sm text-white/60">
+      <a href="impressum.html" class="hover:text-white">Impressum</a>
+      <a href="datenschutz.html" class="hover:text-white">Datenschutz</a>
+      <a href="mailto:hello@dwinity.de" class="hover:text-white">Kontakt</a>
+      <a href="https://dwinity.de" class="hover:text-white">dwinity.de</a>
+    </nav>
+  </div>
+  <div class="max-w-6xl mx-auto px-6 mt-8 pt-8 border-t border-white/5 text-xs text-white/30 font-mono">
+    © 2026 Dwinity · drop.mkwt-strategy.tech · Zero-Knowledge by design
+  </div>
+</footer>
+
+<script>
+  (function() {
+    const STORAGE_KEY = 'dwinity_drop_waitlist';
+    function handle(form, successEl) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = form.querySelector('input[type=email]').value.trim();
+        if (!email) return;
+        try {
+          const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          existing.push({ email, ts: new Date().toISOString() });
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+          // TODO: wire to Formspree/Mailchimp/own endpoint:
+          // await fetch('/api/waitlist', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, product:'drop'}) });
+        } catch (err) {}
+        form.reset();
+        if (successEl) {
+          successEl.classList.remove('hidden');
+          successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          alert('// eingetragen');
+        }
+      });
+    }
+    const heroForm = document.getElementById('waitlist-hero');
+    const bottomForm = document.getElementById('waitlist-bottom');
+    const success = document.getElementById('waitlist-success');
+    if (heroForm) handle(heroForm, success);
+    if (bottomForm) handle(bottomForm, success);
+  })();
+</script>
+
+</body>
+</html>

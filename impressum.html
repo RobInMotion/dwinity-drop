@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Impressum — Dwinity Drop</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { void: { 950:'#05060A', 900:'#0A0B10', 800:'#13141B' }, neon: { 500:'#00FF9D', 600:'#00D684' } },
+    fontFamily: { sans:['Space Grotesk','ui-sans-serif','system-ui'], mono:['JetBrains Mono','ui-monospace','monospace'] },
+  } } };
+</script>
+</head>
+<body class="font-sans text-white bg-void-950 antialiased">
+
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
+      <span class="w-7 h-7 rounded-md bg-neon-500 text-void-950 grid place-items-center font-bold">D</span>
+      Dwinity <span class="text-neon-500">Drop</span>
+    </a>
+    <a href="index.html" class="text-sm text-white/60 hover:text-white">← Zurück</a>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-6 py-16">
+  <h1 class="font-sans text-5xl font-600 tracking-tight mb-10">Impressum</h1>
+
+  <section class="space-y-8 text-white/70 leading-relaxed">
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Angaben gemäß § 5 TMG</h2>
+      <p>
+        <!-- TODO: Durch echte Daten ersetzen -->
+        [Firma / Name]<br/>
+        [Straße und Hausnummer]<br/>
+        [PLZ und Ort]<br/>
+        Deutschland
+      </p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Vertreten durch</h2>
+      <p>[Vorname Nachname, Geschäftsführer]</p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Kontakt</h2>
+      <p>
+        Telefon: [+49 ...]<br/>
+        E-Mail: <a href="mailto:hello@dwinity.de" class="text-neon-500 hover:underline">hello@dwinity.de</a>
+      </p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Umsatzsteuer-ID</h2>
+      <p>Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br/>[DE...]</p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+      <p>[Vorname Nachname, Anschrift wie oben]</p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Haftungsausschluss</h2>
+      <p>
+        Dwinity Drop ist ein Dienst zur Übertragung verschlüsselter Dateien.
+        Die Nutzung erfolgt eigenverantwortlich. Illegale Inhalte sind untersagt.
+        Aufgrund der Ende-zu-Ende-Verschlüsselung haben wir keinen Einblick in übertragene Inhalte,
+        werden aber Nutzerkonten bei begründeten Hinweisen auf Missbrauch sperren.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-white/5 py-8 mt-16">
+  <div class="max-w-6xl mx-auto px-6 text-sm text-white/40 font-mono">© 2026 Dwinity · <a href="datenschutz.html" class="hover:text-white">Datenschutz</a></div>
+</footer>
+</body>
+</html>
