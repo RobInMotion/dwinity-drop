@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dwinity Drop — Empfang</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-neon-32.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/favicon.png" />
+<meta name="description" content="Dateien empfangen über Dwinity Drop — im Browser entschlüsselt, Self-Custody, Teil des Dwinity-Ecosystems." />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/fx.css" />
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void: { 950: '#05060A', 900: '#0A0B10', 800: '#13141B', 700: '#1E2029', 600: '#2A2D3A' },
+          neon: { 500: '#00FF9D', 600: '#00D684', 400: '#4DFFB8' },
+        },
+        fontFamily: {
+          sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body { background: #05060A; }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .text-glow { text-shadow: 0 0 24px rgba(0,255,157,0.35); }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+</style>
+</head>
+<body class="font-sans text-white antialiased min-h-screen">
+<canvas id="netstream-bg"></canvas>
+<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
+      <img src="/img/logo-hand-neon-256.png" alt="Dwinity" class="w-7 h-7 rounded-md object-contain fx-logo-glow" />
+      <span>Dwinity <span class="text-neon-500">Drop</span></span>
+    </a>
+    <span class="font-mono text-xs text-white/50">Empfangs-Modus · Self-Custody</span>
+  </div>
+</header>
+
+<section class="relative pt-32 pb-20 overflow-hidden min-h-screen">
+  <div class="absolute inset-0 grid-bg opacity-60"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-void-950/80 to-void-950"></div>
+
+  <div class="relative max-w-2xl mx-auto px-6">
+    <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono rounded-full bg-neon-500/10 text-neon-500 border border-neon-500/30 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
+      Zero-Knowledge · Entschlüsselung läuft im Browser
+    </span>
+
+    <h1 class="font-sans text-4xl md:text-5xl font-600 leading-tight tracking-tight">
+      Eine Datei wartet auf <span class="text-neon-500 text-glow">dich</span>.
+    </h1>
+
+    <div id="panel" class="mt-10 rounded-3xl border border-white/10 bg-void-900/75 backdrop-blur p-8 md:p-10">
+      <div id="meta" class="hidden">
+        <div class="font-mono text-xs text-white/50 mb-2">// Dateiname</div>
+        <div id="filename" class="font-600 text-xl break-all mb-6">—</div>
+
+        <button id="download-btn" class="w-full px-6 py-4 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
+          Herunterladen &amp; Entschlüsseln
+        </button>
+
+        <div id="dl-progress" class="hidden mt-6 text-left">
+          <div class="h-2 bg-void-800 rounded-full overflow-hidden">
+            <div id="dl-progress-bar" class="h-full bg-neon-500 transition-all duration-150" style="width: 0%"></div>
+          </div>
+          <div id="dl-progress-text" class="mt-3 text-xs font-mono text-white/60">// …</div>
+        </div>
+
+        <div id="dl-success" class="hidden mt-6 p-4 rounded-xl bg-neon-500/10 border border-neon-500/30 text-neon-500 font-mono text-sm">
+          // ✓ entschlüsselt · Download gestartet
+        </div>
+      </div>
+
+      <div id="error" class="hidden p-4 rounded-xl bg-red-500/10 border border-red-500/40 text-red-400 font-mono text-sm"></div>
+
+      <div class="mt-8 pt-8 border-t border-white/10 grid grid-cols-3 gap-4 text-xs font-mono text-white/50">
+        <div><div class="text-white/70 mb-1">Schlüssel</div>Nur im URL-Fragment (#)</div>
+        <div><div class="text-white/70 mb-1">Entschlüsselung</div>Lokal im Browser</div>
+        <div><div class="text-white/70 mb-1">Ecosystem</div>Dwinity · Self-Custody</div>
+      </div>
+    </div>
+
+    <p class="mt-6 text-center text-xs font-mono text-white/40">
+      Der Schlüssel nach dem <span class="text-neon-500">#</span> verlässt deinen Browser nie.
+      Unser Server sieht nur verschlüsselte Bytes.
+    </p>
+
+    <!-- Ecosystem footer belt -->
+    <div class="mt-12 p-6 rounded-2xl border border-white/10 bg-void-900/40">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="w-8 h-8 rounded-md bg-white text-void-950 grid place-items-center font-bold text-sm">∞</span>
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50">Dwinity Ecosystem</div>
+          <div class="font-600">Data Sovereignty Stack</div>
+        </div>
+      </div>
+      <p class="text-sm text-white/60 leading-relaxed">
+        Dwinity Drop ist ein Vertical-Produkt auf der
+        <a href="https://dwinity.com" class="text-neon-500 hover:underline">Dwinity Blockchain Cloud</a>.
+        Du willst selbst verschicken? <a href="/" class="text-neon-500 hover:underline">drop.mkwt-strategy.tech</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script src="/download.js"></script>
+<script src="/netstream.js"></script>
+</body>
+</html>
