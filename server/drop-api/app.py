@@ -88,7 +88,7 @@ def init_db():
 
 init_db()
 
-app = FastAPI(title="Dwinity Drop API")
+app = FastAPI(title="Dead Drop API")
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,4 +1,4 @@
-/* Dwinity NetStream Background
+/* Dead Drop NetStream Background
    =============================
    Replaces Vanta NET with a custom mesh where:
     - nodes drift slowly,

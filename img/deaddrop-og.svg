@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <filter id="chalk" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5"/>
+    </filter>
+    <filter id="chalk2" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.0" numOctaves="2" seed="13" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.8"/>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#vignette)"/>
+
+  <!-- Kreide-X links -->
+  <g transform="translate(120, 165)">
+    <g stroke="#00FF9D" stroke-width="14" stroke-linecap="round" opacity="0.25" filter="url(#chalk)">
+      <line x1="20" y1="30" x2="280" y2="270"/>
+      <line x1="280" y1="30" x2="20" y2="270"/>
+    </g>
+    <g stroke="#00FF9D" stroke-width="9" stroke-linecap="round" filter="url(#chalk)">
+      <line x1="25" y1="35" x2="275" y2="265"/>
+      <line x1="275" y1="35" x2="25" y2="265"/>
+    </g>
+    <g stroke="#00FF9D" stroke-width="2.5" stroke-linecap="round" opacity="0.55" filter="url(#chalk2)">
+      <line x1="30" y1="40" x2="270" y2="260"/>
+      <line x1="270" y1="40" x2="30" y2="260"/>
+    </g>
+  </g>
+
+  <!-- Wortmarke rechts -->
+  <g transform="translate(490, 290)">
+    <text font-family="Space Grotesk, Arial, sans-serif" font-weight="700" font-size="104" fill="#ffffff" letter-spacing="-2">DEAD DROP</text>
+    <text y="82" font-family="Space Grotesk, Arial, sans-serif" font-weight="400" font-size="42" fill="#00FF9D" letter-spacing="-1">Silent files.</text>
+    <text y="140" font-family="JetBrains Mono, monospace" font-size="20" fill="#ffffff80" letter-spacing="3">POWERED BY DWINITY</text>
+  </g>
+</svg>

@@ -74,7 +74,7 @@
     for (const f of files) zip.file(f.name, f);
     const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
     const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-    return { blob, name: `dwinity-drop-${stamp}.zip`, bundled: true };
+    return { blob, name: `deaddrop-${stamp}.zip`, bundled: true };
   }
 
   async function encryptBlob(blob) {

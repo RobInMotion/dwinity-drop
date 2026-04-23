@@ -79,7 +79,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename || "dwinity-drop-" + Date.now();
+    a.download = filename || "deaddrop-" + Date.now();
     document.body.appendChild(a);
     a.click();
     a.remove();

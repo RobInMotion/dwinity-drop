@@ -84,7 +84,7 @@
     return (
       `${host} wants you to sign in with your Ethereum account:\n` +
       `${address}\n\n` +
-      `Sign in to Dwinity - Self-Custody Ecosystem.\n\n` +
+      `Sign in to Dead Drop · powered by Dwinity.\n\n` +
       `URI: ${origin}\n` +
       `Version: 1\n` +
       `Chain ID: ${CHAIN_ID}\n` +
