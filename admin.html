@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin — Dead Drop</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+<style>
+  body { background: #05060A; }
+  .grid-bg { background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px; }
+  .stat-card { background: rgba(19,20,27,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 1.25rem; }
+</style>
+</head>
+<body class="font-sans text-white antialiased min-h-screen">
+
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-2">
+    <a href="/" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
+      <span class="truncate">Dead <span class="text-neon-500">Drop</span></span>
+      <span class="ml-1 md:ml-2 px-1.5 md:px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-[9px] md:text-xs font-mono uppercase tracking-widest shrink-0">Admin</span>
+    </a>
+    <div class="flex items-center gap-2 md:gap-3 shrink-0 min-w-0">
+      <span id="admin-wallet" class="font-mono text-[10px] md:text-xs text-white/50 truncate max-w-[110px] md:max-w-none">—</span>
+      <a href="/dashboard" class="hidden sm:inline-flex items-center px-2.5 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest text-white/70 hover:text-white transition shrink-0">Dashboard</a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-12">
+
+  <!-- Access gate -->
+  <div id="gate" class="text-center py-20">
+    <h1 class="font-sans text-3xl font-600 mb-4" data-i18n="admin.gate.title">Admin-Zugang</h1>
+    <p class="text-white/60 mb-8" data-i18n="admin.gate.sub">Du musst mit deiner Admin-Wallet eingeloggt sein.</p>
+    <a href="/" class="inline-block px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="admin.gate.home">Zur Startseite</a>
+  </div>
+
+  <!-- Admin panel -->
+  <div id="panel" class="hidden">
+
+    <!-- Stats -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+      <div class="stat-card">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="admin.stat.activeDrops">Aktive Drops</div>
+        <div class="text-2xl md:text-3xl font-600 text-neon-500" id="stat-active">—</div>
+        <div class="text-xs text-white/40 mt-1"><span id="stat-total">—</span> <span data-i18n="admin.stat.total">total</span> · <span id="stat-pending">—</span> <span data-i18n="admin.stat.pending">pending</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="admin.stat.storage">Speicher</div>
+        <div class="text-2xl md:text-3xl font-600" id="stat-bytes">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="admin.stat.downloads">Downloads</div>
+        <div class="text-2xl md:text-3xl font-600" id="stat-downloads">—</div>
+        <div class="text-xs text-white/40 mt-1"><span id="stat-urls">—</span> <span data-i18n="admin.stat.urlIssuances">URL-Ausstellungen</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="admin.stat.reports">Reports</div>
+        <div class="text-2xl md:text-3xl font-600" id="stat-reports-open">—</div>
+        <div class="text-xs text-white/40 mt-1"><span id="stat-reports-total">—</span> <span data-i18n="admin.stat.total">total</span></div>
+      </div>
+    </section>
+
+    <!-- Revenue (additional row) -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-10">
+      <div class="stat-card">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="admin.rev.usdc">Revenue · USDC</div>
+        <div class="text-2xl md:text-3xl font-600 text-neon-500" id="rev-usdc">—</div>
+        <div class="text-xs text-white/40 mt-1"><span id="rev-usdc-count">—</span> <span data-i18n="admin.rev.paidInvoices">paid invoices</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="admin.rev.dwin">Revenue · DWIN</div>
+        <div class="text-2xl md:text-3xl font-600 text-neon-500" id="rev-dwin">—</div>
+        <div class="text-xs text-white/40 mt-1"><span id="rev-dwin-count">—</span> <span data-i18n="admin.rev.paidInvoices">paid invoices</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="admin.rev.pending">Pending</div>
+        <div class="text-2xl md:text-3xl font-600" id="rev-pending">—</div>
+        <div class="text-xs text-white/40 mt-1" data-i18n="admin.rev.pendingSub">Invoices warten auf Payment</div>
+      </div>
+    </section>
+
+    <!-- Wallets -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <div>
+          <h2 class="font-sans text-2xl font-600" data-i18n="admin.wallets.title">Wallets</h2>
+          <div class="text-[11px] font-mono text-white/40" data-i18n="admin.wallets.sub">Alle registrierten Wallets · Admin-Toggle · Pro-Status</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="wallet-promote-input" data-i18n-placeholder="admin.wallets.promotePh" placeholder="0x… als Admin hinzufügen" maxlength="42"
+            class="px-3 py-1.5 rounded-lg bg-void-800 border border-white/10 font-mono text-xs w-64 focus:outline-none focus:border-neon-500/40" />
+          <button id="wallet-promote-btn" class="px-3 py-1.5 rounded-lg bg-neon-500 hover:bg-neon-600 text-void-950 text-xs font-bold" data-i18n="admin.wallets.promoteBtn">+ Admin</button>
+        </div>
+      </div>
+      <div id="wallets-list" class="space-y-1.5">
+        <div class="text-white/40 font-mono text-sm">// lade …</div>
+      </div>
+    </section>
+
+    <!-- All Drops (admin view) -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-sans text-2xl font-600" data-i18n="admin.drops.title">Alle Drops</h2>
+          <div class="text-[11px] font-mono text-white/40" data-i18n="admin.drops.sub">System-weit · neueste zuerst · max 500</div>
+        </div>
+      </div>
+      <div id="all-drops-list" class="space-y-1.5">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
+    <!-- All Rooms (admin view) -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-sans text-2xl font-600" data-i18n="admin.rooms.title">Alle Chat-Rooms</h2>
+          <div class="text-[11px] font-mono text-white/40" data-i18n="admin.rooms.sub">System-weit · aktive + abgelaufene</div>
+        </div>
+      </div>
+      <div id="all-rooms-list" class="space-y-1.5">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
+    <!-- All Invoices -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <div>
+          <h2 class="font-sans text-2xl font-600" data-i18n="admin.invoices.title">Invoices</h2>
+          <div class="text-[11px] font-mono text-white/40" data-i18n="admin.invoices.sub">Alle Zahlungsvorgänge · paid / pending / expired</div>
+        </div>
+        <select id="invoices-filter" class="px-3 py-1.5 rounded-lg bg-void-800 border border-white/10 font-mono text-xs focus:outline-none focus:border-neon-500/40">
+          <option value="" data-i18n="admin.invoices.all">alle</option>
+          <option value="paid">paid</option>
+          <option value="pending">pending</option>
+          <option value="expired">expired</option>
+          <option value="cancelled">cancelled</option>
+        </select>
+      </div>
+      <div id="invoices-list" class="space-y-1.5">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
+    <!-- Reports -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-sans text-2xl font-600" data-i18n="admin.reports.title">Offene Missbrauchs-Meldungen</h2>
+        <label class="text-xs font-mono text-white/50 flex items-center gap-2">
+          <input type="checkbox" id="show-resolved" class="accent-neon-500" />
+          <span data-i18n="admin.reports.showResolved">resolved anzeigen</span>
+        </label>
+      </div>
+      <div id="reports-list" class="space-y-3">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
+    <!-- Waitlist signups -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <div>
+          <h2 class="font-sans text-2xl font-600" data-i18n="admin.waitlist.title">Waitlist</h2>
+          <div class="text-[11px] font-mono text-white/40" data-i18n="admin.waitlist.sub">Email-Signups für Launch-Updates</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="waitlist-filter" class="px-3 py-1.5 rounded-lg bg-void-800 border border-white/10 font-mono text-xs focus:outline-none focus:border-neon-500/40">
+            <option value="" data-i18n="admin.waitlist.allProducts">alle Produkte</option>
+            <option value="drop">drop</option>
+            <option value="drop-free">drop-free</option>
+            <option value="tax">tax</option>
+          </select>
+          <button id="waitlist-export" class="px-3 py-1.5 rounded-lg bg-void-800 border border-white/15 hover:border-neon-500/40 text-xs font-mono text-white/70 hover:text-white">CSV</button>
+        </div>
+      </div>
+      <div id="waitlist-summary" class="mb-3 text-xs font-mono text-white/50"></div>
+      <div id="waitlist-list" class="space-y-1.5">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
+    <!-- Orphan Payments -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-sans text-2xl font-600" data-i18n="admin.orphans.title">Orphan Payments</h2>
+        <div class="text-[11px] font-mono text-white/40" data-i18n="admin.orphans.sub">
+          Zahlungen ohne Invoice-Match — manuell einem Wallet zuordnen
+        </div>
+      </div>
+      <div id="orphans-list" class="space-y-2">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
+    <!-- Promos -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-sans text-2xl font-600" data-i18n="admin.promos.title">Promo-Codes</h2>
+      </div>
+
+      <!-- Create -->
+      <div class="stat-card mb-4">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-3" data-i18n="admin.promos.createTitle">Neuen Code erstellen</div>
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
+          <div class="md:col-span-2">
+            <label class="block text-[10px] font-mono text-white/40 mb-1" data-i18n="admin.promos.code">Code</label>
+            <input id="promo-new-code" maxlength="32" placeholder="BETA2026"
+              class="w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 font-mono uppercase focus:outline-none focus:border-neon-500/40" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-mono text-white/40 mb-1" data-i18n="admin.promos.discount">Rabatt %</label>
+            <input id="promo-new-pct" type="number" min="1" max="100" value="20"
+              class="w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 font-mono focus:outline-none focus:border-neon-500/40" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-mono text-white/40 mb-1" data-i18n="admin.promos.maxUses">Max Uses</label>
+            <input id="promo-new-max" type="number" min="1" max="100000" placeholder="∞"
+              class="w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 font-mono focus:outline-none focus:border-neon-500/40" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-mono text-white/40 mb-1" data-i18n="admin.promos.expires">Läuft ab</label>
+            <input id="promo-new-until" type="date"
+              class="w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 font-mono focus:outline-none focus:border-neon-500/40" />
+          </div>
+          <button id="promo-create-btn" class="px-4 py-2 rounded-lg bg-neon-500 hover:bg-neon-600 text-void-950 font-bold text-sm" data-i18n="admin.promos.create">
+            Erstellen
+          </button>
+        </div>
+        <input id="promo-new-note" maxlength="200" data-i18n-placeholder="admin.promos.notePh" placeholder="Notiz (optional) — z.B. Launch-Campaign Twitter"
+          class="mt-2 w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 text-sm focus:outline-none focus:border-neon-500/40" />
+        <div id="promo-error" class="hidden mt-2 text-xs font-mono text-red-400"></div>
+      </div>
+
+      <!-- List -->
+      <div id="promos-list" class="space-y-2">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/ref-capture.js" defer></script>
+<script src="/auth.js"></script>
+<script src="/panic.js" defer></script>
+<script src="/admin.js"></script>
+<script src="/i18n.js"></script>
+</body>
+</html>

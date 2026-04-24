@@ -4,32 +4,16 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Dead Drop — Empfang</title>
-<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="apple-touch-icon" href="/img/deaddrop-logo-256.png" />
 <meta name="description" content="Dateien empfangen über Dead Drop — im Browser entschlüsselt, niemand sonst liest mit. Powered by Dwinity." />
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
 <link rel="stylesheet" href="/fx.css" />
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          void: { 950: '#05060A', 900: '#0A0B10', 800: '#13141B', 700: '#1E2029', 600: '#2A2D3A' },
-          neon: { 500: '#00FF9D', 600: '#00D684', 400: '#4DFFB8' },
-        },
-        fontFamily: {
-          sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui'],
-          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
-        },
-      },
-    },
-  };
-</script>
 <style>
   body { background: #05060A; }
   .grid-bg {
@@ -48,10 +32,10 @@
 <header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
   <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
     <a href="/" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
-      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-7 h-7 object-contain fx-logo-glow" />
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-10 h-10 object-contain fx-logo-glow" />
       <span>Dead <span class="text-neon-500">Drop</span></span>
     </a>
-    <span class="font-mono text-xs text-white/50">Empfangs-Modus · Silent</span>
+    <span class="font-mono text-xs text-white/50" data-i18n="receive.mode">Empfangs-Modus · Self-Custody</span>
   </div>
 </header>
 
@@ -62,19 +46,19 @@
   <div class="relative max-w-2xl mx-auto px-6">
     <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono rounded-full bg-neon-500/10 text-neon-500 border border-neon-500/30 mb-6">
       <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
-      Zero-Knowledge · Entschlüsselung läuft im Browser
+      <span data-i18n="receive.chip">Zero-Knowledge · Entschlüsselung läuft im Browser</span>
     </span>
 
-    <h1 class="font-sans text-4xl md:text-5xl font-600 leading-tight tracking-tight">
+    <h1 class="font-sans text-4xl md:text-5xl font-600 leading-tight tracking-tight" data-i18n-html="receive.title">
       Eine Datei wartet auf <span class="text-neon-500 text-glow">dich</span>.
     </h1>
 
     <div id="panel" class="mt-10 rounded-3xl border border-white/10 bg-void-900/75 backdrop-blur p-8 md:p-10">
       <div id="meta" class="hidden">
-        <div class="font-mono text-xs text-white/50 mb-2">// Dateiname</div>
+        <div class="font-mono text-xs text-white/50 mb-2" data-i18n="receive.filenameLabel">// Dateiname</div>
         <div id="filename" class="font-600 text-xl break-all mb-6">—</div>
 
-        <button id="download-btn" class="w-full px-6 py-4 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
+        <button id="download-btn" class="w-full px-6 py-4 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="receive.download">
           Herunterladen &amp; Entschlüsseln
         </button>
 
@@ -85,7 +69,7 @@
           <div id="dl-progress-text" class="mt-3 text-xs font-mono text-white/60">// …</div>
         </div>
 
-        <div id="dl-success" class="hidden mt-6 p-4 rounded-xl bg-neon-500/10 border border-neon-500/30 text-neon-500 font-mono text-sm">
+        <div id="dl-success" class="hidden mt-6 p-4 rounded-xl bg-neon-500/10 border border-neon-500/30 text-neon-500 font-mono text-sm" data-i18n="receive.success">
           // ✓ entschlüsselt · Download gestartet
         </div>
       </div>
@@ -93,28 +77,51 @@
       <div id="error" class="hidden p-4 rounded-xl bg-red-500/10 border border-red-500/40 text-red-400 font-mono text-sm"></div>
 
       <div class="mt-8 pt-8 border-t border-white/10 grid grid-cols-3 gap-4 text-xs font-mono text-white/50">
-        <div><div class="text-white/70 mb-1">Schlüssel</div>Nur im URL-Fragment (#)</div>
-        <div><div class="text-white/70 mb-1">Entschlüsselung</div>Lokal im Browser</div>
-        <div><div class="text-white/70 mb-1">Ecosystem</div>powered by Dwinity</div>
+        <div><div class="text-white/70 mb-1" data-i18n="receive.keyStat">Schlüssel</div><span data-i18n="receive.keyValue">Nur im URL-Fragment (#)</span></div>
+        <div><div class="text-white/70 mb-1" data-i18n="receive.decryptStat">Entschlüsselung</div><span data-i18n="receive.decryptValue">Lokal im Browser</span></div>
+        <div><div class="text-white/70 mb-1" data-i18n="receive.ecoStat">Ecosystem</div><span data-i18n="receive.ecoValue">Dwinity · Self-Custody</span></div>
       </div>
     </div>
 
-    <p class="mt-6 text-center text-xs font-mono text-white/40">
+    <p class="mt-6 text-center text-xs font-mono text-white/40" data-i18n-html="receive.foot">
       Der Schlüssel nach dem <span class="text-neon-500">#</span> verlässt deinen Browser nie.
       Unser Server sieht nur verschlüsselte Bytes.
     </p>
+
+    <!-- Report link (DSA/TMG) -->
+    <p class="mt-4 text-center text-[11px] font-mono text-white/30">
+      <span data-i18n="receive.reportPrompt">Missbrauch melden?</span> <a href="#" id="report-link" class="underline hover:text-red-400" data-i18n="receive.reportLink">// Inhalt melden</a>
+    </p>
+
+    <!-- Report dialog -->
+    <div id="report-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div class="max-w-md w-full rounded-2xl bg-void-900 border border-white/10 p-6">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1" data-i18n="receive.report.kicker">Missbrauchs-Meldung</div>
+        <h3 class="font-600 text-lg mb-4" data-i18n="receive.report.title">Was stimmt mit diesem Inhalt nicht?</h3>
+        <textarea id="report-reason" class="w-full h-28 p-3 rounded-lg bg-void-800 border border-white/10 text-sm font-mono placeholder-white/30 focus:outline-none focus:border-neon-500/40" data-i18n-placeholder="receive.report.reasonPlaceholder" placeholder="Beschreibe kurz (min. 10 Zeichen) warum dieser Link gemeldet wird — z.B. illegaler Inhalt, Phishing, Urheberrecht."></textarea>
+        <input id="report-contact" type="email" class="mt-3 w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 text-sm font-mono placeholder-white/30 focus:outline-none focus:border-neon-500/40" data-i18n-placeholder="receive.report.contactPlaceholder" placeholder="Kontakt (optional, für Rückfragen)">
+        <div id="report-error" class="hidden mt-3 text-xs font-mono text-red-400"></div>
+        <div id="report-success" class="hidden mt-3 text-xs font-mono text-neon-500" data-i18n="receive.report.success">// Meldung erhalten. Wir prüfen innerhalb von 48h.</div>
+        <div class="mt-4 flex items-center justify-end gap-2">
+          <button id="report-cancel" class="px-4 py-2 text-sm font-mono text-white/60 hover:text-white" data-i18n="receive.report.cancel">// abbrechen</button>
+          <button id="report-submit" class="px-4 py-2 rounded-full bg-red-500/90 hover:bg-red-500 text-white text-sm font-bold" data-i18n="receive.report.submit">Melden</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/report.js"></script>
 
     <!-- Ecosystem footer belt -->
     <div class="mt-12 p-6 rounded-2xl border border-white/10 bg-void-900/40">
       <div class="flex items-center gap-3 mb-3">
         <span class="w-8 h-8 rounded-md bg-white text-void-950 grid place-items-center font-bold text-sm">∞</span>
         <div>
-          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50">Dwinity Ecosystem</div>
-          <div class="font-600">Data Sovereignty Stack</div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50" data-i18n="receive.ecoKicker">Dwinity Ecosystem</div>
+          <div class="font-600" data-i18n="receive.ecoSub">Data Sovereignty Stack</div>
         </div>
       </div>
-      <p class="text-sm text-white/60 leading-relaxed">
-        Dead Drop ist ein Vertical-Produkt im Ecosystem der
+      <p class="text-sm text-white/60 leading-relaxed" data-i18n-html="receive.belt">
+        Dead Drop ist ein Vertical-Produkt auf der
         <a href="https://dwinity.com" class="text-neon-500 hover:underline">Dwinity Blockchain Cloud</a>.
         Du willst selbst verschicken? <a href="/" class="text-neon-500 hover:underline">drop.mkwt-strategy.tech</a>.
       </p>
@@ -124,5 +131,6 @@
 
 <script src="/download.js"></script>
 <script src="/netstream.js"></script>
+<script src="/i18n.js"></script>
 </body>
 </html>

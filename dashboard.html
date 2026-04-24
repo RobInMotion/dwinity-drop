@@ -4,40 +4,33 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Dead Drop — Dashboard</title>
-<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="apple-touch-icon" href="/img/deaddrop-logo-256.png" />
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/lib/leaflet.css" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
 <link rel="stylesheet" href="/fx.css" />
-<script>
-  tailwind.config = {
-    theme: { extend: {
-      colors: {
-        void: { 950:'#05060A',900:'#0A0B10',800:'#13141B',700:'#1E2029',600:'#2A2D3A' },
-        neon: { 500:'#00FF9D',600:'#00D684',400:'#4DFFB8' },
-      },
-      fontFamily: {
-        sans: ['Space Grotesk','ui-sans-serif','system-ui'],
-        mono: ['JetBrains Mono','ui-monospace','monospace'],
-      },
-    }},
-  };
-</script>
 <style>
-  html { scroll-behavior: smooth; } body { background: #05060A; }
+  body { background: #05060A; }
   .grid-bg { background-image:
     linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
     background-size: 40px 40px; }
-  .text-glow { text-shadow: 0 0 24px rgba(0,255,157,0.35); }
   @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} } .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
 
-  /* Leaflet dark polish + node dots */
+  /* Quota ring SVG */
+  .ring-bg { stroke: rgba(255,255,255,0.06); }
+  .ring-fg { transition: stroke-dashoffset 800ms cubic-bezier(0.2, 0.8, 0.2, 1); filter: drop-shadow(0 0 6px rgba(0,255,157,0.4)); }
+
+  /* Drop card */
+  .drop-card { transition: border-color 180ms, transform 180ms, background 180ms; }
+  .drop-card:hover { border-color: rgba(0,255,157,0.35); transform: translateY(-2px); }
+
+  /* Leaflet dark polish */
   #drop-map { background: #05060A; }
   .leaflet-container { background: #0A0B10 !important; font-family: inherit !important; }
   .leaflet-tile-pane { filter: hue-rotate(160deg) saturate(0.6) brightness(0.6); }
@@ -45,34 +38,43 @@
   .leaflet-control-attribution a { color: #00FF9D !important; }
   .node-dot { width:6px; height:6px; border-radius:50%; background:#4a5568; box-shadow:0 0 2px rgba(255,255,255,0.15); }
   .node-dot.active { background:#00FF9D; box-shadow:0 0 8px rgba(0,255,157,0.8), 0 0 16px rgba(0,255,157,0.4); animation: pulse-dot 1.6s ease-in-out infinite; }
+
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
 </style>
 </head>
 <body class="font-sans text-white antialiased min-h-screen">
 <canvas id="netstream-bg"></canvas>
+
 <!-- NAV -->
-<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
-  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
-      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-7 h-7 object-contain fx-logo-glow" />
-      <span>Dead <span class="text-neon-500">Drop</span></span>
-      <span class="ml-2 text-xs text-white/40 font-mono hidden md:inline">· Dashboard</span>
+<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 md:gap-2">
+    <a href="/" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
+      <span class="truncate">Dead <span class="text-neon-500">Drop</span></span>
+      <span class="ml-1.5 text-[10px] text-white/40 font-mono uppercase tracking-widest hidden md:inline">Dashboard</span>
     </a>
-    <div class="flex items-center gap-2">
-      <div class="relative">
-        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-2 px-3 py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition">
-          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
-          <span id="wallet-btn-label">Wallet verbinden</span>
+    <div class="flex items-center gap-1 md:gap-2 shrink-0">
+      <a href="/chat" class="shrink-0 inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-neon-500/30 text-neon-500 hover:bg-neon-500/10 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition">
+        Chat
+      </a>
+      <a href="/#dropzone" title="Neuer Drop" aria-label="Neuer Drop" class="shrink-0 inline-flex items-center gap-1 px-2.5 md:px-4 py-1.5 md:py-2 rounded-full bg-neon-500 text-void-950 hover:bg-neon-600 text-xs md:text-sm font-bold transition">
+        <span class="md:hidden text-base leading-none">+</span>
+        <span class="hidden md:inline">+ Neuer Drop</span>
+      </a>
+      <div class="relative shrink-0">
+        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
+          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"></span>
+          <span id="wallet-btn-label" class="truncate">Wallet</span>
         </button>
         <div id="wallet-menu" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-void-900 border border-white/10 shadow-xl p-4 text-sm z-50">
           <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1">Wallet</div>
           <div id="wallet-menu-addr" class="font-mono text-xs break-all text-white/80 mb-3">—</div>
-          <div id="wallet-menu-pro" class="text-xs mb-4">—</div>
+          <div id="wallet-menu-pro" class="text-xs mb-3">—</div>
+          <a href="/rank" class="block mb-3 text-xs font-mono text-white/60 hover:text-neon-500 transition">🐉 Dragon Rank ansehen →</a>
           <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2">// trennen</a>
         </div>
       </div>
-      <a href="/" class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 hover:border-neon-500/50 text-sm font-semibold transition">
-        ← Neuer Drop
-      </a>
     </div>
   </div>
 </header>
@@ -80,130 +82,144 @@
 <!-- Needs-login state -->
 <section id="nologin-screen" class="hidden pt-32 pb-16 min-h-screen">
   <div class="max-w-xl mx-auto px-6 text-center">
-    <h1 class="font-sans text-4xl font-600 tracking-tight mb-4">Dein Dashboard</h1>
-    <p class="text-white/60 mb-8">Verbinde deine Wallet, um deine Drops und deinen Speicher-Status zu sehen.</p>
-    <button id="nologin-connect" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
-      Wallet verbinden
+    <div class="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono rounded-full bg-neon-500/10 text-neon-500 border border-neon-500/30 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
+      <span data-i18n="dash.nologin.chip">Wallet-Login</span>
+    </div>
+    <h1 class="font-sans text-4xl font-600 tracking-tight mb-4" data-i18n="dash.noLogin.title">Dein Dashboard</h1>
+    <p class="text-white/60 mb-8" data-i18n="dash.noLogin.sub">Verbinde deine Wallet, um deine Drops, Quota und den Pro-Status zu sehen.</p>
+    <button id="nologin-connect" data-action="connect-wallet" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="dash.nologin.connect">
+      Wallet verbinden →
     </button>
   </div>
 </section>
 
 <!-- Dashboard -->
-<main id="dashboard-screen" class="hidden pt-24 pb-16 relative">
-  
-  
+<main id="dashboard-screen" class="hidden pt-20 md:pt-24 pb-16 relative">
   <div class="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none" style="background:rgba(0,229,255,0.04);"></div>
   <div class="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none" style="background:rgba(142,45,226,0.05);"></div>
 
-  <div class="relative max-w-7xl mx-auto px-6">
-    <!-- Top -->
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
-      <div>
-        <div class="font-mono text-xs uppercase tracking-widest text-neon-500 mb-2">› Dein Digital Twin · Staging</div>
-        <h1 class="font-sans text-2xl sm:text-3xl md:text-4xl font-600 tracking-tight fx-glow-text inline-block px-3 py-1 rounded-lg" style="background: radial-gradient(ellipse, rgba(5,6,10,0.6), rgba(5,6,10,0) 80%);">Dashboard</h1>
-        <p class="text-white/50 text-sm mt-2 font-mono">
-          $ heute: storj · $ morgen: wallet-gebundener Digital Twin
-        </p>
+  <div class="relative max-w-6xl mx-auto px-4 md:px-6">
+
+    <!-- Title strip -->
+    <div class="flex items-end justify-between gap-3 mb-5 md:mb-8 flex-wrap">
+      <div class="min-w-0">
+        <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-neon-500 mb-1" data-i18n="dash.vaultKicker">› Self-Custody Vault</div>
+        <h1 class="font-sans text-2xl md:text-4xl font-600 tracking-tight" data-i18n="dash.title">Dashboard</h1>
       </div>
-      <div id="pro-badge" class="hidden inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neon-500/10 border border-neon-500/40 text-neon-500 font-mono text-xs">
-        <span class="w-2 h-2 rounded-full bg-neon-500 pulse-dot"></span>
-        <span id="pro-badge-text">Pro aktiv</span>
+      <!-- Tier badges -->
+      <div id="pro-badge" class="hidden shrink-0 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-neon-500/10 border border-neon-500/40 text-neon-500 font-mono text-[11px] md:text-xs">
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot shrink-0"></span>
+        <span id="pro-badge-text" class="truncate max-w-[180px] md:max-w-none" data-i18n="dash.proActive">Pro aktiv</span>
       </div>
-      <div id="free-badge" class="hidden inline-flex items-center gap-2 px-4 py-2 rounded-full bg-void-800 border border-white/10 text-white/60 font-mono text-xs">
-        Free-Tarif ·
-        <a href="/#preise" class="text-neon-500 hover:underline ml-1">Pro freischalten</a>
+      <div id="free-badge" class="hidden shrink-0 inline-flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/10 text-white/60 font-mono text-[11px] md:text-xs">
+        <span data-i18n="dash.free">Free</span>
+        <a href="/#preise" class="text-neon-500 hover:underline" data-i18n="dash.proLink">· Pro</a>
       </div>
     </div>
 
-    <!-- Stats row -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-      <div class="fx-aurora fx-halo fx-transmit p-6 rounded-2xl bg-void-900/85 backdrop-blur border border-white/10 relative overflow-hidden">
-        <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-2">› Aktive Drops</div>
-        <div class="flex items-baseline gap-2">
-          <span id="stat-active" class="font-sans text-4xl font-600 fx-glow-text">0</span>
-          <span class="text-white/40 text-sm">von <span id="stat-total">0</span> gesamt</span>
-        </div>
-      </div>
-      <div class="fx-aurora fx-halo fx-transmit p-6 rounded-2xl bg-void-900/85 backdrop-blur border border-white/10 relative overflow-hidden">
-        <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-2">› Speicher belegt</div>
-        <div class="flex items-baseline gap-2 mb-3">
-          <span id="stat-used" class="font-sans text-4xl font-600 fx-glow-text">0</span>
-          <span class="text-white/40 text-sm">von <span id="stat-quota">—</span></span>
-        </div>
-        <div class="h-1.5 bg-void-800 rounded-full overflow-hidden">
-          <div id="stat-bar" class="h-full transition-all duration-500" style="width:0%; background:linear-gradient(90deg,#00FF9D,#00E5FF,#00FF9D); background-size:200% 100%; animation: fx-glow-shift 3s ease-in-out infinite;"></div>
-        </div>
-      </div>
-      <div class="fx-aurora fx-halo p-6 rounded-2xl bg-void-900/85 backdrop-blur border border-white/10 relative overflow-hidden">
-        <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-2">› Cryptographic Seal</div>
-        <div class="font-sans text-xl font-600 mb-2 fx-glow-text">AES-256-GCM</div>
-        <div class="text-xs text-white/50">Dateinamen &amp; Schlüssel bleiben in deinem Browser · Server speichert nur verschlüsselte Bytes.</div>
-      </div>
-    </div>
+    <!-- Hero: Quota ring + Stats grid -->
+    <section class="fx-aurora rounded-3xl bg-void-900/85 backdrop-blur border border-white/10 p-4 md:p-8 mb-5 md:mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-5 md:gap-10 items-center">
 
-    <!-- Bubble browser -->
-    <div id="bubble-panel" class="fx-aurora mb-4 rounded-2xl bg-void-900/85 backdrop-blur border border-white/10 overflow-hidden relative">
-      <div class="px-5 pt-5 pb-4 flex items-center justify-between border-b border-white/10">
+        <!-- Quota ring -->
+        <div class="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 mx-auto md:mx-0">
+          <svg viewBox="0 0 200 200" class="w-full h-full -rotate-90">
+            <circle class="ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="10" />
+            <circle id="ring-progress" class="ring-fg" cx="100" cy="100" r="88" fill="none" stroke-width="10"
+              stroke-dasharray="553" stroke-dashoffset="553" stroke-linecap="round"
+              stroke="url(#ringGrad)" />
+            <defs>
+              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#00FF9D"/>
+                <stop offset="100%" stop-color="#00E5FF"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+            <div class="font-mono text-[9px] md:text-[10px] uppercase tracking-widest text-white/40 mb-0.5 md:mb-1" data-i18n="dash.storage">Speicher</div>
+            <div class="font-sans text-2xl sm:text-3xl md:text-4xl font-600 fx-glow-text leading-none" id="stat-used">0 B</div>
+            <div class="text-[11px] md:text-xs text-white/40 font-mono mt-1"><span data-i18n="dash.of">von</span> <span id="stat-quota">—</span></div>
+            <div class="text-[10px] text-neon-500 font-mono mt-0.5" id="stat-pct">0 %</div>
+          </div>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="grid grid-cols-2 gap-3 md:gap-4">
+          <div class="p-4 rounded-xl bg-void-800/60 border border-white/5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-1.5" data-i18n="dash.activeDrops">Aktive Drops</div>
+            <div class="flex items-baseline gap-2">
+              <span id="stat-active" class="font-sans text-2xl md:text-3xl font-600">0</span>
+              <span class="text-white/40 text-xs"><span data-i18n="dash.of">von</span> <span id="stat-total">0</span></span>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-void-800/60 border border-white/5">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-1.5" data-i18n="dash.downloads">Downloads</div>
+            <div class="flex items-baseline gap-2">
+              <span id="stat-dl" class="font-sans text-2xl md:text-3xl font-600">0</span>
+              <span class="text-white/40 text-xs" data-i18n="dash.total">insg.</span>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-void-800/60 border border-white/5 col-span-2">
+            <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-1.5" data-i18n="dash.encryption">Verschlüsselung</div>
+            <div class="font-sans font-600 text-sm md:text-base" data-i18n="dash.encryptionValue">AES-256-GCM · Self-Custody</div>
+            <div class="text-[11px] text-white/50 mt-0.5" data-i18n="dash.encryptionSub">Schlüssel nur im Browser · Server sieht nur Bytes</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Drops section -->
+    <section class="mb-6 md:mb-8">
+      <div class="flex items-center justify-between mb-4">
         <div>
-          <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-1">› Bubble Browser</div>
-          <div class="font-sans font-600">Deine Drops · Größe = Volumen</div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50" data-i18n="dash.dropsHeader">Deine Drops</div>
+          <h2 class="font-sans text-xl md:text-2xl font-600" data-i18n="dash.dropsSub">Aktive Übertragungen</h2>
         </div>
-        <div class="text-[11px] text-white/40 font-mono hidden md:block">hover für Details · klick zum Auswählen</div>
-      </div>
-      <div class="relative fx-bubble-bg">
-        <canvas id="bubble-canvas" class="w-full block relative z-10" style="height:280px;"></canvas>
-        <div id="bubble-tooltip" class="hidden absolute pointer-events-none px-3 py-2 rounded-lg bg-void-800 border border-neon-500/40 text-xs font-mono shadow-xl z-10">
-          <div data-tip-name class="font-600 text-white mb-0.5">—</div>
-          <div data-tip-meta class="text-white/60">—</div>
-        </div>
-        <div id="bubble-empty" class="hidden absolute inset-0 grid place-items-center text-white/40 text-sm font-mono pointer-events-none">
-          // noch keine Drops
-        </div>
-      </div>
-    </div>
-
-    <!-- Main grid: list + map -->
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
-      <!-- Drop-Liste -->
-      <div class="fx-aurora lg:col-span-3 rounded-2xl bg-void-900/85 backdrop-blur border border-white/10 overflow-hidden">
-        <div class="p-5 border-b border-white/10 flex items-center justify-between">
-          <div>
-            <div class="font-mono text-[10px] uppercase tracking-widest text-white/50">Deine Drops</div>
-            <div class="font-sans font-600">Aktive Übertragungen</div>
-          </div>
-          <a href="/" class="text-xs font-mono text-neon-500 hover:underline">+ neuer Drop</a>
-        </div>
-        <div id="drops-empty" class="hidden p-10 text-center text-white/50 text-sm">
-          Noch keine aktiven Drops. <a href="/" class="text-neon-500 hover:underline">Jetzt einen erstellen →</a>
-        </div>
-        <div id="drops-list" class="fx-scroll divide-y divide-white/5 max-h-[540px] overflow-y-auto"></div>
+        <a href="/#dropzone" class="text-xs font-mono text-neon-500 hover:underline" data-i18n="dash.newDropLinkPlus">+ neuer Drop</a>
       </div>
 
-      <!-- Map -->
-      <div class="fx-aurora lg:col-span-2 rounded-2xl bg-void-900/85 backdrop-blur border border-white/10 overflow-hidden flex flex-col">
-        <div class="p-5 border-b border-white/10">
-          <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-1">Fragment Map</div>
-          <div class="font-sans font-600">Dezentrale Verteilung</div>
-          <div class="text-[11px] text-white/40 mt-2 leading-relaxed">
-            Jeder Drop wird via Erasure-Coding <span class="text-white/60">29 of 80</span> auf weltweit verteilte Storj-Nodes fragmentiert.
-            Klick auf einen Drop → leuchten die Fragment-Nodes auf.<br/>
-            <span class="text-white/30">Darstellung repräsentativ — echte Node-Koordinaten sind nicht öffentlich.</span>
-          </div>
-        </div>
-        <div id="drop-map" class="flex-1 min-h-[380px]"></div>
+      <div id="drops-empty" class="hidden p-10 rounded-2xl bg-void-900/60 border border-white/10 border-dashed text-center">
+        <div class="text-4xl mb-3 opacity-30">⬡</div>
+        <div class="text-white/70 mb-1" data-i18n="dash.emptyDrops">Noch keine aktiven Drops</div>
+        <a href="/#dropzone" class="text-neon-500 hover:underline text-sm font-mono" data-i18n="dash.newDropLink">Jetzt einen erstellen →</a>
       </div>
-    </div>
+
+      <div id="drops-list" class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4"></div>
+    </section>
+
+    <!-- Fragment Map (collapsed by default) -->
+    <details class="fx-aurora rounded-2xl bg-void-900/60 border border-white/10 overflow-hidden mb-6">
+      <summary class="p-4 md:p-5 flex items-center justify-between hover:bg-void-800/40 transition">
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-1" data-i18n="dash.fragmentMap.kicker">› Fragment Map</div>
+          <div class="font-sans font-600" data-i18n="dash.fragmentMap.title">Dezentrale Verteilung anzeigen</div>
+        </div>
+        <div class="text-white/30 text-xs font-mono flex items-center gap-2">
+          <span>Erasure 29/80</span>
+          <span class="transition-transform inline-block" data-details-arrow>▾</span>
+        </div>
+      </summary>
+      <div class="border-t border-white/10">
+        <div class="p-4 md:p-5 text-[11px] text-white/40 leading-relaxed" data-i18n-html="dash.fragmentMap.text">
+          Jeder Drop wird per Erasure-Coding <span class="text-white/60">29 of 80</span> auf Storj-Nodes weltweit verteilt.
+          Klick einen Drop oben an → die relevanten Fragment-Nodes leuchten auf.
+          <span class="text-white/30">Darstellung repräsentativ — echte Node-Koordinaten sind nicht öffentlich.</span>
+        </div>
+        <div id="drop-map" class="min-h-[320px] md:min-h-[360px]"></div>
+      </div>
+    </details>
 
     <!-- Roadmap footer -->
-    <div class="mt-10 p-6 rounded-2xl border border-dashed border-neon-500/40 bg-neon-500/5">
+    <div class="p-5 md:p-6 rounded-2xl border border-dashed border-neon-500/40 bg-neon-500/5">
       <div class="flex items-start gap-4">
-        <span class="w-10 h-10 rounded-lg bg-white text-void-950 grid place-items-center font-bold shrink-0">∞</span>
+        <span class="w-10 h-10 shrink-0 rounded-lg bg-white text-void-950 grid place-items-center font-bold">∞</span>
         <div>
-          <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-1">Roadmap</div>
-          <div class="font-sans font-600 mb-2">Migration in deinen Digital Twin</div>
-          <p class="text-sm text-white/60 leading-relaxed">
-            Sobald die <a href="https://dwinity.com" class="text-neon-500 hover:underline">Dwinity Blockchain Cloud</a> ihre API öffnet,
-            werden deine Drops direkt in deinen wallet-gebundenen Digital Twin migriert — wallet-verankert, seed-recoverable, wir sehen dann gar nichts mehr.
+          <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-1" data-i18n="dash.roadmap.kicker">Roadmap</div>
+          <div class="font-sans font-600 mb-2" data-i18n="dash.roadmap.title">Migration in deinen Digital Twin</div>
+          <p class="text-sm text-white/60 leading-relaxed" data-i18n-html="dash.roadmap.text">
+            Sobald die <a href="https://dwinity.com" class="text-neon-500 hover:underline">Dwinity Blockchain Cloud</a> live ist,
+            werden deine Drops in deinen wallet-gebundenen Digital Twin migriert — seed-recoverable, E2E, wir sehen dann gar nichts mehr.
           </p>
         </div>
       </div>
@@ -212,11 +228,15 @@
 </main>
 
 <!-- scripts -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha3/0.9.3/sha3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script src="/lib/leaflet.js"></script>
+<script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/lib/qrious.min.js" integrity="sha384-Dr98ddmUw2QkdCarNQ+OL7xLty7cSxgR0T7v1tq4UErS/qLV0132sBYTolRAFuOV" crossorigin="anonymous"></script>
+<script src="/ref-capture.js" defer></script>
 <script src="/auth.js"></script>
+<script src="/panic.js" defer></script>
 <script src="/dashboard.js"></script>
 <script src="/netstream.js"></script>
+<script src="/popup.js" defer></script>
+<script src="/i18n.js"></script>
 </body>
 </html>

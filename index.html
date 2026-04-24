@@ -4,40 +4,76 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Dead Drop — Silent files · powered by Dwinity</title>
-<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="apple-touch-icon" href="/img/deaddrop-logo-256.png" />
-<meta name="description" content="Dead Drop — Silent files. Ende-zu-Ende im Browser verschlüsselt, dezentral gespeichert auf Storj. Kein Server sieht deine Dateien. Powered by Dwinity." />
-<meta property="og:title" content="Dead Drop — Silent files" />
-<meta property="og:description" content="Stiller Dateiversand. Browser verschlüsselt Ende-zu-Ende, niemand liest mit. Powered by Dwinity." />
+<meta name="description" content="Self-Custody File Transfer: Drop verschlüsselt deine Dateien im Browser, bevor sie unseren Server sehen. Zero-Knowledge, dezentral auf Storj, wallet-bound. Chat 2.0 als Beta im selben Wallet-Flow." />
+<meta name="keywords" content="self-custody, file transfer, zero knowledge, e2e encryption, storj, avalanche, web3, dwinity, digital twin, wetransfer alternative" />
+<meta name="author" content="Dwinity" />
+<link rel="canonical" href="https://drop.mkwt-strategy.tech/" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="Dead Drop — Self-Custody ist nicht nur für Bitcoin" />
+<meta property="og:description" content="Zero-Knowledge File-Transfer. Browser verschlüsselt, dezentral auf Storj, Schlüssel bleibt bei dir. Chat 2.0 als Beta im selben Wallet-Flow." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://drop.mkwt-strategy.tech" />
+<meta property="og:url" content="https://drop.mkwt-strategy.tech/" />
+<meta property="og:site_name" content="Dead Drop" />
+<meta property="og:locale" content="de_DE" />
 <meta property="og:image" content="https://drop.mkwt-strategy.tech/img/deaddrop-og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Dead Drop — Silent files" />
+
+<!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@dwinity_eco" />
+<meta name="twitter:creator" content="@dwinity_eco" />
+<meta name="twitter:title" content="Dead Drop — Silent files" />
+<meta name="twitter:description" content="Wir sehen nix. Das ist ein Feature, kein Bug. Zero-Knowledge-Dateitransfer im Browser, dezentral auf Storj. Chat 2.0 beta live." />
 <meta name="twitter:image" content="https://drop.mkwt-strategy.tech/img/deaddrop-og.png" />
+
+<!-- Schema.org JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://drop.mkwt-strategy.tech/#app",
+      "name": "Dead Drop",
+      "url": "https://drop.mkwt-strategy.tech/",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Web",
+      "description": "Zero-Knowledge File Transfer mit clientseitiger AES-256-GCM-Verschlüsselung. Dezentrale Storj-Ablage, Wallet-Login, Self-Custody.",
+      "offers": [
+        {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "EUR"},
+        {"@type": "Offer", "name": "Pro Monthly", "price": "7.50", "priceCurrency": "USD", "description": "USDC auf Avalanche C-Chain"},
+        {"@type": "Offer", "name": "Pro Yearly", "price": "75.00", "priceCurrency": "USD"},
+        {"@type": "Offer", "name": "Founder Lifetime", "price": "199.00", "priceCurrency": "USD"}
+      ],
+      "publisher": {"@id": "https://dwinity.shop/#organization"}
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://dwinity.shop/#organization",
+      "name": "Dwinity IP GmbH",
+      "url": "https://dwinity.shop/",
+      "logo": "https://drop.mkwt-strategy.tech/img/logo-hand-neon-256.png",
+      "sameAs": [
+        "https://x.com/dwinity_eco",
+        "https://www.instagram.com/dwinity_eco/",
+        "https://www.linkedin.com/company/dwinity-ip-gmbh/",
+        "https://t.me/dwinity_eco"
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
 <link rel="stylesheet" href="/fx.css" />
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          void: { 950: '#05060A', 900: '#0A0B10', 800: '#13141B', 700: '#1E2029', 600: '#2A2D3A' },
-          neon: { 500: '#00FF9D', 600: '#00D684', 400: '#4DFFB8' },
-        },
-        fontFamily: {
-          sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui'],
-          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
-        },
-      },
-    },
-  };
-</script>
 <style>
   html { scroll-behavior: smooth; }
   body { background: #05060A; }
@@ -56,38 +92,48 @@
   .dropzone:hover { border-color: rgba(0,255,157,0.5); background: rgba(0,255,157,0.03); }
   @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+  @keyframes skeleton-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.7; } }
+  .stat-skeleton { animation: skeleton-pulse 1.4s ease-in-out infinite; letter-spacing: 0.25em; }
 </style>
 </head>
 <body class="font-sans text-white antialiased min-h-screen">
 <canvas id="netstream-bg"></canvas>
 <!-- NAV -->
 <header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
-  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-    <a href="#" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
-      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-7 h-7 object-contain fx-logo-glow" />
-      <span>Dead <span class="text-neon-500">Drop</span></span>
+  <div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 md:gap-2">
+    <a href="#" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
+      <span class="truncate">Dead <span class="text-neon-500">Drop</span></span>
     </a>
     <nav class="hidden md:flex items-center gap-8 text-sm text-white/70">
-      <a href="#how" class="hover:text-white">So funktioniert's</a>
-      <a href="#compare" class="hover:text-white">Vergleich</a>
-      <a href="#preise" class="hover:text-white">Preise</a>
+      <a href="#how" class="hover:text-white" data-i18n="nav.how">So funktioniert's</a>
+      <a href="#compare" class="hover:text-white" data-i18n="nav.compare">Vergleich</a>
+      <a href="#preise" class="hover:text-white" data-i18n="nav.pricing">Preise</a>
     </nav>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1 md:gap-2 shrink-0">
+      <!-- Language switcher -->
+      <div class="flex items-center font-mono text-[10px] md:text-[11px] uppercase tracking-widest border border-white/10 rounded-full overflow-hidden shrink-0" role="group" data-i18n-aria-label="lang.switch">
+        <button type="button" data-lang-switch="de" class="lang-btn px-2 md:px-2.5 py-1.5 text-white/50 hover:text-white transition">DE</button>
+        <button type="button" data-lang-switch="en" class="lang-btn px-2 md:px-2.5 py-1.5 text-white/50 hover:text-white transition">EN</button>
+      </div>
       <!-- Wallet button -->
       <div class="relative">
-        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-2 px-3 py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition">
-          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
-          <span id="wallet-btn-label">Wallet verbinden</span>
+        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[140px] md:max-w-none">
+          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"></span>
+          <span id="wallet-btn-label" class="truncate" data-i18n="nav.walletConnect">Wallet verbinden</span>
         </button>
         <div id="wallet-menu" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-void-900 border border-white/10 shadow-xl p-4 text-sm z-50">
-          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1">Wallet</div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1" data-i18n="nav.walletLabel">Wallet</div>
           <div id="wallet-menu-addr" class="font-mono text-xs break-all text-white/80 mb-3">—</div>
           <div id="wallet-menu-pro" class="text-xs mb-4">—</div>
-          <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2">// trennen</a>
+          <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2" data-i18n="nav.walletDisconnect">// trennen</a>
         </div>
       </div>
-      <a href="#waitlist" class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neon-500 text-void-950 text-sm font-bold hover:bg-neon-600 transition">
-        Early Access
+      <a href="/chat" class="shrink-0 inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-neon-500/30 text-neon-500 hover:bg-neon-500/10 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition">
+        Chat
+      </a>
+      <a href="/dashboard" class="hidden sm:inline-flex shrink-0 items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-white/20 hover:border-neon-500/50 text-xs md:text-sm font-semibold transition" data-i18n="nav.dashboard">
+        Dashboard
       </a>
     </div>
   </div>
@@ -100,54 +146,73 @@
        style="background: radial-gradient(ellipse at center, rgba(5,6,10,0.72) 20%, rgba(5,6,10,0.55) 45%, rgba(5,6,10,0) 80%);"></div>
   <div class="relative max-w-6xl mx-auto px-6">
     <div class="text-center max-w-4xl mx-auto">
-      <span class="chip fx-chip-holo text-neon-500 mb-8">
+      <span class="chip fx-chip-holo text-neon-500 mb-6 md:mb-8">
         <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
-        &gt;_ DEAD DROP · SILENT FILE TRANSFER
+        <span data-i18n="hero.chip">&gt;_ SELF-CUSTODY ECOSYSTEM · FILES · CHAT · DATA</span>
       </span>
 
-      <h1 class="font-sans text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-600 leading-[1.05] tracking-tight break-words">
-        Du schützt deine Kryptos.<br class="hidden sm:inline"/>
-        <span class="fx-glow-text">Warum nicht auch deine Dateien?</span>
+      <h1 class="font-sans text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-600 leading-[1.1] sm:leading-[1.05] tracking-tight break-words px-2 md:px-0">
+        <span data-i18n="hero.title.line1">Self-Custody ist nicht</span><br class="hidden sm:inline"/>
+        <span class="fx-glow-text" data-i18n="hero.title.line2">nur für Bitcoin.</span>
       </h1>
 
-      <p class="mt-8 text-base sm:text-lg md:text-xl text-white/75 max-w-2xl mx-auto leading-relaxed">
-        Self-Custody für deinen Dateiversand. Browser verschlüsselt Ende-zu-Ende,
-        dezentral verteilt auf Storj — später direkt in deinem <span class="text-neon-500">Digital Twin</span>.
-        Niemand außer dem Empfänger kann lesen. Auch wir nicht.
+      <p class="mt-6 md:mt-8 text-base sm:text-lg md:text-2xl text-white/75 max-w-2xl mx-auto leading-relaxed font-600" data-i18n="hero.leadBold">
+        Wir sehen nix. Das ist ein Feature, kein Bug.
       </p>
+      <p class="mt-4 md:mt-5 text-sm sm:text-base md:text-lg text-white/55 max-w-2xl mx-auto leading-relaxed px-2 md:px-0" data-i18n-html="hero.leadSub">
+        Drop verschlüsselt deine Dateien <strong class="text-white/80">im Browser</strong>, bevor sie unseren Server sehen — der Schlüssel bleibt bei dir.
+        Mit Wallet-Login kommst du gleich in Chat 2.0 (Beta) rein.
+      </p>
+
+      <!-- Tri-CTA row on desktop -->
+      <div class="mt-7 md:mt-9 flex flex-wrap items-center justify-center gap-2 md:gap-3 text-[11px] md:text-xs font-mono">
+        <span class="inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-full bg-void-800/70 border border-white/10 text-white/70">
+          <span class="w-1.5 h-1.5 rounded-full bg-neon-500 shrink-0"></span>
+          <span data-i18n="hero.feature.aes">AES-256-GCM im Browser</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-full bg-void-800/70 border border-white/10 text-white/70">
+          <span class="w-1.5 h-1.5 rounded-full bg-neon-500 shrink-0"></span>
+          <span data-i18n="hero.feature.storj">Storj 29/80 · 0 Single-Points</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-full bg-void-800/70 border border-white/10 text-white/70">
+          <span class="w-1.5 h-1.5 rounded-full bg-neon-500 shrink-0"></span>
+          <span data-i18n="hero.feature.wallet">Wallet-bound · Ledger-ready</span>
+        </span>
+      </div>
     </div>
 
     <!-- DROPZONE — LIVE -->
     <div class="mt-16 max-w-2xl mx-auto">
-      <div id="dropzone" class="dropzone fx-aurora relative rounded-3xl border-2 border-dashed border-white/15 bg-void-900/65 backdrop-blur-xl p-12 md:p-16 text-center">
-        <div class="absolute top-4 right-4 flex items-center gap-2 text-xs font-mono text-white/40">
-          <span class="w-2 h-2 rounded-full bg-neon-500 pulse-dot"></span>
-          E2E · AES-256-GCM · Storj
+      <div id="dropzone" class="dropzone fx-aurora relative rounded-3xl border-2 border-dashed border-white/15 bg-void-900/65 backdrop-blur-xl p-6 pt-10 md:p-16 text-center">
+        <div class="absolute top-3 right-3 md:top-4 md:right-4 flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-mono text-white/40">
+          <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-neon-500 pulse-dot shrink-0"></span>
+          <span class="hidden sm:inline" data-i18n="drop.badge.long">E2E · AES-256-GCM · Storj</span>
+          <span class="sm:hidden" data-i18n="drop.badge.short">E2E</span>
         </div>
         <svg class="w-16 h-16 mx-auto mb-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5l4.5-4.5m0 0l4.5 4.5M12 3v13.5M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5"/>
         </svg>
-        <div class="text-xl md:text-2xl font-600 mb-2">Dateien hierher ziehen oder auswählen</div>
-        <div class="text-white/50 text-sm mb-6">bis 100 MB (verschlüsselt) · mehrere Dateien werden als ZIP gebündelt · Verschlüsselung im Browser</div>
+        <div class="text-xl md:text-2xl font-600 mb-2" data-i18n="drop.hint">Dateien hierher ziehen oder auswählen</div>
+        <div class="text-white/50 text-sm mb-6" data-i18n="drop.meta">bis 100 MB (verschlüsselt) · mehrere Dateien werden als ZIP gebündelt · Verschlüsselung im Browser</div>
         <input id="file-input" type="file" class="hidden" multiple />
-        <button id="drop-btn" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
+        <button id="drop-btn" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="drop.chooseFile">
           Datei auswählen
         </button>
 
         <!-- retention selector + burn toggle -->
         <div class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-mono text-white/60">
           <div class="flex items-center gap-2">
-            <label for="drop-retention">Ablauf:</label>
+            <label for="drop-retention" data-i18n="drop.expiresLabel">Ablauf:</label>
             <select id="drop-retention" class="bg-void-800 border border-white/10 rounded-md px-2 py-1 text-white/80 font-mono focus:outline-none focus:border-neon-500/60">
-              <option value="1">1 Stunde</option>
-              <option value="24">24 Stunden</option>
-              <option value="168" selected>7 Tage</option>
-              <option value="720">30 Tage (Pro)</option>
+              <option value="1" data-i18n="drop.expire.1h">1 Stunde</option>
+              <option value="24" data-i18n="drop.expire.24h">24 Stunden</option>
+              <option value="168" selected data-i18n="drop.expire.7d">7 Tage</option>
+              <option value="720" data-i18n="drop.expire.30d">30 Tage (Pro)</option>
             </select>
           </div>
           <label class="flex items-center gap-2 cursor-pointer select-none">
             <input type="checkbox" id="drop-burn" class="accent-neon-500" />
-            <span>🔥 Selbstzerstörung nach 1. Download</span>
+            <span data-i18n="drop.burn">🔥 Selbstzerstörung nach 1. Download</span>
           </label>
         </div>
 
@@ -158,25 +223,25 @@
           </div>
           <div class="mt-3 flex items-center justify-between gap-3">
             <div id="drop-progress-text" class="text-xs font-mono text-white/60">// …</div>
-            <button id="drop-abort-btn" class="text-xs font-mono text-white/50 hover:text-red-400 underline underline-offset-2">// abbrechen</button>
+            <button id="drop-abort-btn" class="text-xs font-mono text-white/50 hover:text-red-400 underline underline-offset-2" data-i18n="drop.abort">// abbrechen</button>
           </div>
         </div>
 
         <!-- result -->
         <div id="drop-result" class="hidden mt-8 text-left">
-          <div class="text-xs font-mono text-neon-500 mb-2">// link erzeugt · enthält Entschlüsselungs-Schlüssel</div>
+          <div class="text-xs font-mono text-neon-500 mb-2" data-i18n="drop.linkCreated">// link erzeugt · enthält Entschlüsselungs-Schlüssel</div>
           <div class="flex gap-2">
             <input id="drop-share-url" type="text" readonly class="flex-1 px-4 py-3 rounded-xl bg-void-800 border border-neon-500/40 text-neon-400 font-mono text-sm focus:outline-none focus:border-neon-500" />
-            <button id="drop-copy-btn" class="px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition whitespace-nowrap">Link kopieren</button>
+            <button id="drop-copy-btn" class="px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition whitespace-nowrap" data-i18n="drop.copyLink">Link kopieren</button>
           </div>
           <div class="mt-5 flex flex-col sm:flex-row gap-5 items-start">
             <div id="drop-qr" class="shrink-0 p-3 rounded-xl bg-white grid place-items-center" style="width:144px;height:144px;"></div>
             <div class="flex-1">
-              <p class="text-xs text-white/50 font-mono leading-relaxed">
+              <p class="text-xs text-white/50 font-mono leading-relaxed" data-i18n-html="drop.fragmentNote">
                 Alles nach dem <span class="text-neon-500">#</span> bleibt im Browser des Empfängers — unser Server sieht den Schlüssel nie.
               </p>
               <p id="drop-result-meta" class="mt-2 text-xs text-white/40 font-mono"></p>
-              <button id="drop-new-btn" class="mt-3 text-xs text-white/60 hover:text-neon-500 font-mono underline underline-offset-2">// weiteren Drop erstellen</button>
+              <button id="drop-new-btn" class="mt-3 text-xs text-white/60 hover:text-neon-500 font-mono underline underline-offset-2" data-i18n="drop.newDrop">// weiteren Drop erstellen</button>
             </div>
           </div>
         </div>
@@ -185,9 +250,9 @@
         <div id="drop-error" class="hidden mt-6 p-3 rounded-xl bg-red-500/10 border border-red-500/40 text-red-400 text-sm font-mono"></div>
 
         <div class="mt-8 pt-8 border-t border-white/10 grid grid-cols-3 gap-4 text-xs font-mono text-white/50">
-          <div><div class="text-white/70 mb-1">Schlüssel</div>AES-256-GCM · 256-bit random</div>
-          <div><div class="text-white/70 mb-1">Speicherung</div>Storj DCS · Erasure 29/80</div>
-          <div><div class="text-white/70 mb-1">Server-Zugriff</div>Zero (Signed URL)</div>
+          <div><div class="text-white/70 mb-1" data-i18n="drop.stat.key">Schlüssel</div><span data-i18n="drop.stat.keyValue">AES-256-GCM · 256-bit random</span></div>
+          <div><div class="text-white/70 mb-1" data-i18n="drop.stat.storage">Speicherung</div><span data-i18n="drop.stat.storageValue">Storj DCS · Erasure 29/80</span></div>
+          <div><div class="text-white/70 mb-1" data-i18n="drop.stat.server">Server-Zugriff</div><span data-i18n="drop.stat.serverValue">Zero (Signed URL)</span></div>
         </div>
       </div>
     </div>
@@ -196,40 +261,34 @@
     <form id="waitlist-hero" class="mt-10 max-w-lg mx-auto flex flex-col sm:flex-row gap-3">
       <input type="email" required placeholder="name@example.com"
         class="flex-1 px-5 py-4 rounded-xl bg-void-800 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-neon-500/50 focus:ring-2 focus:ring-neon-500/20" />
-      <button type="submit" class="px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition whitespace-nowrap">
+      <button type="submit" class="px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition whitespace-nowrap" data-i18n="waitlist.submit">
         Auf die Liste →
       </button>
     </form>
-    <p class="mt-3 text-center text-sm text-white/40 font-mono">#2847 Anmeldungen · Beta-Zugang Sommer 2026</p>
+    <p class="mt-3 text-center text-sm text-white/40 font-mono" data-i18n="waitlist.count">#2847 Anmeldungen · Beta-Zugang Sommer 2026</p>
   </div>
 </section>
 
-<!-- ECOSYSTEM BELT -->
-<section class="py-14 border-t border-white/5 bg-void-900/40">
-  <div class="max-w-6xl mx-auto px-6">
-    <div class="grid md:grid-cols-[auto_1fr_auto] items-center gap-8">
-      <div class="flex items-center gap-3">
-        <span class="w-9 h-9 rounded-md bg-white text-void-950 grid place-items-center font-bold">∞</span>
-        <div>
-          <div class="font-mono text-xs uppercase tracking-widest text-white/50">Dwinity Ecosystem</div>
-          <div class="font-600 text-lg">Data Sovereignty Stack</div>
-        </div>
+<!-- LIVE STATS BAR (social proof) -->
+<section class="py-6 md:py-8 border-y border-white/5 bg-void-900/40">
+  <div class="max-w-6xl mx-auto px-4 md:px-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 text-center">
+      <div>
+        <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-white/40 mb-1" data-i18n="stats.activeDrops">Aktive Drops</div>
+        <div class="font-sans text-xl md:text-3xl font-600 text-neon-500 stat-skeleton" id="stat-drops">···</div>
       </div>
-      <p class="text-white/70 leading-relaxed">
-        <span class="text-white">Dead Drop</span> ist das erste Vertical-Produkt im Ecosystem der
-        <a href="https://dwinity.com" class="text-neon-500 hover:underline">Dwinity Blockchain Cloud</a>.
-        Heute speichern wir auf Storj DCS, ab Launch der Dwinity-API landen Uploads direkt in deinem
-        wallet-gebundenen <span class="text-neon-500">Digital Twin</span> — unhackbar, anonym, fragmentiert auf tausende Nodes.
-      </p>
-      <a href="https://dwinity.com" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 hover:border-neon-500/50 text-sm font-semibold transition whitespace-nowrap">
-        Ecosystem kennenlernen →
-      </a>
-    </div>
-    <div class="mt-8 pt-8 border-t border-white/5 flex flex-wrap gap-x-8 gap-y-3 text-xs font-mono text-white/50">
-      <span>▸ Self-Custody via Wallet (MetaMask · Ledger)</span>
-      <span>▸ Fragmentiert · Verschlüsselt · Redundant</span>
-      <span>▸ Partner: Storj · Nillion · Avalanche · Nvidia</span>
-      <span>▸ DWIN-Token Ecosystem</span>
+      <div>
+        <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-white/40 mb-1" data-i18n="stats.encrypted">Verschlüsselt</div>
+        <div class="font-sans text-xl md:text-3xl font-600 stat-skeleton" id="stat-bytes">···</div>
+      </div>
+      <div>
+        <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-white/40 mb-1" data-i18n="stats.chatRooms">Chat-Rooms</div>
+        <div class="font-sans text-xl md:text-3xl font-600 stat-skeleton" id="stat-rooms">···</div>
+      </div>
+      <div>
+        <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-white/40 mb-1" data-i18n="stats.serverLeaks">Server-Leaks</div>
+        <div class="font-sans text-xl md:text-3xl font-600 text-neon-500">0</div>
+      </div>
     </div>
   </div>
 </section>
@@ -238,8 +297,8 @@
 <section id="how" class="py-24 border-t border-white/5">
   <div class="max-w-6xl mx-auto px-6">
     <div class="max-w-2xl mb-16">
-      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4">Drei Prinzipien</span>
-      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight">
+      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4" data-i18n="principles.chip">Drei Prinzipien</span>
+      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight" data-i18n-html="principles.title">
         Wir können deine Dateien <span class="text-neon-500">nicht</span> lesen.
         Auch wenn wir wollten.
       </h2>
@@ -248,9 +307,9 @@
     <div class="grid md:grid-cols-3 gap-6">
       <!-- Self-Custody -->
       <div class="p-8 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/30 transition">
-        <div class="font-mono text-xs text-neon-500 mb-4">01 / SELF-CUSTODY</div>
-        <h3 class="font-sans text-2xl font-600 mb-4">Nur du hältst den Schlüssel.</h3>
-        <p class="text-white/60 leading-relaxed">
+        <div class="font-mono text-xs text-neon-500 mb-4" data-i18n="principles.01.tag">01 / SELF-CUSTODY</div>
+        <h3 class="font-sans text-2xl font-600 mb-4" data-i18n="principles.01.title">Nur du hältst den Schlüssel.</h3>
+        <p class="text-white/60 leading-relaxed" data-i18n-html="principles.01.text">
           Dein Browser verschlüsselt die Datei, bevor sie unseren Server auch nur sieht.
           Der Schlüssel steht im URL-Fragment hinter dem <span class="text-neon-500">#</span> —
           das geht technisch nie an unseren Server. Dwinity-Prinzip: Du trägst deine Daten mit dir, wie Werte in einem Wallet.
@@ -259,9 +318,9 @@
 
       <!-- Decentralized -->
       <div class="p-8 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/30 transition">
-        <div class="font-mono text-xs text-neon-500 mb-4">02 / DEZENTRAL</div>
-        <h3 class="font-sans text-2xl font-600 mb-4">Fragmentiert über tausende Knoten.</h3>
-        <p class="text-white/60 leading-relaxed">
+        <div class="font-mono text-xs text-neon-500 mb-4" data-i18n="principles.02.tag">02 / DEZENTRAL</div>
+        <h3 class="font-sans text-2xl font-600 mb-4" data-i18n="principles.02.title">Fragmentiert über tausende Knoten.</h3>
+        <p class="text-white/60 leading-relaxed" data-i18n="principles.02.text">
           Gespeichert auf Storj DCS — Erasure 29 of 80. Deine Datei liegt als verschlüsselte Fragmente auf
           unabhängigen Knoten weltweit. Kein zentrales Rechenzentrum, kein Single Point of Failure —
           dasselbe Prinzip, das die Dwinity Blockchain Cloud „unhackbar" macht.
@@ -270,10 +329,10 @@
 
       <!-- Digital Twin -->
       <div class="p-8 rounded-2xl bg-void-900 border border-neon-500/40 hover:border-neon-500/60 transition relative">
-        <div class="absolute -top-3 right-6 px-2 py-0.5 bg-neon-500 text-void-950 text-[10px] font-bold rounded-full uppercase tracking-widest">Roadmap</div>
-        <div class="font-mono text-xs text-neon-500 mb-4">03 / DIGITAL TWIN</div>
-        <h3 class="font-sans text-2xl font-600 mb-4">Dein Wallet. Dein Datenraum.</h3>
-        <p class="text-white/60 leading-relaxed">
+        <div class="absolute -top-3 right-6 px-2 py-0.5 bg-neon-500 text-void-950 text-[10px] font-bold rounded-full uppercase tracking-widest" data-i18n="principles.03.badge">Roadmap</div>
+        <div class="font-mono text-xs text-neon-500 mb-4" data-i18n="principles.03.tag">03 / DIGITAL TWIN</div>
+        <h3 class="font-sans text-2xl font-600 mb-4" data-i18n="principles.03.title">Dein Wallet. Dein Datenraum.</h3>
+        <p class="text-white/60 leading-relaxed" data-i18n-html="principles.03.text">
           Sobald die Dwinity-API live ist, landen Drops direkt in deinem <span class="text-neon-500">Digital Twin</span> —
           wallet-gebunden via MetaMask oder Ledger, mit Seed-Phrase-Recovery.
           Dateitransfer wird Teil deiner souveränen Dateninfrastruktur.
@@ -284,33 +343,36 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="py-24 border-t border-white/5 bg-void-900/40">
-  <div class="max-w-6xl mx-auto px-6">
-    <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight mb-4 text-center">
-      In 4 Schritten souverän verschickt.
-    </h2>
-    <p class="text-center text-white/60 text-sm mb-16 max-w-xl mx-auto">Drei sind schon live, der vierte wird Schritt <span class="text-neon-500">05</span> sobald die Dwinity-API öffnet.</p>
+<section class="py-16 md:py-24 border-t border-white/5 bg-void-900/40">
+  <div class="max-w-6xl mx-auto px-4 md:px-6">
+    <div class="text-center mb-10 md:mb-16">
+      <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-neon-500 mb-3" data-i18n="how.kicker">› 3 Schritte · 4 Sekunden</div>
+      <h2 class="font-sans text-3xl sm:text-5xl md:text-6xl font-700 tracking-tight mb-2 leading-none" data-i18n-html="how.title">
+        Drop. <span class="text-neon-500">Encrypt.</span> Vanish.
+      </h2>
+      <p class="mt-5 text-white/60 text-sm md:text-base max-w-xl mx-auto" data-i18n="how.sub">Drei live, ein vierter folgt wenn die Dwinity-API öffnet.</p>
+    </div>
 
     <div class="grid md:grid-cols-4 gap-6">
       <div class="relative">
         <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">01</div>
-        <div class="font-600 text-xl mb-2">Datei wählen</div>
-        <p class="text-white/60 text-sm">Drop, Tap, Paste — egal woher. Kein Login, kein Tracker.</p>
+        <div class="font-600 text-xl mb-2" data-i18n="how.01.title">Datei wählen</div>
+        <p class="text-white/60 text-sm" data-i18n="how.01.text">Drop, Tap, Paste — egal woher. Kein Login, kein Tracker.</p>
       </div>
       <div class="relative">
         <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">02</div>
-        <div class="font-600 text-xl mb-2">Im Browser verschlüsseln</div>
-        <p class="text-white/60 text-sm">AES-256-GCM via WebCrypto. Schlüssel wird lokal generiert und nie an uns gesendet.</p>
+        <div class="font-600 text-xl mb-2" data-i18n="how.02.title">Im Browser verschlüsseln</div>
+        <p class="text-white/60 text-sm" data-i18n="how.02.text">AES-256-GCM via WebCrypto. Schlüssel wird lokal generiert und nie an uns gesendet.</p>
       </div>
       <div class="relative">
         <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">03</div>
-        <div class="font-600 text-xl mb-2">Fragmentiert speichern</div>
-        <p class="text-white/60 text-sm">Storj DCS: Erasure-Coding 29 of 80, verteilt über tausende Nodes weltweit. Zensurresistent by design.</p>
+        <div class="font-600 text-xl mb-2" data-i18n="how.03.title">Fragmentiert speichern</div>
+        <p class="text-white/60 text-sm" data-i18n="how.03.text">Storj DCS: Erasure-Coding 29 of 80, verteilt über tausende Nodes weltweit. Zensurresistent by design.</p>
       </div>
       <div class="relative">
         <div class="font-mono text-6xl font-700 text-neon-500/20 mb-4">04</div>
-        <div class="font-600 text-xl mb-2">Link teilen</div>
-        <p class="text-white/60 text-sm">Der Link enthält den Schlüssel hinter dem <span class="text-neon-500">#</span> — bleibt im Browser des Empfängers.</p>
+        <div class="font-600 text-xl mb-2" data-i18n="how.04.title">Link teilen</div>
+        <p class="text-white/60 text-sm" data-i18n-html="how.04.text">Der Link enthält den Schlüssel hinter dem <span class="text-neon-500">#</span> — bleibt im Browser des Empfängers.</p>
       </div>
     </div>
 
@@ -319,10 +381,10 @@
       <div class="font-mono text-5xl font-700 text-neon-500/40 shrink-0">05</div>
       <div class="flex-1">
         <div class="flex items-center gap-3 mb-1">
-          <div class="font-600 text-xl">In deinem Digital Twin ablegen</div>
-          <span class="px-2 py-0.5 bg-neon-500 text-void-950 text-[10px] font-bold rounded-full uppercase tracking-widest">Roadmap</span>
+          <div class="font-600 text-xl" data-i18n="how.05.title">In deinem Digital Twin ablegen</div>
+          <span class="px-2 py-0.5 bg-neon-500 text-void-950 text-[10px] font-bold rounded-full uppercase tracking-widest" data-i18n="how.05.badge">Roadmap</span>
         </div>
-        <p class="text-white/60 text-sm">Sobald die Dwinity-API live ist: Wallet verbinden (MetaMask/Ledger), und dein Drop landet direkt in deinem wallet-gebundenen Digital Twin. Seed-Phrase ist dein Recovery — wir können nicht mehr zugreifen. Das ist das Ziel.</p>
+        <p class="text-white/60 text-sm" data-i18n="how.05.text">Sobald die Dwinity-API live ist: Wallet verbinden (MetaMask/Ledger), und dein Drop landet direkt in deinem wallet-gebundenen Digital Twin. Seed-Phrase ist dein Recovery — wir können nicht mehr zugreifen. Das ist das Ziel.</p>
       </div>
     </div>
   </div>
@@ -332,125 +394,371 @@
 <section id="compare" class="py-24 border-t border-white/5">
   <div class="max-w-5xl mx-auto px-6">
     <div class="text-center max-w-2xl mx-auto mb-14">
-      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4">Im Vergleich</span>
-      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight">
+      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4" data-i18n="compare.chip">Im Vergleich</span>
+      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight" data-i18n-html="compare.title">
         Zentrale Cloud. <span class="text-neon-500">Oder souverän.</span>
       </h2>
-      <p class="mt-4 text-white/60 text-sm">Stellvertretend für das Modell „Big Tech Cloud" (AWS S3, WeTransfer, Dropbox) vs. das Modell „Dwinity Blockchain Cloud".</p>
+      <p class="mt-4 text-white/60 text-sm" data-i18n="compare.sub">Stellvertretend für das Modell „Big Tech Cloud" (AWS S3, WeTransfer, Dropbox) vs. das Modell „Dwinity Blockchain Cloud".</p>
     </div>
 
-    <div class="rounded-2xl border border-white/10 overflow-hidden bg-void-900">
-      <table class="w-full text-left">
+    <div class="rounded-2xl border border-white/10 overflow-x-auto bg-void-900">
+      <table class="w-full text-left text-xs md:text-sm min-w-[640px]">
         <thead class="bg-void-800">
-          <tr class="text-sm font-mono uppercase tracking-widest text-white/50">
-            <th class="px-6 py-4">Dimension</th>
-            <th class="px-6 py-4">Zentrale Cloud</th>
-            <th class="px-6 py-4 text-neon-500">Dead Drop</th>
+          <tr class="text-[10px] md:text-sm font-mono uppercase tracking-widest text-white/50">
+            <th class="px-3 md:px-6 py-3 md:py-4" data-i18n="compare.col.dimension">Dimension</th>
+            <th class="px-3 md:px-6 py-3 md:py-4" data-i18n="compare.col.central">Zentrale Cloud</th>
+            <th class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.col.dd">Dead Drop</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-white/5 text-sm">
-          <tr><td class="px-6 py-4 text-white/80">Datenhoheit</td><td class="px-6 py-4 text-red-400">Anbieter</td><td class="px-6 py-4 text-neon-500">Du (Self-Custody)</td></tr>
-          <tr><td class="px-6 py-4 text-white/80">E2E-Verschlüsselung</td><td class="px-6 py-4 text-red-400">✗ Nein</td><td class="px-6 py-4 text-neon-500">✓ AES-256-GCM im Browser</td></tr>
-          <tr><td class="px-6 py-4 text-white/80">Speicher-Modell</td><td class="px-6 py-4 text-red-400">Zentrales Rechenzentrum</td><td class="px-6 py-4 text-neon-500">Fragmentiert, Storj 29/80</td></tr>
-          <tr><td class="px-6 py-4 text-white/80">Single Point of Failure</td><td class="px-6 py-4 text-red-400">Ja (Region/AZ)</td><td class="px-6 py-4 text-neon-500">Keiner</td></tr>
-          <tr><td class="px-6 py-4 text-white/80">KI-Training mit Dateien</td><td class="px-6 py-4 text-red-400">⚠ Ja (per ToS möglich)</td><td class="px-6 py-4 text-neon-500">✗ Technisch unmöglich</td></tr>
-          <tr><td class="px-6 py-4 text-white/80">Behörden-Zugriff / Gag-Order</td><td class="px-6 py-4 text-red-400">Anbieter kann liefern</td><td class="px-6 py-4 text-neon-500">Nur verschlüsselte Bytes</td></tr>
-          <tr><td class="px-6 py-4 text-white/80">Jurisdiktion</td><td class="px-6 py-4 text-white/60">US / EU, anbieterzentral</td><td class="px-6 py-4 text-neon-500">Global verteilt</td></tr>
-          <tr><td class="px-6 py-4 text-white/80">Roadmap: Wallet-Bindung</td><td class="px-6 py-4 text-red-400">—</td><td class="px-6 py-4 text-neon-500">Digital Twin (MetaMask/Ledger)</td></tr>
+        <tbody class="divide-y divide-white/5">
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row1.dim">Datenhoheit</td><td class="px-3 md:px-6 py-3 md:py-4 text-red-400" data-i18n="compare.row1.left">Anbieter</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row1.right">Du (Self-Custody)</td></tr>
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row2.dim">E2E-Verschlüsselung</td><td class="px-3 md:px-6 py-3 md:py-4 text-red-400" data-i18n="compare.row2.left">✗ Nein</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row2.right">✓ AES-256-GCM im Browser</td></tr>
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row3.dim">Speicher-Modell</td><td class="px-3 md:px-6 py-3 md:py-4 text-red-400" data-i18n="compare.row3.left">Zentrales Rechenzentrum</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row3.right">Fragmentiert, Storj 29/80</td></tr>
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row4.dim">Single Point of Failure</td><td class="px-3 md:px-6 py-3 md:py-4 text-red-400" data-i18n="compare.row4.left">Ja (Region/AZ)</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row4.right">Keiner</td></tr>
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row5.dim">KI-Training mit Dateien</td><td class="px-3 md:px-6 py-3 md:py-4 text-red-400" data-i18n="compare.row5.left">⚠ Ja (per ToS möglich)</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row5.right">✗ Technisch unmöglich</td></tr>
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row6.dim">Behörden-Zugriff / Gag-Order</td><td class="px-3 md:px-6 py-3 md:py-4 text-red-400" data-i18n="compare.row6.left">Anbieter kann liefern</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row6.right">Nur verschlüsselte Bytes</td></tr>
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row7.dim">Jurisdiktion</td><td class="px-3 md:px-6 py-3 md:py-4 text-white/60" data-i18n="compare.row7.left">US / EU, anbieterzentral</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row7.right">Global verteilt</td></tr>
+          <tr><td class="px-3 md:px-6 py-3 md:py-4 text-white/80" data-i18n="compare.row8.dim">Roadmap: Wallet-Bindung</td><td class="px-3 md:px-6 py-3 md:py-4 text-red-400" data-i18n="compare.row8.left">—</td><td class="px-3 md:px-6 py-3 md:py-4 text-neon-500" data-i18n="compare.row8.right">Digital Twin (MetaMask/Ledger)</td></tr>
         </tbody>
       </table>
     </div>
 
-    <p class="mt-6 text-xs text-white/40 text-center font-mono">
+    <p class="mt-6 text-xs text-white/40 text-center font-mono" data-i18n="compare.foot">
       Stand 04/2026 · „Zentrale Cloud" als Sammelbegriff für AWS-basierte Filetransfer-Dienste.
     </p>
   </div>
 </section>
 
 <!-- PRICING -->
-<section id="preise" class="py-24 border-t border-white/5">
-  <div class="max-w-5xl mx-auto px-6">
-    <div class="text-center mb-14">
-      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4">Preise</span>
-      <h2 class="font-sans text-4xl md:text-5xl font-600 tracking-tight">Zwei Tarife. Ehrlich.</h2>
+<section id="preise" class="py-16 md:py-24 border-t border-white/5">
+  <div class="max-w-6xl mx-auto px-4 md:px-6">
+    <div class="text-center mb-10 md:mb-14">
+      <span class="chip bg-white/5 text-white/70 border border-white/10 mb-4" data-i18n="pricing.chip">Preise</span>
+      <h2 class="font-sans text-3xl sm:text-4xl md:text-5xl font-600 tracking-tight" data-i18n="pricing.title">Drei Tarife. Ehrlich.</h2>
+      <p class="mt-3 md:mt-4 text-sm md:text-base text-white/60" data-i18n="pricing.sub">
+        Pro schaltet Drop und Chat 2.0 gleichzeitig frei — eine Wallet, zwei Services.
+      </p>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
       <!-- Free -->
       <div class="p-8 rounded-2xl bg-void-900 border border-white/10">
-        <div class="font-mono text-xs uppercase tracking-widest text-white/50 mb-3">Free · Beta</div>
+        <div class="font-mono text-xs uppercase tracking-widest text-white/50 mb-3" data-i18n="pricing.free.kicker">Free · Beta</div>
         <div class="flex items-baseline gap-2 mb-1">
           <span class="font-sans text-5xl font-600">0 €</span>
         </div>
-        <div class="text-white/50 text-sm mb-6">für immer</div>
+        <div class="text-white/50 text-sm mb-6" data-i18n="pricing.free.period">für immer</div>
         <ul class="space-y-3 text-sm text-white/80">
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Bis 100 MB pro Datei (Beta)</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> 7 Tage Aufbewahrung</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> 3 Drops pro Tag</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Self-Custody · AES-256-GCM</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Storj DCS Backend</li>
-          <li class="flex gap-3 text-white/40"><span>—</span> Kein Passwortschutz</li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> <span data-i18n="pricing.free.01">Bis 100 MB pro Datei</span></li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> <span data-i18n="pricing.free.02">Bis zu 7 Tage Aufbewahrung</span></li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> <span data-i18n="pricing.free.03">300 MB gleichzeitig aktiv</span></li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> <span data-i18n="pricing.free.04">Self-Custody · AES-256-GCM im Browser</span></li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> <span data-i18n="pricing.free.05">Burn-after-Read (1 Download, dann Selbstzerstörung)</span></li>
+          <li class="flex gap-3"><span class="text-neon-500">✓</span> <span data-i18n="pricing.free.06">Storj DCS Backend</span></li>
         </ul>
       </div>
 
       <!-- Pro -->
-      <div class="p-8 rounded-2xl bg-gradient-to-br from-neon-500/10 via-void-900 to-void-900 border border-neon-500/40 glow relative">
-        <div class="absolute -top-3 left-8 px-3 py-1 bg-neon-500 text-void-950 text-xs font-bold rounded-full uppercase tracking-widest">Sovereign</div>
-        <div class="font-mono text-xs uppercase tracking-widest text-neon-500 mb-3">Pro · Wallet-bound</div>
-        <div class="flex items-baseline gap-2 mb-1">
-          <span class="font-sans text-5xl font-600">7 €</span>
-          <span class="text-white/60">/ Monat</span>
+      <div class="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-neon-500/10 via-void-900 to-void-900 border border-neon-500/40 glow relative">
+        <div class="absolute -top-3 left-6 md:left-8 px-3 py-1 bg-neon-500 text-void-950 text-xs font-bold rounded-full uppercase tracking-widest" data-i18n="pricing.pro.badge">Sovereign</div>
+        <div class="font-mono text-xs uppercase tracking-widest text-neon-500 mb-3" data-i18n="pricing.pro.kicker">Pro · Wallet-bound</div>
+        <div class="flex items-baseline gap-2 mb-1 flex-wrap">
+          <span class="font-sans text-4xl md:text-5xl font-600">7,50</span>
+          <span class="text-white/60 text-sm" data-i18n="pricing.pro.perMonth">USDC / Monat</span>
         </div>
-        <div class="text-white/50 text-sm mb-6">jährlich 69 € (18 % günstiger) · oder via DWIN-Token</div>
-        <ul class="space-y-3 text-sm text-white/90">
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Unlimitierte Dateigröße</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Bis 30 Tage Aufbewahrung (Storj) / unbegrenzt im Digital Twin</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Unbegrenzte Drops</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Passwortschutz + Ablauf-Regeln</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Wallet-Bindung: MetaMask · Ledger · Trezor</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Ablage direkt im Digital Twin (ab Dwinity-API-Launch)</li>
-          <li class="flex gap-3"><span class="text-neon-500">✓</span> Custom Domain · drop.meinedomain.de</li>
+        <div class="text-white/50 text-xs md:text-sm mb-5 md:mb-6" data-i18n="pricing.pro.yearly">jährlich 75 USDC · oder 5,60 DWIN / mo</div>
+        <ul class="space-y-2.5 text-sm text-white/90">
+          <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.pro.01">Bis 2 GB pro Datei · chunked verschlüsselt</span></li>
+          <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.pro.02">Bis 30 Tage Retention · Custom-TTL</span></li>
+          <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.pro.03">20 GB aktive Drops · unbegrenzte Anzahl</span></li>
+          <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.pro.04">Chat: unlimited Rooms + Messages</span></li>
+          <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.pro.05">Burn-after-Read + Download-Limit</span></li>
+          <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.pro.06">Dashboard + Drop-Historie + Node-Map</span></li>
+          <li class="flex gap-2 text-white/60"><span class="text-white/40 shrink-0">◦</span> <span data-i18n-html="pricing.pro.07">Digital Twin <span class="text-white/40">· API-Launch</span></span></li>
         </ul>
-        <button data-action="open-upgrade" class="mt-6 w-full px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
-          Pro freischalten · USDC/DWIN
+        <button data-action="open-upgrade" class="mt-5 md:mt-6 w-full px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="pricing.pro.cta">
+          Pro freischalten →
         </button>
       </div>
+
+      <!-- Lifetime Founder -->
+      <div class="p-6 md:p-8 rounded-2xl border-2 border-neon-500/60 relative"
+           style="box-shadow: 0 0 40px rgba(0,255,157,0.15);">
+        <!-- gradient + radial overlay, clipped to the card's rounded shape -->
+        <div class="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+          <div class="absolute inset-0 bg-gradient-to-br from-neon-500/15 via-void-900 to-void-900"></div>
+          <div class="absolute inset-0 opacity-50"
+               style="background: radial-gradient(circle at top right, rgba(0,229,255,0.15), transparent 60%);"></div>
+        </div>
+        <div class="absolute -top-3 left-6 md:left-8 px-3 py-1 bg-neon-500 text-void-950 text-xs font-bold rounded-full uppercase tracking-widest z-10" data-i18n="pricing.lifetime.badge">🐉 Founder</div>
+        <div class="relative">
+          <div class="font-mono text-xs uppercase tracking-widest text-neon-500 mb-3" data-i18n="pricing.lifetime.kicker">Lifetime · Einmalig</div>
+          <div class="flex items-baseline gap-2 mb-1 flex-wrap">
+            <span class="font-sans text-4xl md:text-5xl font-600">199</span>
+            <span class="text-white/60 text-sm" data-i18n="pricing.lifetime.oneTime">USDC einmal</span>
+          </div>
+          <div class="text-white/50 text-xs md:text-sm mb-5 md:mb-6" data-i18n="pricing.lifetime.sub">oder 149 DWIN · nur in Launch-Phase</div>
+          <ul class="space-y-2.5 text-sm text-white/90">
+            <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n-html="pricing.lifetime.01"><strong class="text-white">Alles was Pro kann — für immer.</strong></span></li>
+            <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.lifetime.02">Pre-DEX-DWIN-Preis garantiert</span></li>
+            <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.lifetime.03">Custom Domain Q3 2026 inkludiert</span></li>
+            <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.lifetime.04">Priority-Support direkt zum Team</span></li>
+            <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.lifetime.05">Digital Twin Early-Access</span></li>
+            <li class="flex gap-2"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="pricing.lifetime.06">Founder-Badge im Dashboard + Chat</span></li>
+            <li class="flex gap-2 text-neon-500 font-600"><span class="shrink-0">★</span> <span data-i18n="pricing.lifetime.07">Revenue-Share Discussion ab Launch</span></li>
+          </ul>
+          <button data-action="open-upgrade" class="mt-5 md:mt-6 w-full px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="pricing.lifetime.cta">
+            Founder werden →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Launch50 reminder -->
+    <div class="mt-6 md:mt-8 max-w-3xl mx-auto p-3 md:p-4 rounded-xl border border-dashed border-neon-500/40 bg-neon-500/5 text-center">
+      <span class="font-mono text-[11px] md:text-xs text-neon-500">LAUNCH50</span>
+      <span class="text-white/70 text-xs md:text-sm mx-2">—</span>
+      <span class="text-white/80 text-xs md:text-sm" data-i18n="pricing.launch50">50 % Rabatt auf alle Tarife, Code beim Upgrade einlösen</span>
+    </div>
+
+    <!-- Market comparison -->
+    <div class="mt-6 md:mt-8 max-w-3xl mx-auto">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-3 text-center" data-i18n="pricing.market.kicker">Im Marktvergleich</div>
+      <div class="overflow-x-auto rounded-xl border border-white/10">
+        <table class="w-full text-left text-xs md:text-sm">
+          <thead class="bg-void-800">
+            <tr class="text-[10px] md:text-xs font-mono uppercase tracking-widest text-white/50">
+              <th class="px-3 md:px-4 py-2 md:py-3" data-i18n="pricing.market.col.service">Dienst</th>
+              <th class="px-3 md:px-4 py-2 md:py-3" data-i18n="pricing.market.col.monthly">Monatlich</th>
+              <th class="px-3 md:px-4 py-2 md:py-3">E2E</th>
+              <th class="px-3 md:px-4 py-2 md:py-3 text-neon-500">Self-Custody</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 bg-void-900">
+            <tr>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-white/80 font-600">Dead Drop Pro</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-neon-500 font-mono">7,50 USDC</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-neon-500">✓</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-neon-500" data-i18n="pricing.market.ddCustody">✓ Wallet-bound</td>
+            </tr>
+            <tr>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-white/70">WeTransfer Pro</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-white/60 font-mono">~12 €</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-red-400">✗</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-red-400">✗</td>
+            </tr>
+            <tr>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-white/70">Tresorit Send / Solo</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-white/60 font-mono">~11 €</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-neon-500">✓</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-red-400" data-i18n="pricing.market.accountBased">✗ Account-basiert</td>
+            </tr>
+            <tr>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-white/70">Dropbox / Google Drive</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-white/60 font-mono">9,99 €</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-red-400">✗</td>
+              <td class="px-3 md:px-4 py-2 md:py-3 text-red-400" data-i18n="pricing.market.providerCentral">✗ Anbieter-zentral</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-2 text-[10px] md:text-[11px] text-white/40 text-center font-mono" data-i18n="pricing.market.foot">
+        Preise &amp; Features Stand 04/2026 · öffentliche Tarife der genannten Anbieter.
+      </p>
     </div>
 
     <div class="mt-10 p-6 rounded-2xl bg-void-900 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 max-w-3xl mx-auto">
       <div>
-        <div class="font-600 mb-1">Business &amp; Teams</div>
-        <p class="text-white/60 text-sm">Ab 5 Seats, SSO, Audit-Log, SLA — auf Anfrage.</p>
+        <div class="font-600 mb-1" data-i18n="pricing.business.title">Business &amp; Teams</div>
+        <p class="text-white/60 text-sm" data-i18n="pricing.business.body">Ab 5 Seats, SSO, Audit-Log, SLA — auf Anfrage.</p>
       </div>
       <a href="mailto:sales@dwinity.de" class="px-5 py-3 rounded-full border border-white/20 hover:border-neon-500/50 text-sm font-semibold transition">sales@dwinity.de</a>
     </div>
   </div>
 </section>
 
-<!-- WAITLIST BOTTOM -->
-<section id="waitlist" class="py-24 border-t border-white/5 relative overflow-hidden">
+<!-- ECOSYSTEM GRID -->
+<section class="py-16 md:py-24 border-t border-white/5 bg-void-900/40">
+  <div class="max-w-6xl mx-auto px-4 md:px-6">
+    <div class="text-center mb-8 md:mb-12">
+      <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-neon-500 mb-3" data-i18n="eco.kicker">› Rund um Drop</div>
+      <h2 class="font-sans text-2xl sm:text-3xl md:text-4xl font-600 tracking-tight leading-tight" data-i18n-html="eco.title">
+        Teil eines größeren <span class="fx-glow-text">Ecosystems</span>.
+      </h2>
+      <p class="mt-3 md:mt-4 text-sm md:text-base text-white/55 max-w-xl mx-auto" data-i18n="eco.sub">
+        Drop steht für sich — aber du kannst mit demselben Wallet auch Chat 2.0 nutzen und später in den Digital Twin migrieren.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <!-- Drop: live -->
+      <a href="/" class="group block p-5 md:p-6 rounded-2xl bg-gradient-to-br from-neon-500/10 to-void-900 border border-neon-500/40 hover:border-neon-500/70 transition">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-1.5 py-0.5 rounded bg-neon-500/25 text-neon-500 text-[9px] font-mono uppercase tracking-widest" data-i18n="eco.drop.badge">Live</span>
+          <span class="font-mono text-[10px] text-white/40">01</span>
+        </div>
+        <div class="text-xl md:text-2xl font-600 mb-2">Drop 📦</div>
+        <p class="text-sm text-white/60 leading-relaxed" data-i18n="eco.drop.text">Self-Custody File Transfer. E2E im Browser. Dezentral auf Storj.</p>
+      </a>
+
+      <!-- Chat 2.0: beta -->
+      <a href="/chat" class="group block p-5 md:p-6 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/40 transition">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400 text-[9px] font-mono uppercase tracking-widest" data-i18n="eco.chat.badge">Beta</span>
+          <span class="font-mono text-[10px] text-white/40">02</span>
+        </div>
+        <div class="text-xl md:text-2xl font-600 mb-2">Chat 2.0 💬</div>
+        <p class="text-sm text-white/60 leading-relaxed" data-i18n-html="eco.chat.text">Wallet-gated Rooms mit Link-to-join. <span class="text-white/40">Weiterentwicklung von Crypto Chat 1.0 aus der Blockchain Cloud.</span></p>
+      </a>
+
+      <!-- Digital Twin: external, live -->
+      <a href="https://dwinity.shop" target="_blank" rel="noopener" class="group block p-5 md:p-6 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/40 transition">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/70 text-[9px] font-mono uppercase tracking-widest">Dwinity IP</span>
+          <span class="font-mono text-[10px] text-white/40">03</span>
+        </div>
+        <div class="text-xl md:text-2xl font-600 mb-2">Digital Twin 🧬</div>
+        <p class="text-sm text-white/60 leading-relaxed" data-i18n-html="eco.twin.text">Wallet-bound Datenraum auf der <span class="text-white/80">Dwinity Blockchain Cloud</span>. <span class="text-white/40">Drop-Integration auf der Roadmap.</span></p>
+      </a>
+
+      <!-- Tax: private beta, subtle -->
+      <a href="https://tax.mkwt-strategy.tech" class="group block p-5 md:p-6 rounded-2xl bg-void-900/60 border border-dashed border-white/15 hover:border-white/25 transition opacity-85">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/60 text-[9px] font-mono uppercase tracking-widest" data-i18n="eco.tax.badge">Private Beta</span>
+          <span class="font-mono text-[10px] text-white/40">04</span>
+        </div>
+        <div class="text-xl md:text-2xl font-600 mb-2 text-white/80">Tax 📊</div>
+        <p class="text-sm text-white/50 leading-relaxed" data-i18n-html="eco.tax.text">Krypto-Steuerreport (DE). <span class="text-white/40">Sehr früh — auf Anfrage.</span></p>
+      </a>
+    </div>
+
+    <div class="mt-8 md:mt-10 text-center">
+      <a href="/rank" class="inline-flex items-center gap-2 text-xs md:text-sm font-mono text-white/50 hover:text-neon-500 transition" data-i18n="eco.dragonLink">
+        🐉 Dragon Rank · opt-in gamification für aktive Nutzer →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-16 md:py-24 border-t border-white/5">
+  <div class="max-w-3xl mx-auto px-4 md:px-6">
+    <div class="text-center mb-8 md:mb-12">
+      <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-neon-500 mb-3" data-i18n="faq.kicker">› FAQ</div>
+      <h2 class="font-sans text-3xl sm:text-4xl md:text-5xl font-600 tracking-tight" data-i18n="faq.title">Die fünf Fragen, die jeder hat.</h2>
+    </div>
+
+    <div class="space-y-2 md:space-y-3">
+      <details class="group p-5 md:p-6 rounded-2xl bg-void-900/60 border border-white/10 hover:border-white/20 transition">
+        <summary class="cursor-pointer flex items-start justify-between gap-4">
+          <div class="font-600 text-sm md:text-base" data-i18n="faq.q1">Was passiert, wenn ich den Link verliere?</div>
+          <span class="text-white/40 text-lg shrink-0 group-open:rotate-180 transition-transform">▾</span>
+        </summary>
+        <p class="mt-3 text-sm text-white/70 leading-relaxed" data-i18n-html="faq.a1">
+          Der Link enthält den Entschlüsselungs-Key (nach dem <span class="text-neon-500 font-mono">#</span>).
+          Ohne diesen Link kann niemand — auch wir nicht — die Datei entschlüsseln.
+          Mit Wallet-Login findest du deine erstellten Drops im Dashboard wieder.
+          Ohne Wallet: der Link ist das Einzige. Deshalb empfehlen wir Wallet-bound für alles was länger lebt.
+        </p>
+      </details>
+
+      <details class="group p-5 md:p-6 rounded-2xl bg-void-900/60 border border-white/10 hover:border-white/20 transition">
+        <summary class="cursor-pointer flex items-start justify-between gap-4">
+          <div class="font-600 text-sm md:text-base" data-i18n="faq.q2">Können Behörden meine Dateien einsehen?</div>
+          <span class="text-white/40 text-lg shrink-0 group-open:rotate-180 transition-transform">▾</span>
+        </summary>
+        <p class="mt-3 text-sm text-white/70 leading-relaxed" data-i18n-html="faq.a2">
+          Wir können Auskunftsanfragen nur mit dem beantworten, was wir haben — und das ist ausschließlich
+          <strong class="text-white/90">verschlüsselter Blob + Metadaten</strong> (Größe, Zeitstempel, Retention).
+          Der Schlüssel liegt nie bei uns. Bei klar illegalen Inhalten (Report-Flow) löschen wir das Objekt auf Storj — der Plaintext bleibt trotzdem unlesbar für uns.
+        </p>
+      </details>
+
+      <details class="group p-5 md:p-6 rounded-2xl bg-void-900/60 border border-white/10 hover:border-white/20 transition">
+        <summary class="cursor-pointer flex items-start justify-between gap-4">
+          <div class="font-600 text-sm md:text-base" data-i18n="faq.q3">Warum USDC / DWIN statt Kreditkarte?</div>
+          <span class="text-white/40 text-lg shrink-0 group-open:rotate-180 transition-transform">▾</span>
+        </summary>
+        <p class="mt-3 text-sm text-white/70 leading-relaxed" data-i18n="faq.a3">
+          Self-Custody bis zum Ende: Zahlung direkt aus deinem Wallet auf Avalanche, ohne Stripe-Account oder KYC.
+          Kein Mapping "Karte ↔ Email ↔ Dateien". Der Match passiert über einen einzigartigen Cent-Tail im Amount.
+          Wer Kreditkarte unbedingt will: später via Revolut-Pay-Zwischenschritt geplant, aktuell nicht.
+        </p>
+      </details>
+
+      <details class="group p-5 md:p-6 rounded-2xl bg-void-900/60 border border-white/10 hover:border-white/20 transition">
+        <summary class="cursor-pointer flex items-start justify-between gap-4">
+          <div class="font-600 text-sm md:text-base" data-i18n="faq.q4">Was ist anders zu WeTransfer, Tresorit, Dropbox?</div>
+          <span class="text-white/40 text-lg shrink-0 group-open:rotate-180 transition-transform">▾</span>
+        </summary>
+        <p class="mt-3 text-sm text-white/70 leading-relaxed" data-i18n-html="faq.a4">
+          <strong class="text-white/90">WeTransfer</strong> speichert unverschlüsselt, kann auf Behörden-Request rausgeben + trainiert potenziell KI-Modelle.
+          <strong class="text-white/90">Tresorit</strong> kann E2E, bindet aber Account + Email (zentraler Honeypot).
+          <strong class="text-white/90">Dropbox / Drive</strong> hat Provider-Key, Anbieter kann grundsätzlich zugreifen.
+          <strong class="text-neon-500">Dead Drop</strong>: E2E + kein Account-Zwang + wallet-bound + Storj-fragmentiert.
+        </p>
+      </details>
+
+      <details class="group p-5 md:p-6 rounded-2xl bg-void-900/60 border border-white/10 hover:border-white/20 transition">
+        <summary class="cursor-pointer flex items-start justify-between gap-4">
+          <div class="font-600 text-sm md:text-base" data-i18n="faq.q5">Was passiert, wenn Dwinity als Firma verschwindet?</div>
+          <span class="text-white/40 text-lg shrink-0 group-open:rotate-180 transition-transform">▾</span>
+        </summary>
+        <p class="mt-3 text-sm text-white/70 leading-relaxed" data-i18n="faq.a5">
+          Die verschlüsselten Blobs liegen dezentral auf Storj. Der Entschlüsselungs-Key liegt in deinem Share-Link.
+          Solange du beides hast, bist du nicht auf uns angewiesen.
+          Für persistente Ablage ab Dwinity-API-Launch: Digital Twin ist wallet-bound — überdauert einzelne Anbieter, das ist der Grund für die Ecosystem-Architektur.
+        </p>
+      </details>
+    </div>
+
+    <p class="mt-8 text-center text-xs md:text-sm text-white/50" data-i18n-html="faq.footer">
+      Noch offene Fragen? <a href="mailto:hello@dwinity.de" class="text-neon-500 hover:underline">hello@dwinity.de</a> — Antwort meist innerhalb eines Tages.
+    </p>
+  </div>
+</section>
+
+<!-- FINAL CTA with urgency -->
+<section id="waitlist" class="py-16 md:py-24 border-t border-white/5 relative overflow-hidden">
   <div class="absolute inset-0 grid-bg opacity-40"></div>
   <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-neon-500/10 rounded-full blur-[120px]"></div>
 
-  <div class="relative max-w-3xl mx-auto px-6 text-center">
-    <h2 class="font-sans text-4xl md:text-6xl font-600 tracking-tight leading-tight">
-      Sei einer der <span class="text-neon-500 text-glow">ersten 1.000</span>.
+  <div class="relative max-w-3xl mx-auto px-4 md:px-6 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-300 text-[10px] md:text-xs font-mono uppercase tracking-widest mb-5 md:mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping shrink-0"></span>
+      <span data-i18n="cta.chip">Launch-Phase · Founder-Window offen</span>
+    </div>
+    <h2 class="font-sans text-3xl sm:text-4xl md:text-6xl font-600 tracking-tight leading-[1.1] md:leading-tight" data-i18n-html="cta.title">
+      Deine Dateien sind <span class="text-neon-500 text-glow">deine</span>.<br class="hidden sm:inline" />
+      <span class="fx-glow-text">Ab sofort.</span>
     </h2>
-    <p class="mt-6 text-white/70 text-lg">
-      Private Beta im Sommer 2026. Warteliste schließt bei 5.000 Anmeldungen.
-      Pro-Tarif für das erste Jahr auf 39 € reduziert für Beta-Mitglieder.
+    <p class="mt-5 md:mt-6 text-white/70 text-base md:text-lg max-w-xl mx-auto" data-i18n-html="cta.sub">
+      Oben die Dropzone — kostet nichts, braucht nichts, fragt nichts. Für mehr (2 GB Files, Chat, Lifetime) → Pro freischalten, mit <span class="font-mono text-neon-500">LAUNCH50</span> für 50 % Rabatt.
     </p>
 
-    <form id="waitlist-bottom" class="mt-10 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-      <input type="email" required placeholder="name@example.com"
-        class="flex-1 px-5 py-4 rounded-xl bg-void-800 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-neon-500/50 focus:ring-2 focus:ring-neon-500/20" />
-      <button type="submit" class="px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition whitespace-nowrap">
-        Auf die Liste →
+    <div class="mt-8 md:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a href="#dropzone" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="cta.dropNow">
+        Jetzt droppen ↑
+      </a>
+      <button data-action="open-upgrade" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-neon-500/40 hover:border-neon-500/70 hover:bg-neon-500/5 text-sm font-600 transition" data-i18n="cta.unlockPro">
+        Pro freischalten →
       </button>
-    </form>
-    <div id="waitlist-success" class="hidden mt-6 p-4 rounded-xl bg-neon-500/10 border border-neon-500/30 text-neon-500 font-semibold font-mono">
-      // eingetragen · du hörst von uns
     </div>
+
+    <!-- Keep waitlist form for legacy/extra catch, but smaller -->
+    <details class="mt-8 md:mt-10">
+      <summary class="cursor-pointer text-xs font-mono text-white/40 hover:text-white/70" data-i18n="cta.waitlistToggle">// oder doch lieber auf die Warteliste?</summary>
+      <form id="waitlist-bottom" class="mt-5 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+        <input type="email" required placeholder="name@example.com"
+          class="flex-1 px-5 py-3 rounded-xl bg-void-800 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-neon-500/50" />
+        <button type="submit" class="px-5 py-3 rounded-xl border border-white/20 hover:border-neon-500/50 text-sm font-semibold transition whitespace-nowrap" data-i18n="cta.joinList">
+          Liste beitreten →
+        </button>
+      </form>
+      <div id="waitlist-success" class="hidden mt-4 p-3 rounded-xl bg-neon-500/10 border border-neon-500/30 text-neon-500 font-mono text-sm" data-i18n="cta.waitlistSuccess">
+        // eingetragen · du hörst von uns
+      </div>
+    </details>
   </div>
 </section>
 
@@ -459,148 +767,153 @@
   <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
     <div>
       <div class="flex items-center gap-2 font-sans font-semibold text-lg mb-1">
-        <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-7 h-7 object-contain fx-logo-glow" />
+        <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-10 h-10 object-contain fx-logo-glow" />
         Dead <span class="text-neon-500">Drop</span>
       </div>
-      <div class="text-sm text-white/50">powered by <a href="https://dwinity.com" class="hover:text-white underline-offset-2 hover:underline">Dwinity</a></div>
+      <div class="text-sm text-white/50"><span data-i18n="footer.subtitle">powered by</span> <a href="https://dwinity.com" class="hover:text-white underline-offset-2 hover:underline">Dwinity</a></div>
     </div>
     <nav class="flex flex-wrap gap-6 text-sm text-white/60">
-      <a href="https://dwinity.com" class="hover:text-white">Ecosystem</a>
-      <a href="https://tax.mkwt-strategy.tech" class="hover:text-white">Dwinity Tax</a>
-      <a href="impressum.html" class="hover:text-white">Impressum</a>
-      <a href="datenschutz.html" class="hover:text-white">Datenschutz</a>
-      <a href="mailto:hello@dwinity.de" class="hover:text-white">Kontakt</a>
+      <a href="https://dwinity.shop" target="_blank" rel="noopener" class="hover:text-white" data-i18n="footer.ecosystem">Ecosystem</a>
+      <a href="https://dwinity.shop/crypto-chat/" target="_blank" rel="noopener" class="hover:text-white">Chat 1.0</a>
+      <a href="/chat" class="hover:text-white">Chat 2.0</a>
+      <a href="impressum.html" class="hover:text-white" data-i18n="footer.imprint">Impressum</a>
+      <a href="datenschutz.html" class="hover:text-white" data-i18n="footer.privacy">Datenschutz</a>
+      <a href="mailto:hello@dwinity.de" class="hover:text-white" data-i18n="footer.contact">Kontakt</a>
     </nav>
   </div>
+  <!-- Social row -->
+  <div class="max-w-6xl mx-auto px-6 mt-8 flex flex-wrap items-center gap-3 md:gap-5">
+    <span class="text-[10px] font-mono uppercase tracking-widest text-white/30" data-i18n="footer.follow">Follow:</span>
+    <a href="https://x.com/dwinity_eco" target="_blank" rel="noopener" aria-label="X (Twitter)" class="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-neon-500 transition">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      @dwinity_eco
+    </a>
+    <a href="https://t.me/dwinity_eco" target="_blank" rel="noopener" aria-label="Telegram" class="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-neon-500 transition">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.28c-.146.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.566-4.458c.537-.196 1.006.128.832.938z"/></svg>
+      t.me/dwinity_eco
+    </a>
+    <a href="https://www.instagram.com/dwinity_eco/" target="_blank" rel="noopener" aria-label="Instagram" class="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-neon-500 transition">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      @dwinity_eco
+    </a>
+    <a href="https://www.linkedin.com/company/dwinity-ip-gmbh/" target="_blank" rel="noopener" aria-label="LinkedIn" class="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-neon-500 transition">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+      LinkedIn
+    </a>
+  </div>
   <div class="max-w-6xl mx-auto px-6 mt-8 pt-8 border-t border-white/5 text-xs text-white/30 font-mono">
-    © 2026 Dead Drop · powered by Dwinity · drop.mkwt-strategy.tech · Zero-Knowledge by design
+    <span data-i18n="footer.copy">© 2026 Dead Drop · powered by Dwinity · drop.mkwt-strategy.tech · Zero-Knowledge by design</span>
+    <span class="mx-2 text-white/20">·</span>
+    <a href="/rank" class="text-white/40 hover:text-neon-500 transition">🐉 Dragon Rank</a>
+    <span class="mx-2 text-white/20">·</span>
+    <a href="/impressum.html" class="text-white/40 hover:text-white transition" data-i18n="footer.imprint">Impressum</a>
+    <span class="mx-2 text-white/20">·</span>
+    <a href="/datenschutz.html" class="text-white/40 hover:text-white transition" data-i18n="footer.privacy">Datenschutz</a>
   </div>
 </footer>
 
-<script>
-  (function() {
-    function handle(form, successEl) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const input = form.querySelector('input[type=email]');
-        const button = form.querySelector('button[type=submit]');
-        const email = input.value.trim();
-        if (!email) return;
-        const origLabel = button.textContent;
-        button.disabled = true;
-        button.textContent = '// sende …';
-        try {
-          const r = await fetch('/api/waitlist', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, product: 'drop' }),
-          });
-          if (r.status === 429) throw new Error('Zu viele Anfragen — bitte später erneut.');
-          if (!r.ok) throw new Error('Server-Fehler: HTTP ' + r.status);
-          form.reset();
-          if (successEl) {
-            successEl.classList.remove('hidden');
-            successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          } else {
-            alert('// eingetragen');
-          }
-        } catch (err) {
-          alert('// Fehler: ' + (err.message || err));
-        } finally {
-          button.disabled = false;
-          button.textContent = origLabel;
-        }
-      });
-    }
-    const heroForm = document.getElementById('waitlist-hero');
-    const bottomForm = document.getElementById('waitlist-bottom');
-    const success = document.getElementById('waitlist-success');
-    if (heroForm) handle(heroForm, success);
-    if (bottomForm) handle(bottomForm, success);
-  })();
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script src="/waitlist.js"></script>
+<script src="/lib/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous"></script>
+<script src="/lib/qrious.min.js" integrity="sha384-Dr98ddmUw2QkdCarNQ+OL7xLty7cSxgR0T7v1tq4UErS/qLV0132sBYTolRAFuOV" crossorigin="anonymous"></script>
 <!-- Free-tier email gate modal -->
-<div id="email-gate" class="hidden fixed inset-0 z-[60]">
-  <div id="email-gate-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-  <div class="relative max-w-md mx-auto mt-24 mb-8 px-4">
+<div id="email-gate" class="hidden fixed inset-0 z-[60] overflow-y-auto overscroll-contain">
+  <div id="email-gate-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
+  <div class="relative max-w-md mx-auto my-4 md:my-24 px-3 md:px-4">
     <div class="fx-aurora rounded-2xl bg-void-900 border border-white/10 shadow-2xl p-7">
       <div class="flex items-center gap-2 mb-4">
         <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
-        <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500">Free · 1 Schritt</div>
+        <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500" data-i18n="emailGate.kicker">Free · ein fairer Deal</div>
       </div>
-      <h3 class="font-sans text-2xl font-600 leading-tight mb-3">Kurz deine E-Mail — und du kannst senden.</h3>
-      <p class="text-white/60 text-sm leading-relaxed mb-5">
-        Wir schicken dir den Share-Link zusätzlich per Mail, falls du ihn verlierst.
-        Du bekommst seltene Updates zum Dwinity-Ecosystem — kein Spam, jederzeit abbestellbar.
-        <br/><br/>
-        <span class="text-white/40">Mit Wallet-Login (oben rechts) überspringst du diesen Schritt und bekommst mehr Limits.</span>
+      <h3 class="font-sans text-2xl font-600 leading-tight mb-3" data-i18n="emailGate.title">
+        Ehrlich gesagt: wir brauchen deine E-Mail.
+      </h3>
+      <p class="text-white/70 text-sm leading-relaxed mb-4" data-i18n-html="emailGate.body">
+        Drop ist kostenlos — aber Storj, Server und Entwicklung kosten uns Geld.
+        Dein Gegenwert: eine E-Mail, über die wir dir <strong class="text-white/90">selten</strong> Updates zum Ecosystem schicken
+        (neue Features, Chat-Rollout, Digital-Twin-Launch). Kein Spam, jederzeit abbestellbar.
+      </p>
+      <div class="mb-5 p-3 rounded-lg bg-void-800/60 border border-white/10 text-xs text-white/60 leading-relaxed">
+        <div class="flex items-start gap-2">
+          <span class="text-neon-500 shrink-0">ⓘ</span>
+          <span data-i18n-html="emailGate.info">Der <strong class="text-white/80">Share-Link erscheint direkt im Browser</strong> — wir versenden ihn <strong class="text-white/80">nicht</strong> per Mail. Das wäre ein unnötiges Risiko für deine Zero-Knowledge-Datei. Link kopieren, dann teilen wo du willst.</span>
+        </div>
+      </div>
+      <p class="mb-5 text-xs text-white/40 leading-relaxed" data-i18n="emailGate.walletHint">
+        Wallet-Login (oben rechts) ersetzt diesen Schritt und gibt dir mehr Limits + Chat + Dragon Rank.
       </p>
       <form id="email-gate-form" class="flex flex-col gap-3">
         <input type="email" required placeholder="name@example.com" id="email-gate-input"
           class="fx-input px-4 py-3 rounded-xl bg-void-800 border border-white/10 text-white placeholder:text-white/30 font-mono text-sm focus:outline-none focus:border-neon-500/50" />
         <label class="flex items-start gap-2 text-xs text-white/60 font-mono leading-relaxed cursor-pointer">
           <input type="checkbox" id="email-gate-consent" class="accent-neon-500 mt-0.5" />
-          <span>Ich habe die <a href="/datenschutz.html" target="_blank" class="text-neon-500 hover:underline">Datenschutzhinweise</a> gelesen und stimme der Speicherung meiner E-Mail für diesen Dienst zu.</span>
+          <span data-i18n-html="emailGate.consent">Ich stimme der Speicherung meiner E-Mail für Ecosystem-Updates zu. <a href="/datenschutz.html" target="_blank" class="text-neon-500 hover:underline">Datenschutz</a>.</span>
         </label>
-        <button type="submit" class="w-full px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition mt-1">
-          Weiter zum Senden →
+        <button type="submit" class="w-full px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition mt-1" data-i18n="emailGate.submit">
+          Fair · weiter zum Senden →
         </button>
         <div id="email-gate-error" class="hidden text-xs text-red-400 font-mono"></div>
       </form>
-      <button id="email-gate-close" type="button" class="mt-4 w-full text-xs text-white/40 hover:text-white/70 font-mono underline underline-offset-2">
-        // doch nicht senden
+      <button id="email-gate-close" type="button" class="mt-4 w-full text-xs text-white/40 hover:text-white/70 font-mono underline underline-offset-2" data-i18n="emailGate.walletInstead">
+        // lieber Wallet verbinden
       </button>
     </div>
   </div>
 </div>
 
 <!-- Upgrade modal -->
-<div id="upgrade-modal" class="hidden fixed inset-0 z-50">
-  <div id="upgrade-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-  <div class="relative max-w-lg mx-auto mt-16 mb-8 px-4">
-    <div class="rounded-2xl bg-void-900 border border-white/10 shadow-2xl p-6 md:p-8">
-      <div class="flex items-start justify-between mb-6">
-        <div>
-          <div class="font-mono text-xs uppercase tracking-widest text-neon-500 mb-1">Pro freischalten</div>
-          <h3 class="font-sans text-2xl font-600">Self-Custody Pro</h3>
-        </div>
-        <button id="upgrade-close" class="text-white/40 hover:text-white text-2xl leading-none">×</button>
+<div id="upgrade-modal" class="hidden fixed inset-0 z-50 overflow-y-auto overscroll-contain">
+  <div id="upgrade-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-sm"></div>
+  <div class="relative max-w-lg mx-auto my-4 md:my-16 px-3 md:px-4">
+    <div class="relative rounded-2xl bg-void-900 border border-white/10 shadow-2xl p-5 pt-6 md:p-8">
+      <button id="upgrade-close" data-i18n-aria-label="upgrade.closeAria" aria-label="Schließen" class="absolute top-2.5 right-2.5 md:top-3 md:right-3 w-9 h-9 rounded-full bg-void-800/60 hover:bg-void-800 text-white/50 hover:text-white grid place-items-center text-xl leading-none transition z-10">×</button>
+      <div class="pr-10 mb-5 md:mb-6">
+        <div class="font-mono text-[11px] md:text-xs uppercase tracking-widest text-neon-500 mb-1" data-i18n="upgrade.kicker">Pro freischalten</div>
+        <h3 class="font-sans text-xl md:text-2xl font-600" data-i18n="upgrade.title">Self-Custody Pro</h3>
       </div>
 
-      <div id="upgrade-not-logged" class="hidden mb-5 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-sm text-red-300">
+      <div id="upgrade-not-logged" class="hidden mb-5 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-sm text-red-300" data-i18n="upgrade.notLogged">
         Bitte erst Wallet verbinden (Button oben rechts).
       </div>
 
       <!-- STEP 1: Plan + Asset (rendered dynamically from /quote) -->
       <div id="upgrade-step-plan">
         <div class="mb-5">
-          <div class="text-xs font-mono uppercase tracking-widest text-white/50 mb-3">Laufzeit</div>
+          <div class="text-xs font-mono uppercase tracking-widest text-white/50 mb-3" data-i18n="upgrade.term">Laufzeit</div>
           <label id="upgrade-plan-monthly" class="flex items-center justify-between p-4 rounded-xl bg-void-800 border border-white/10 hover:border-neon-500/40 cursor-pointer mb-2">
             <div class="flex items-center gap-3">
               <input type="radio" name="upgrade-plan" value="monthly" class="accent-neon-500" checked />
               <div>
-                <div class="font-600">Monatlich</div>
-                <div class="text-xs text-white/50 font-mono">30 Tage</div>
+                <div class="font-600" data-i18n="upgrade.plan.monthly">Monatlich</div>
+                <div class="text-xs text-white/50 font-mono" data-i18n="upgrade.plan.monthly.days">30 Tage</div>
               </div>
             </div>
             <div class="font-mono text-sm" data-price="monthly">—</div>
           </label>
-          <label id="upgrade-plan-yearly" class="flex items-center justify-between p-4 rounded-xl bg-void-800 border border-white/10 hover:border-neon-500/40 cursor-pointer">
+          <label id="upgrade-plan-yearly" class="flex items-center justify-between p-4 rounded-xl bg-void-800 border border-white/10 hover:border-neon-500/40 cursor-pointer mb-2">
             <div class="flex items-center gap-3">
               <input type="radio" name="upgrade-plan" value="yearly" class="accent-neon-500" />
               <div>
-                <div class="font-600">Jährlich <span class="text-neon-500 text-xs font-mono ml-1">–17%</span></div>
-                <div class="text-xs text-white/50 font-mono">365 Tage</div>
+                <div class="font-600"><span data-i18n="upgrade.plan.yearly">Jährlich</span> <span class="text-neon-500 text-xs font-mono ml-1">–17%</span></div>
+                <div class="text-xs text-white/50 font-mono" data-i18n="upgrade.plan.yearly.days">365 Tage</div>
               </div>
             </div>
             <div class="font-mono text-sm" data-price="yearly">—</div>
           </label>
+          <label id="upgrade-plan-lifetime" class="relative flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-neon-500/10 to-void-800 border-2 border-neon-500/40 hover:border-neon-500/70 cursor-pointer">
+            <span class="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-neon-500 text-void-950 text-[9px] font-bold uppercase tracking-widest" data-i18n="upgrade.plan.lifetime.badge">Founder Deal</span>
+            <div class="flex items-center gap-3">
+              <input type="radio" name="upgrade-plan" value="lifetime" class="accent-neon-500" />
+              <div>
+                <div class="font-600">Lifetime 🐉</div>
+                <div class="text-xs text-white/50 font-mono" data-i18n="upgrade.plan.lifetime.sub">einmalig · für immer</div>
+              </div>
+            </div>
+            <div class="font-mono text-sm text-neon-500" data-price="lifetime">—</div>
+          </label>
         </div>
 
         <div class="mb-6">
-          <div class="text-xs font-mono uppercase tracking-widest text-white/50 mb-3">Asset</div>
+          <div class="text-xs font-mono uppercase tracking-widest text-white/50 mb-3" data-i18n="upgrade.asset">Asset</div>
           <label id="upgrade-asset-usdc" class="flex items-center p-3 rounded-xl bg-void-800 border border-white/10 hover:border-neon-500/40 cursor-pointer mb-2">
             <input type="radio" name="upgrade-asset" value="USDC" class="accent-neon-500 mr-3" checked />
             <div class="flex-1">
@@ -612,12 +925,24 @@
             <input type="radio" name="upgrade-asset" value="DWIN" class="accent-neon-500 mr-3" disabled />
             <div class="flex-1">
               <div class="font-600">DWIN</div>
-              <div class="text-xs text-white/50 font-mono" data-dwin-note>Aktiviert sobald DEX-Liquidität vorhanden</div>
+              <div class="text-xs text-white/50 font-mono" data-dwin-note data-i18n="upgrade.asset.dwinNote">Aktiviert sobald DEX-Liquidität vorhanden</div>
             </div>
           </label>
         </div>
 
-        <button id="upgrade-create-btn" class="w-full px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
+        <div class="mb-6">
+          <div class="text-xs font-mono uppercase tracking-widest text-white/50 mb-3"><span data-i18n="upgrade.promo">Promo-Code</span> <span class="text-white/30 normal-case" data-i18n="upgrade.optional">(optional)</span></div>
+          <div class="flex gap-2">
+            <input type="text" id="upgrade-promo-input" maxlength="32" data-i18n-placeholder="upgrade.promo.placeholder" placeholder="z.B. BETA2026"
+              class="flex-1 px-4 py-3 rounded-xl bg-void-800 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-neon-500/50 font-mono uppercase" />
+            <button id="upgrade-promo-check" class="px-4 py-3 rounded-xl border border-white/15 hover:border-neon-500/40 text-sm font-mono text-white/80 hover:text-white transition" data-i18n="upgrade.promo.check">
+              Prüfen
+            </button>
+          </div>
+          <div id="upgrade-promo-feedback" class="hidden mt-2 text-xs font-mono"></div>
+        </div>
+
+        <button id="upgrade-create-btn" class="w-full px-6 py-4 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="upgrade.createInvoice">
           Invoice erzeugen →
         </button>
       </div>
@@ -627,9 +952,9 @@
         <div class="flex items-start gap-5 mb-5">
           <div id="upgrade-qr" class="shrink-0 p-2 rounded-xl bg-white" style="width:176px;height:176px;"></div>
           <div class="flex-1 text-sm">
-            <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1">Betrag</div>
+            <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1" data-i18n="upgrade.amount">Betrag</div>
             <div id="upgrade-amount" class="font-mono font-600 text-lg mb-3 text-neon-500">—</div>
-            <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1">Empfänger</div>
+            <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1" data-i18n="upgrade.receiver">Empfänger</div>
             <div id="upgrade-receiver" class="font-mono text-xs break-all text-white/80">—</div>
             <div class="text-xs text-white/50 mt-3">
               <span id="upgrade-asset-display">USDC</span> · Avalanche C-Chain (43114)
@@ -640,13 +965,13 @@
         <div id="upgrade-status" class="text-xs font-mono mb-4 p-3 rounded-lg bg-void-800">// …</div>
 
         <div class="flex flex-col gap-2">
-          <button id="upgrade-pay-btn" class="w-full px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
+          <button id="upgrade-pay-btn" class="w-full px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="upgrade.payWithWallet">
             Mit diesem Wallet bezahlen →
           </button>
-          <div class="text-xs text-white/40 text-center font-mono">
+          <div class="text-xs text-white/40 text-center font-mono" data-i18n-html="upgrade.altPay">
             oder: QR scannen / Adresse &amp; Betrag kopieren und extern senden
           </div>
-          <button id="upgrade-cancel-btn" class="text-xs text-white/50 hover:text-red-400 font-mono underline underline-offset-2 mt-2">
+          <button id="upgrade-cancel-btn" class="text-xs text-white/50 hover:text-red-400 font-mono underline underline-offset-2 mt-2" data-i18n="upgrade.back">
             // zurück zur Plan-Auswahl
           </button>
         </div>
@@ -657,9 +982,9 @@
         <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-neon-500/20 grid place-items-center">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="text-neon-500" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        <h4 class="font-sans text-2xl font-600 mb-2">Pro aktiviert</h4>
+        <h4 class="font-sans text-2xl font-600 mb-2" data-i18n="upgrade.done.title">Pro aktiviert</h4>
         <div id="upgrade-done-msg" class="text-white/70 text-sm mb-6">—</div>
-        <button onclick="document.getElementById('upgrade-close').click()" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition">
+        <button data-action="upgrade-close" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="upgrade.done.continue">
           Weiter zum Drop
         </button>
       </div>
@@ -669,11 +994,16 @@
   </div>
 </div>
 
+<script src="/i18n.js"></script>
 <script src="/app.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha3/0.9.3/sha3.min.js"></script>
+<script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/ref-capture.js" defer></script>
 <script src="/auth.js"></script>
+<script src="/panic.js" defer></script>
 <script src="/upgrade.js"></script>
 
 <script src="/netstream.js"></script>
+<script src="/stats.js" defer></script>
+<script src="/popup.js" defer></script>
 </body>
 </html>

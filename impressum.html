@@ -4,85 +4,104 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Impressum — Dead Drop</title>
-<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="apple-touch-icon" href="/img/deaddrop-logo-256.png" />
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = { theme: { extend: {
-    colors: { void: { 950:'#05060A', 900:'#0A0B10', 800:'#13141B' }, neon: { 500:'#00FF9D', 600:'#00D684' } },
-    fontFamily: { sans:['Space Grotesk','ui-sans-serif','system-ui'], mono:['JetBrains Mono','ui-monospace','monospace'] },
-  } } };
-</script>
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
 </head>
 <body class="font-sans text-white bg-void-950 antialiased">
 
 <header class="sticky top-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
   <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
     <a href="index.html" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
-      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-7 h-7 object-contain fx-logo-glow" />
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-10 h-10 object-contain fx-logo-glow" />
       Dead <span class="text-neon-500">Drop</span>
     </a>
-    <a href="index.html" class="text-sm text-white/60 hover:text-white">← Zurück</a>
+    <a href="index.html" class="text-sm text-white/60 hover:text-white" data-i18n="legal.back">← Zurück</a>
   </div>
 </header>
 
 <main class="max-w-3xl mx-auto px-6 py-16">
-  <h1 class="font-sans text-5xl font-600 tracking-tight mb-10">Impressum</h1>
+  <h1 class="font-sans text-5xl font-600 tracking-tight mb-10" data-i18n="impressum.title">Impressum</h1>
 
   <section class="space-y-8 text-white/70 leading-relaxed">
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Angaben gemäß § 5 TMG</h2>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.tmg.title">Angaben gemäß § 5 TMG</h2>
       <p>
         <!-- TODO: Durch echte Daten ersetzen -->
         [Firma / Name]<br/>
         [Straße und Hausnummer]<br/>
         [PLZ und Ort]<br/>
-        Deutschland
+        <span data-i18n="impressum.tmg.country">Deutschland</span>
       </p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Vertreten durch</h2>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.repr.title">Vertreten durch</h2>
       <p>[Vorname Nachname, Geschäftsführer]</p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Kontakt</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.contact.title">Kontakt</h2>
+      <p data-i18n-html="impressum.contact.body">
         Telefon: [+49 ...]<br/>
         E-Mail: <a href="mailto:hello@dwinity.de" class="text-neon-500 hover:underline">hello@dwinity.de</a>
       </p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Umsatzsteuer-ID</h2>
-      <p>Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br/>[DE...]</p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.vat.title">Umsatzsteuer-ID</h2>
+      <p data-i18n-html="impressum.vat.body">Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br/>[DE...]</p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.rstv.title">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
       <p>[Vorname Nachname, Anschrift wie oben]</p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">Haftungsausschluss</h2>
-      <p>
-        Dead Drop ist ein Dienst zur Übertragung verschlüsselter Dateien, betrieben im Dwinity-Ecosystem.
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.liability.title">Haftungsausschluss</h2>
+      <p data-i18n="impressum.liability.body">
+        Dead Drop ist ein Dienst zur Übertragung verschlüsselter Dateien.
         Die Nutzung erfolgt eigenverantwortlich. Illegale Inhalte sind untersagt.
         Aufgrund der Ende-zu-Ende-Verschlüsselung haben wir keinen Einblick in übertragene Inhalte,
-        werden aber Nutzerkonten bei begründeten Hinweisen auf Missbrauch sperren.
+        werden aber Dateien bei begründeten Hinweisen auf Missbrauch unverzüglich löschen.
+      </p>
+    </div>
+
+    <div id="missbrauch">
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.abuse.title">Missbrauch melden (§ 3 Abs. 1 DSA)</h2>
+      <p data-i18n="impressum.abuse.body">
+        Verdacht auf illegale Inhalte (Urheberrecht, Phishing, sonstige Straftatbestände)?
+        Wir prüfen Meldungen innerhalb von 48 Stunden und löschen bestätigte Fälle sofort.
+      </p>
+      <ul class="mt-3 space-y-1 text-sm">
+        <li data-i18n="impressum.abuse.01">— Über den Melde-Button unter jedem Share-Link (Download-Seite, Link „// Inhalt melden“)</li>
+        <li data-i18n-html="impressum.abuse.02">— Per E-Mail an <a href="mailto:abuse@mkwt-strategy.tech" class="text-neon-500 hover:underline">abuse@mkwt-strategy.tech</a></li>
+      </ul>
+      <p class="mt-3 text-xs font-mono text-white/50" data-i18n="impressum.abuse.note">
+        Benötigte Angaben: Share-Link oder Drop-ID, Grund, ggf. Rückkontakt.
+        Anonyme Meldungen sind zulässig.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="impressum.resp.title">Verantwortlicher für Dead Drop</h2>
+      <p data-i18n="impressum.resp.body">
+        Betreiber des Dienstes ist die oben genannte Stelle. Hosting auf einem europäischen Server
+        (Hostinger, Frankfurt). Speicherung verschlüsselter Bytes auf dem dezentralen Storj-Netzwerk.
       </p>
     </div>
   </section>
 </main>
 
 <footer class="border-t border-white/5 py-8 mt-16">
-  <div class="max-w-6xl mx-auto px-6 text-sm text-white/40 font-mono">© 2026 Dead Drop · powered by Dwinity · <a href="datenschutz.html" class="hover:text-white">Datenschutz</a></div>
+  <div class="max-w-6xl mx-auto px-6 text-sm text-white/40 font-mono" data-i18n-html="legal.footer.impressum">© 2026 Dead Drop · powered by Dwinity · <a href="datenschutz.html" class="hover:text-white">Datenschutz</a></div>
 </footer>
+<script src="/i18n.js"></script>
 </body>
 </html>

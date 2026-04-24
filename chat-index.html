@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chat — Dead Drop</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<meta name="description" content="Wallet-gated, end-to-end encrypted chat. Rooms via share link. Self-custody." />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+<style>
+  body { background: #05060A; }
+  .grid-bg { background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px; }
+  @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+</style>
+</head>
+<body class="font-sans text-white antialiased min-h-screen">
+
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
+  <div class="max-w-5xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 md:gap-3">
+    <a href="/" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
+      <span class="truncate">Dead <span class="text-neon-500">Drop</span></span>
+      <span class="ml-1 md:ml-2 px-1.5 md:px-2 py-0.5 rounded-full bg-neon-500/15 text-neon-500 text-[9px] md:text-[10px] font-mono uppercase tracking-widest shrink-0">Chat</span>
+      <span class="ml-1 px-1.5 md:px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[9px] md:text-[10px] font-mono uppercase tracking-widest shrink-0">Beta</span>
+    </a>
+    <div class="flex items-center gap-1.5 md:gap-3 shrink-0">
+      <a href="/dashboard" class="shrink-0 inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest text-white/70 hover:text-white transition">
+        <span class="md:hidden" data-i18n="chat.header.dashMobile">Drop</span>
+        <span class="hidden md:inline" data-i18n="chat.header.dashDesktop">Drop-Dashboard</span>
+      </a>
+      <div class="relative shrink-0">
+        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
+          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"></span>
+          <span id="wallet-btn-label" class="truncate" data-i18n="nav.walletConnect">Wallet</span>
+        </button>
+        <div id="wallet-menu" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-void-900 border border-white/10 shadow-xl p-4 text-sm z-50">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1" data-i18n="nav.walletLabel">Wallet</div>
+          <div id="wallet-menu-addr" class="font-mono text-xs break-all text-white/80 mb-3">—</div>
+          <div id="wallet-menu-pro" class="text-xs mb-4">—</div>
+          <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2" data-i18n="nav.walletDisconnect">// trennen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-6 py-12">
+
+  <!-- Gate -->
+  <div id="gate" class="hidden text-center py-20">
+    <div class="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono rounded-full bg-neon-500/10 text-neon-500 border border-neon-500/30 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
+      <span data-i18n="chat.gate.chip">Wallet-Login erforderlich</span>
+    </div>
+    <h1 class="font-sans text-4xl font-600 mb-4" data-i18n="chat.gate.title">Verbinde dein Wallet</h1>
+    <p class="text-white/60 mb-2 max-w-lg mx-auto" data-i18n-html="chat.gate.sub">
+      Dead Drop <span class="text-neon-500">Chat</span> ist wallet-gebunden — deine Adresse ist deine Identität.
+      Sign-In With Ethereum (SIWE), kein Passwort, kein Mail-Signup.
+    </p>
+    <p class="text-white/40 text-xs font-mono mb-8 max-w-lg mx-auto" data-i18n-html="chat.gate.sub2">
+      Weiterentwicklung von <a href="https://dwinity.com" class="hover:text-neon-500 underline underline-offset-2">Chat 1.0</a> in der Blockchain Cloud · Link-to-join statt Wallet-to-wallet
+    </p>
+    <button data-action="connect-wallet" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="chat.gate.connect">
+      Wallet verbinden →
+    </button>
+  </div>
+
+  <!-- Main panel -->
+  <div id="panel" class="hidden">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="font-sans text-4xl md:text-5xl font-600 tracking-tight" data-i18n="chat.panel.title">Meine Rooms</h1>
+        <p class="text-white/50 text-sm mt-2 font-mono" data-i18n="chat.panel.sub">E2E · AES-256-GCM · Wallet-identified</p>
+      </div>
+      <button id="create-btn" class="px-5 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="chat.panel.newRoom">
+        + Neuer Room
+      </button>
+    </div>
+
+    <div id="rooms-list" class="space-y-3">
+      <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+    </div>
+
+    <div class="mt-12 p-5 rounded-2xl bg-void-900/40 border border-white/5">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-2" data-i18n="chat.how.kicker">So funktioniert's</div>
+      <ol class="text-sm text-white/70 space-y-2 list-decimal list-inside">
+        <li data-i18n="chat.how.01">Room erstellen → bekommst Share-Link mit Verschlüsselungs-Key im URL-Fragment</li>
+        <li data-i18n="chat.how.02">Link teilen — Empfänger braucht nur Wallet + Link, kein Account-Signup</li>
+        <li data-i18n-html="chat.how.03">Jeder mit Link + Wallet kann lesen &amp; schreiben (bis Room abläuft)</li>
+        <li data-i18n="chat.how.04">Key verlässt deinen Browser nie. Server sieht nur Ciphertext.</li>
+      </ol>
+    </div>
+
+    <!-- Differentiator grid -->
+    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+      <div class="p-4 md:p-5 rounded-2xl bg-void-900/60 border border-white/10">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-2" data-i18n="chat.diff.01.tag">Wallet = Identität</div>
+        <div class="font-600 mb-1" data-i18n="chat.diff.01.title">Kein Phone · Kein Mail · Kein Alias</div>
+        <p class="text-xs text-white/60 leading-relaxed" data-i18n="chat.diff.01.text">SIWE-Login via MetaMask oder Ledger. Deine 0x-Adresse ist dein Handle. Sybil-Schutz kostet den Angreifer eine Wallet.</p>
+      </div>
+      <div class="p-4 md:p-5 rounded-2xl bg-void-900/60 border border-white/10">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-2" data-i18n="chat.diff.02.tag">Link-to-join</div>
+        <div class="font-600 mb-1" data-i18n="chat.diff.02.title">Kein Pairing · Kein Friend-Request</div>
+        <p class="text-xs text-white/60 leading-relaxed" data-i18n-html="chat.diff.02.text">XMTP &amp; Push brauchen wallet-to-wallet-Handshakes. Bei uns: Link klickt → drin. Unterschied zu Crypto Chat 1.0 (seed-based, 1-on-1).</p>
+      </div>
+      <div class="p-4 md:p-5 rounded-2xl bg-void-900/60 border border-white/10">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-2" data-i18n="chat.diff.03.tag">AES-256-GCM im Browser</div>
+        <div class="font-600 mb-1" data-i18n="chat.diff.03.title">Server sieht nur Bytes</div>
+        <p class="text-xs text-white/60 leading-relaxed" data-i18n="chat.diff.03.text">Room-Key wird clientseitig generiert und wandert nur im URL-Fragment — das fragen wir nicht ab, Proxies / CDNs sehen es nicht.</p>
+      </div>
+      <div class="p-4 md:p-5 rounded-2xl bg-void-900/60 border border-white/10">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-2" data-i18n="chat.diff.04.tag">Ephemeral by default</div>
+        <div class="font-600 mb-1" data-i18n="chat.diff.04.title">24 h Free · bis 30 d Pro</div>
+        <p class="text-xs text-white/60 leading-relaxed" data-i18n-html="chat.diff.04.text">Rooms laufen ab. Danach sind Nachrichten &amp; Members weg — keine 10-Jahre-Backlog wie bei Telegram.</p>
+      </div>
+    </div>
+
+    <!-- Honest limits -->
+    <details class="mt-4 p-4 md:p-5 rounded-2xl bg-void-900/40 border border-white/5">
+      <summary class="cursor-pointer flex items-center justify-between gap-3">
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50" data-i18n="chat.limits.kicker">Was Chat 2.0 (noch) nicht kann</div>
+          <div class="font-600 text-sm mt-1" data-i18n="chat.limits.title">Ehrlicher Beta-Status · klick für Details</div>
+        </div>
+        <span class="text-white/40 text-xs shrink-0">▾</span>
+      </summary>
+      <ul class="mt-4 space-y-2 text-xs text-white/60 leading-relaxed">
+        <li class="flex gap-2"><span class="text-yellow-400 shrink-0">!</span> <span data-i18n-html="chat.limits.01"><strong class="text-white/80">Kein Forward-Secrecy</strong> — ein Room-Key gilt für alle Messages des Rooms. Wenn er leakt, ist die ganze History lesbar. Signal / MLS ist hier fortgeschrittener.</span></li>
+        <li class="flex gap-2"><span class="text-yellow-400 shrink-0">!</span> <span data-i18n-html="chat.limits.02"><strong class="text-white/80">Link = Zutritt</strong> — wer den Link kennt, kommt rein. Es gibt kein "nur dieser Gast darf lesen". Willst du restriktiver: Pro gibt dir Wallet-List-Rooms (Phase 2).</span></li>
+        <li class="flex gap-2"><span class="text-yellow-400 shrink-0">!</span> <span data-i18n-html="chat.limits.03"><strong class="text-white/80">Metadaten sichtbar:</strong> wir wissen welche Wallets wann in welchem Room sind. Nachrichten-<em>Inhalt</em> nicht, Timing + Teilnehmer-Graph schon.</span></li>
+        <li class="flex gap-2"><span class="text-yellow-400 shrink-0">!</span> <span data-i18n-html="chat.limits.04"><strong class="text-white/80">Keine Push-Notifications</strong> — die Seite muss offen sein (SSE-Realtime). Mobile-App kommt, wenn Stack stabil ist.</span></li>
+        <li class="flex gap-2"><span class="text-white/40 shrink-0">◦</span> <span data-i18n="chat.limits.05">Ban- / Moderations-UI, Message-Delete, File-Attachments (via Drop), Typing-Indikator → alles Phase 2+.</span></li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- Create modal -->
+  <div id="create-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="max-w-md w-full rounded-2xl bg-void-900 border border-white/10 p-6">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-1" data-i18n="chat.create.kicker">Neuen Room erstellen</div>
+      <h3 class="font-sans text-xl font-600 mb-5" data-i18n="chat.create.title">Wie soll der Raum heißen?</h3>
+      <label class="block text-xs font-mono text-white/50 mb-1" data-i18n="chat.create.nameLabel">Name (optional)</label>
+      <input id="new-room-name" maxlength="80" data-i18n-placeholder="chat.create.namePlaceholder" placeholder="z.B. Team Sync"
+        class="w-full px-4 py-3 mb-4 rounded-xl bg-void-800 border border-white/10 focus:outline-none focus:border-neon-500/40" />
+      <label class="block text-xs font-mono text-white/50 mb-1" data-i18n="chat.create.ttlLabel">Ablauf</label>
+      <select id="new-room-ttl"
+        class="w-full px-4 py-3 mb-4 rounded-xl bg-void-800 border border-white/10 focus:outline-none focus:border-neon-500/40">
+        <option value="1" data-i18n="chat.create.ttl.1h">1 Stunde</option>
+        <option value="6" data-i18n="chat.create.ttl.6h">6 Stunden</option>
+        <option value="24" selected data-i18n="chat.create.ttl.24h">24 Stunden (Free-Max)</option>
+        <option value="168" data-i18n="chat.create.ttl.7d">7 Tage (Pro)</option>
+        <option value="720" data-i18n="chat.create.ttl.30d">30 Tage (Pro)</option>
+      </select>
+      <div id="create-error" class="hidden mb-3 text-xs font-mono text-red-400"></div>
+      <div class="flex items-center justify-end gap-2">
+        <button id="create-cancel" class="px-4 py-2 text-sm font-mono text-white/60 hover:text-white" data-i18n="chat.create.cancel">// abbrechen</button>
+        <button id="create-submit" class="px-5 py-2 rounded-full bg-neon-500 hover:bg-neon-600 text-void-950 font-bold text-sm" data-i18n="chat.create.submit">
+          Room erstellen
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+<script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/ref-capture.js" defer></script>
+<script src="/auth.js"></script>
+<script src="/panic.js" defer></script>
+<script src="/chat-index.js"></script>
+<script src="/i18n.js"></script>
+</body>
+</html>

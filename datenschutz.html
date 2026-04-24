@@ -4,41 +4,35 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Datenschutz — Dead Drop</title>
-<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
 <link rel="apple-touch-icon" href="/img/deaddrop-logo-256.png" />
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = { theme: { extend: {
-    colors: { void: { 950:'#05060A', 900:'#0A0B10', 800:'#13141B' }, neon: { 500:'#00FF9D', 600:'#00D684' } },
-    fontFamily: { sans:['Space Grotesk','ui-sans-serif','system-ui'], mono:['JetBrains Mono','ui-monospace','monospace'] },
-  } } };
-</script>
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
 </head>
 <body class="font-sans text-white bg-void-950 antialiased">
 
 <header class="sticky top-0 z-40 backdrop-blur-xl bg-void-950/70 border-b border-white/5">
   <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
     <a href="index.html" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
-      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-7 h-7 object-contain fx-logo-glow" />
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-10 h-10 object-contain fx-logo-glow" />
       Dead <span class="text-neon-500">Drop</span>
     </a>
-    <a href="index.html" class="text-sm text-white/60 hover:text-white">← Zurück</a>
+    <a href="index.html" class="text-sm text-white/60 hover:text-white" data-i18n="legal.back">← Zurück</a>
   </div>
 </header>
 
 <main class="max-w-3xl mx-auto px-6 py-16">
-  <h1 class="font-sans text-5xl font-600 tracking-tight mb-10">Datenschutzerklärung</h1>
+  <h1 class="font-sans text-5xl font-600 tracking-tight mb-10" data-i18n="datenschutz.title">Datenschutzerklärung</h1>
 
   <section class="space-y-10 text-white/70 leading-relaxed">
 
     <div class="p-6 rounded-2xl bg-neon-500/5 border border-neon-500/20">
-      <div class="font-mono text-xs text-neon-500 uppercase tracking-widest mb-2">TL;DR</div>
-      <p class="text-white/80">
+      <div class="font-mono text-xs text-neon-500 uppercase tracking-widest mb-2" data-i18n="datenschutz.tldr.kicker">TL;DR</div>
+      <p class="text-white/80" data-i18n="datenschutz.tldr.body">
         Wir sehen deine Dateien nicht. Können wir gar nicht — sie sind Ende-zu-Ende verschlüsselt,
         bevor sie unseren Server erreichen. Den Schlüssel hält dein Browser, das Fragment im Link.
         Wir speichern nur die E-Mail der Warteliste und minimal serverseitige Logs.
@@ -46,16 +40,16 @@
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">1. Verantwortlicher</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.01.title">1. Verantwortlicher</h2>
+      <p data-i18n-html="datenschutz.01.body">
         [Firma / Name], [Anschrift]<br/>
         E-Mail: <a href="mailto:privacy@dwinity.de" class="text-neon-500 hover:underline">privacy@dwinity.de</a>
       </p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">2. Hosting</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.02.title">2. Hosting</h2>
+      <p data-i18n="datenschutz.02.body">
         Landing Page gehostet bei [Hoster, z. B. Hetzner Online GmbH, Deutschland].
         Dateispeicher: Storj DCS — Erasure-Coded verteilt über tausende unabhängige Storage Nodes weltweit,
         verschlüsselt clientseitig vor Upload. AV-Vertrag mit dem Hoster liegt vor.
@@ -63,8 +57,8 @@
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">3. Server-Logfiles</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.03.title">3. Server-Logfiles</h2>
+      <p data-i18n="datenschutz.03.body">
         Bei jedem Besuch werden erfasst: IP-Adresse (nach 24h anonymisiert), Zeitstempel,
         User Agent, Referrer. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Sicherheit).
         Speicherdauer: 14 Tage.
@@ -72,8 +66,8 @@
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">4. Warteliste</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.04.title">4. Warteliste</h2>
+      <p data-i18n-html="datenschutz.04.body">
         Deine E-Mail-Adresse speichern wir zur Benachrichtigung über den Beta-Start.
         Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung). Abmeldung jederzeit per
         Nachricht an <a href="mailto:privacy@dwinity.de" class="text-neon-500 hover:underline">privacy@dwinity.de</a>.
@@ -82,58 +76,102 @@
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">5. Hochgeladene Dateien</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.05.title">5. Hochgeladene Dateien</h2>
+      <p data-i18n="datenschutz.05.body">
         Dateien werden ausschließlich in verschlüsselter Form (AES-256-GCM, clientseitig) übertragen
-        und in Chunks auf Storj DCS verteilt. Wir haben technisch keinen Zugriff auf den Inhalt.
-        Metadaten, die wir sehen: Dateigröße (Gesamt), Ablaufzeitpunkt, Anzahl Downloads.
-        Keine Metadaten, aus denen auf den Inhalt geschlossen werden könnte
-        (Dateiname, MIME-Type sind Teil des verschlüsselten Manifests).
-        Nach Ablauf der Aufbewahrung werden Chunk-Referenzen gelöscht, die Entschlüsselung ist dann technisch unmöglich.
+        und auf dem Storj DCS Netzwerk abgelegt. Bei Dateien ab 50 MB wird chunk-weise verschlüsselt
+        und per S3 Multipart hochgeladen (5 MB pro Chunk, eigener IV, Chunk-Index als
+        Additional Authenticated Data gegen Reorder-Angriffe). Wir haben technisch keinen Zugriff
+        auf den Inhalt — der Schlüssel liegt ausschließlich im URL-Fragment des Share-Links
+        und verlässt deinen Browser nie.
       </p>
-    </div>
-
-    <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">6. Cookies &amp; Tracking</h2>
-      <p>
-        Technisch notwendige Session-Cookies only. Kein Google Analytics, kein Meta Pixel,
-        kein Drittanbieter-Tracking.
+      <p class="mt-3" data-i18n-html="datenschutz.05.metaIntro">
+        <strong class="text-white">Metadaten, die wir serverseitig speichern:</strong>
       </p>
-    </div>
-
-    <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">7. Deine Rechte</h2>
-      <ul class="list-disc pl-6 space-y-2">
-        <li>Auskunft (Art. 15 DSGVO)</li>
-        <li>Berichtigung (Art. 16 DSGVO)</li>
-        <li>Löschung (Art. 17 DSGVO)</li>
-        <li>Einschränkung (Art. 18 DSGVO)</li>
-        <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
-        <li>Widerspruch (Art. 21 DSGVO)</li>
-        <li>Widerruf erteilter Einwilligungen</li>
+      <ul class="list-disc pl-6 space-y-1 mt-2 text-sm">
+        <li data-i18n="datenschutz.05.meta.01">Zufällige Drop-ID (22 Zeichen, ohne Bezug zum Inhalt)</li>
+        <li data-i18n="datenschutz.05.meta.02">Gesamtgröße des verschlüsselten Blobs</li>
+        <li data-i18n="datenschutz.05.meta.03">Erstellungs- und Ablaufzeitpunkt, gewählte Retention</li>
+        <li data-i18n="datenschutz.05.meta.04">Optional: Burn-Limit (max. Downloads)</li>
+        <li data-i18n="datenschutz.05.meta.05">Download-Zähler + Zeitstempel des ersten/letzten Downloads</li>
+        <li data-i18n="datenschutz.05.meta.06">Wenn eingeloggt: deine Wallet-Adresse als Besitzer (für Dashboard + Quota-Check)</li>
       </ul>
-      <p class="mt-4">
+      <p class="mt-3" data-i18n-html="datenschutz.05.noStore">
+        <strong class="text-white">Keine Speicherung</strong> von: Dateiname, MIME-Type, Inhalt,
+        Empfänger oder verwendeten Schlüsseln. Nach Ablauf der Retention oder manueller Löschung
+        wird das Storj-Objekt unwiderruflich entfernt; die Entschlüsselung ist dann technisch unmöglich.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.06.title">6. Wallet-Login (SIWE)</h2>
+      <p data-i18n-html="datenschutz.06.body">
+        Optional kannst du dich mit einer Ethereum/Avalanche-Wallet (MetaMask o.ä.)
+        per Sign-In With Ethereum einloggen. Dabei wird eine Signatur deiner Wallet-Adresse
+        geprüft — kein Private Key, keine Transaktionshistorie verlässt deinen Browser.
+        Wir setzen einen technisch notwendigen Session-Cookie (<span class="font-mono text-xs">dwid_session</span>,
+        30 Tage Gültigkeit, <span class="font-mono text-xs">HttpOnly; Secure; SameSite=Lax</span>)
+        und speichern in unserer DB die Wallet-Adresse und ggf. deinen Pro-Status.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
+      </p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.07.title">7. Missbrauchsmeldungen</h2>
+      <p data-i18n-html="datenschutz.07.body">
+        Über den Melde-Button auf jeder Download-Seite oder per E-Mail an
+        <a href="mailto:abuse@mkwt-strategy.tech" class="text-neon-500 hover:underline">abuse@mkwt-strategy.tech</a>
+        können illegale Inhalte gemeldet werden. Wir speichern dazu: Drop-ID, Meldegrund,
+        Zeitstempel und — falls angegeben — dein Rückkontakt.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO (rechtliche Verpflichtung gem. DSA).
+        Speicherdauer: 12 Monate nach Bearbeitung.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.08.title">8. Cookies &amp; Tracking</h2>
+      <p data-i18n="datenschutz.08.body">
+        Neben dem SIWE-Session-Cookie (siehe 6.) speichert dein Browser lokal (localStorage)
+        eine optionale E-Mail-Adresse aus der Warteliste sowie eine lokale Liste deiner Drops
+        (nur auf deinem Gerät). Kein Google Analytics, kein Meta Pixel,
+        kein Drittanbieter-Tracking, keine Ad-Cookies.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.09.title">9. Deine Rechte</h2>
+      <ul class="list-disc pl-6 space-y-2">
+        <li data-i18n="datenschutz.09.01">Auskunft (Art. 15 DSGVO)</li>
+        <li data-i18n="datenschutz.09.02">Berichtigung (Art. 16 DSGVO)</li>
+        <li data-i18n="datenschutz.09.03">Löschung (Art. 17 DSGVO)</li>
+        <li data-i18n="datenschutz.09.04">Einschränkung (Art. 18 DSGVO)</li>
+        <li data-i18n="datenschutz.09.05">Datenübertragbarkeit (Art. 20 DSGVO)</li>
+        <li data-i18n="datenschutz.09.06">Widerspruch (Art. 21 DSGVO)</li>
+        <li data-i18n="datenschutz.09.07">Widerruf erteilter Einwilligungen</li>
+      </ul>
+      <p class="mt-4" data-i18n-html="datenschutz.09.contact">
         Anfragen an <a href="mailto:privacy@dwinity.de" class="text-neon-500 hover:underline">privacy@dwinity.de</a>.
       </p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">8. Beschwerderecht</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.10.title">10. Beschwerderecht</h2>
+      <p data-i18n="datenschutz.10.body">
         Beschwerde bei zuständiger Datenschutz-Aufsichtsbehörde:
         [z. B. Bayerisches Landesamt für Datenschutzaufsicht, Promenade 18, 91522 Ansbach].
       </p>
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">9. Stand</h2>
-      <p class="font-mono text-sm">April 2026 · Änderungen vorbehalten</p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.11.title">11. Stand</h2>
+      <p class="font-mono text-sm" data-i18n="datenschutz.11.body">April 2026 · Änderungen vorbehalten</p>
     </div>
   </section>
 </main>
 
 <footer class="border-t border-white/5 py-8 mt-16">
-  <div class="max-w-6xl mx-auto px-6 text-sm text-white/40 font-mono">© 2026 Dead Drop · powered by Dwinity · <a href="impressum.html" class="hover:text-white">Impressum</a></div>
+  <div class="max-w-6xl mx-auto px-6 text-sm text-white/40 font-mono" data-i18n-html="legal.footer.datenschutz">© 2026 Dead Drop · powered by Dwinity · <a href="impressum.html" class="hover:text-white">Impressum</a></div>
 </footer>
+<script src="/i18n.js"></script>
 </body>
 </html>

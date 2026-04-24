@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dragon Rank — Dead Drop</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<meta name="description" content="Freiwilliges Gamification-Programm für aktive Dwinity-Nutzer. Sammle XP, steige im Rang auf und teile Ref-Links." />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+<style>
+  body { background: #05060A; }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} } .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+  .tier-card { transition: border-color 180ms, background 180ms, transform 180ms; }
+  .tier-card.active {
+    border-color: rgba(0,255,157,0.6);
+    background: linear-gradient(135deg, rgba(0,255,157,0.12), rgba(0,229,255,0.05));
+    box-shadow: 0 0 30px rgba(0,255,157,0.18);
+  }
+  .tier-card.locked { opacity: 0.55; }
+  .progress-track { background: rgba(255,255,255,0.06); }
+  .progress-fill {
+    background: linear-gradient(90deg, #00FF9D, #00E5FF, #00FF9D);
+    background-size: 200% 100%;
+    animation: fx-glow-shift 3s ease-in-out infinite;
+    transition: width 800ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+</style>
+</head>
+<body class="font-sans text-white antialiased min-h-screen" data-dragons="1">
+<canvas id="netstream-bg"></canvas>
+
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
+  <div class="max-w-5xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-2">
+    <a href="/" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
+      <span class="truncate">Dead <span class="text-neon-500">Drop</span></span>
+      <span class="ml-1 md:ml-2 px-1.5 md:px-2 py-0.5 rounded-full bg-neon-500/15 text-neon-500 text-[9px] md:text-[10px] font-mono uppercase tracking-widest shrink-0">Dragon Rank</span>
+    </a>
+    <div class="flex items-center gap-1.5 md:gap-2 shrink-0">
+      <a href="/dashboard" class="shrink-0 inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest text-white/70 hover:text-white transition">
+        Dashboard
+      </a>
+      <div class="relative shrink-0">
+        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
+          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"></span>
+          <span id="wallet-btn-label" class="truncate">Wallet</span>
+        </button>
+        <div id="wallet-menu" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-void-900 border border-white/10 shadow-xl p-4 text-sm z-50">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1" data-i18n="nav.walletLabel">Wallet</div>
+          <div id="wallet-menu-addr" class="font-mono text-xs break-all text-white/80 mb-3">—</div>
+          <div id="wallet-menu-pro" class="text-xs mb-4">—</div>
+          <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2" data-i18n="nav.walletDisconnect">// trennen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 relative">
+  <div class="absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[120px] pointer-events-none" style="background:rgba(0,255,157,0.05);"></div>
+
+  <!-- HERO -->
+  <section class="relative text-center mb-10 md:mb-16">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-500/10 text-neon-500 border border-neon-500/30 text-[10px] md:text-xs font-mono uppercase tracking-widest mb-5">
+      <span class="w-1.5 h-1.5 rounded-full bg-neon-500 pulse-dot"></span>
+      <span data-i18n="rank.chip">Optional · Opt-in</span>
+    </div>
+    <h1 class="font-sans text-3xl sm:text-5xl md:text-6xl font-600 leading-[1.1] tracking-tight mb-4">
+      <span class="fx-glow-text" data-i18n="rank.title">Dragon Rank</span>
+    </h1>
+    <p class="text-white/60 text-sm md:text-base max-w-2xl mx-auto leading-relaxed" data-i18n="rank.lead">
+      Ein spielerisches Extra für aktive Nutzer. Jeder Drop, jede Chat-Nachricht und jeder Ref-Invite bringt XP.
+      Mit steigendem Rang unlockst du Perks im Dwinity-Ecosystem.
+    </p>
+    <p class="mt-3 text-[11px] md:text-xs font-mono text-white/40 max-w-xl mx-auto" data-i18n="rank.optInHint">
+      Vollständig opt-in — ohne Aktivierung wird nichts getrackt oder gezählt.
+    </p>
+  </section>
+
+  <!-- GATE: not logged in -->
+  <section id="gate-nologin" class="hidden relative text-center py-12 rounded-2xl border border-white/10 bg-void-900/50">
+    <div class="text-4xl mb-3">🔒</div>
+    <h2 class="font-sans text-xl font-600 mb-2" data-i18n="rank.nologin.title">Wallet-Login erforderlich</h2>
+    <p class="text-white/60 text-sm mb-5 max-w-md mx-auto" data-i18n="rank.nologin.sub">
+      Dragon Rank ist an deine Wallet gebunden. Verbinde dein Wallet um zu sehen was du schon gesammelt hast.
+    </p>
+    <button data-action="connect-wallet" class="px-5 py-2.5 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition text-sm" data-i18n="rank.nologin.connect">
+      Wallet verbinden →
+    </button>
+  </section>
+
+  <!-- GATE: opt-in -->
+  <section id="gate-optin" class="hidden relative">
+    <div class="rounded-3xl border border-neon-500/30 bg-gradient-to-br from-neon-500/8 via-void-900 to-void-900 p-6 md:p-10 mb-8">
+      <div class="max-w-xl">
+        <div class="font-mono text-[10px] md:text-xs uppercase tracking-widest text-neon-500 mb-2" data-i18n="rank.optin.kicker">› Opt-in</div>
+        <h2 class="font-sans text-2xl md:text-3xl font-600 mb-4" data-i18n="rank.optin.title">Aktiviere dein Dragon-Tracking</h2>
+        <p class="text-white/70 text-sm md:text-base leading-relaxed mb-5" data-i18n-html="rank.optin.lead">
+          Dragon Rank ist standardmäßig <strong>aus</strong>. Wenn du aktivierst, passiert folgendes:
+        </p>
+        <ul class="space-y-2 text-sm text-white/70 mb-6">
+          <li class="flex gap-3"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="rank.optin.01">Wir zählen deine bestehenden Drops, Downloads, Chat-Nachrichten und Pro-Aktivierungen — daraus wird dein XP-Stand</span></li>
+          <li class="flex gap-3"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="rank.optin.02">Du bekommst einen einzigartigen Ref-Code zum Teilen</span></li>
+          <li class="flex gap-3"><span class="text-neon-500 shrink-0">✓</span> <span data-i18n="rank.optin.03">Ab bestimmten Rängen kommen Perks (Quota, Free-Pro-Wochen, Commission)</span></li>
+          <li class="flex gap-3"><span class="text-white/40 shrink-0">ℹ</span> <span data-i18n="rank.optin.04">Du kannst jederzeit opt-out (wir löschen dein Rank-Eintrag, nichts bleibt)</span></li>
+        </ul>
+        <button id="opt-in-btn" class="w-full sm:w-auto px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="rank.optin.activate">
+          🐉 Dragon Rank aktivieren
+        </button>
+        <div id="opt-in-error" class="hidden mt-3 text-xs font-mono text-red-400"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main rank panel (after opt-in) -->
+  <section id="rank-panel" class="hidden">
+
+    <!-- Current rank + progress -->
+    <div class="rounded-3xl bg-void-900/80 border border-white/10 p-5 md:p-8 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-5 md:gap-8 items-center">
+        <div class="text-center md:text-left">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2" data-i18n="rank.current">Dein aktueller Rang</div>
+          <div id="current-rank" class="font-sans text-3xl md:text-5xl font-600 fx-glow-text leading-none mb-3">—</div>
+          <div id="current-perk" class="text-sm text-white/60 font-mono">—</div>
+        </div>
+        <div>
+          <div class="flex items-baseline justify-between mb-2 flex-wrap gap-2">
+            <div class="font-mono text-xs text-white/40">
+              <span id="total-xp" class="text-neon-500 font-600 text-lg md:text-xl">0</span> XP
+            </div>
+            <div class="font-mono text-[11px] text-white/50" id="next-rank" data-i18n="rank.nextRank">nächster Rang: —</div>
+          </div>
+          <div class="h-3 rounded-full progress-track overflow-hidden">
+            <div id="progress-bar" class="progress-fill h-full rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ref code -->
+    <div class="rounded-2xl bg-void-900/60 border border-white/10 p-5 md:p-6 mb-6">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-2" data-i18n="rank.ref.kicker">Dein Ref-Code</div>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <code id="ref-code" class="flex-1 min-w-0 px-4 py-3 rounded-lg bg-void-800 border border-white/10 font-mono text-base md:text-lg text-neon-500 tracking-wider break-all select-all">—</code>
+        <button id="copy-ref" class="shrink-0 px-4 py-3 rounded-lg bg-neon-500 hover:bg-neon-600 text-void-950 font-bold text-sm" data-i18n="rank.ref.copy">
+          Link kopieren
+        </button>
+      </div>
+      <p class="mt-3 text-[11px] font-mono text-white/40" data-i18n-html="rank.ref.note">
+        Phase B: Wer via deinem Link signed → du kriegst 10% Commission als XP.
+        <span class="text-white/30">On-chain USDC-Payout kommt für Dragon+ in Phase C.</span>
+      </p>
+    </div>
+
+    <!-- XP breakdown -->
+    <div class="rounded-2xl bg-void-900/60 border border-white/10 p-5 md:p-6 mb-6">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-4" data-i18n="rank.xp.kicker">XP-Aufschlüsselung</div>
+      <div id="xp-breakdown" class="space-y-2 text-sm"></div>
+    </div>
+
+    <!-- Tier ladder -->
+    <div class="rounded-2xl bg-void-900/60 border border-white/10 p-5 md:p-6 mb-6">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-4" data-i18n="rank.ladder.kicker">Rang-Leiter</div>
+      <div id="tier-ladder" class="space-y-2"></div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="rounded-2xl bg-void-900/60 border border-white/10 p-5 md:p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50" data-i18n="rank.leaderboard.kicker">Leaderboard</div>
+          <div class="text-sm text-white/70 font-mono" data-i18n="rank.leaderboard.sub">Top 20 Dragons</div>
+        </div>
+      </div>
+      <div id="leaderboard" class="space-y-1.5"></div>
+    </div>
+
+    <!-- DSGVO: Data export -->
+    <div class="rounded-2xl bg-void-900/40 border border-white/5 p-5 md:p-6">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-2" data-i18n="rank.gdpr.kicker">› DSGVO · Art. 15</div>
+      <div class="font-sans font-600 mb-2" data-i18n="rank.gdpr.title">Meine Daten exportieren</div>
+      <p class="text-xs md:text-sm text-white/60 leading-relaxed mb-4" data-i18n-html="rank.gdpr.text">
+        Alles was wir in <span class="font-mono text-white/80">identity.db</span> über dein Wallet gespeichert haben —
+        Wallet-Row, Sessions, Invoices, Rank-Status, Referrals, Orphan-Payments — als JSON.
+        Für Drops + Chat-Nachrichten: die sind im Browser entschlüsselt sichtbar (Dashboard bzw. Chat-Rooms).
+      </p>
+      <button id="data-export-btn" class="px-4 py-2 rounded-lg bg-void-800 border border-white/15 hover:border-neon-500/40 text-xs font-mono text-white/80 hover:text-white transition" data-i18n="rank.gdpr.export">
+        JSON herunterladen
+      </button>
+      <p class="mt-3 text-[11px] text-white/40 font-mono" data-i18n-html="rank.gdpr.wipe">
+        Komplettes Löschen: <span class="text-red-400">⚠</span>-Button unten rechts (2-Klick-Wipe, unwiderruflich).
+      </p>
+    </div>
+  </section>
+</main>
+
+<!-- scripts -->
+<script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/ref-capture.js" defer></script>
+<script src="/auth.js"></script>
+<script src="/panic.js" defer></script>
+<script src="/rank.js"></script>
+<script src="/netstream.js"></script>
+<script src="/dragons.js" defer></script>
+<script src="/i18n.js"></script>
+</body>
+</html>
