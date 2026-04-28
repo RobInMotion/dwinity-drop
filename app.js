@@ -5,6 +5,11 @@
   let IS_PRO = false;
   const WARN_BUNDLE = 80 * 1024 * 1024;
 
+  // Files >= CHUNKED_THRESHOLD use S3 multipart + stream-encryption
+  // (keeps peak RAM bounded instead of O(filesize)).
+  const CHUNKED_THRESHOLD = 50 * 1024 * 1024;   // 50 MB
+  const CHUNK_SIZE = 5 * 1024 * 1024;           // plaintext per chunk (5 MB = S3 min)
+
   const $ = (id) => document.getElementById(id);
   const zone = $("dropzone");
   const fileInput = $("file-input");
@@ -94,6 +99,154 @@
     out.set(ciphertext, iv.length);
     const rawKey = new Uint8Array(await crypto.subtle.exportKey("raw", key));
     return { encrypted: out, rawKey };
+  }
+
+  // ——— Chunked / multipart upload ———
+  //
+  // Envelope format (per chunk):   [IV(12) bytes] [AES-GCM ciphertext+tag]
+  // AAD per chunk = chunk_index as 4-byte big-endian (prevents reordering)
+  // Key is generated once per drop; shared via URL fragment (#k=…).
+
+  function aadFor(index) {
+    const a = new Uint8Array(4);
+    new DataView(a.buffer).setUint32(0, index, false); // big-endian
+    return a;
+  }
+
+  function putChunkWithProgress(url, body, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      currentXhr = xhr;
+      xhr.open("PUT", url);
+      xhr.setRequestHeader("Content-Type", "application/octet-stream");
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(e.loaded, e.total);
+      };
+      xhr.onload = () => {
+        currentXhr = null;
+        if (xhr.status >= 200 && xhr.status < 300) {
+          // ETag comes back in quotes: "abc123" — Storj echoes S3 behavior
+          const etag = xhr.getResponseHeader("ETag") || "";
+          resolve(etag);
+        } else {
+          reject(new Error("Chunk-Upload fehlgeschlagen (HTTP " + xhr.status + ")"));
+        }
+      };
+      xhr.onerror = () => {
+        currentXhr = null;
+        reject(new Error("Netzwerk-Fehler während Chunk-Upload"));
+      };
+      xhr.onabort = () => {
+        currentXhr = null;
+        const err = new Error("abgebrochen");
+        err.aborted = true;
+        reject(err);
+      };
+      xhr.send(body);
+    });
+  }
+
+  async function chunkedUpload(blob, body, totalSize) {
+    // 1. Init multipart
+    setProgress(4, "// Multipart initialisieren …");
+    const initRes = await fetch(API + "/upload/multipart/init", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+    if (initRes.status === 429) throw new Error("Zu viele Uploads — kurz warten.");
+    if (!initRes.ok) throw new Error("Init fehlgeschlagen (HTTP " + initRes.status + ")");
+    const init = await initRes.json();
+    const dropId = init.drop_id;
+    const uploadId = init.upload_id;
+
+    // 2. Generate key once
+    const key = await crypto.subtle.generateKey(
+      { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
+    );
+    const rawKey = new Uint8Array(await crypto.subtle.exportKey("raw", key));
+
+    // 3. Encrypt + upload each chunk sequentially
+    const numChunks = Math.ceil(blob.size / CHUNK_SIZE);
+    const parts = [];
+    let uploadedBytes = 0;
+    // Each ciphertext chunk = 12 (IV) + plaintext + 16 (GCM tag)
+    const totalCtBytes = blob.size + numChunks * 28;
+
+    try {
+      for (let i = 0; i < numChunks; i++) {
+        if (aborted) throw Object.assign(new Error("abgebrochen"), { aborted: true });
+
+        const offset = i * CHUNK_SIZE;
+        const slice = blob.slice(offset, Math.min(offset + CHUNK_SIZE, blob.size));
+        const plain = new Uint8Array(await slice.arrayBuffer());
+
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ct = new Uint8Array(await crypto.subtle.encrypt(
+          { name: "AES-GCM", iv, additionalData: aadFor(i) }, key, plain
+        ));
+        const envelope = new Uint8Array(iv.length + ct.length);
+        envelope.set(iv, 0);
+        envelope.set(ct, iv.length);
+
+        // Get signed URL for this part
+        const partRes = await fetch(API + "/upload/multipart/part", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            drop_id: dropId,
+            upload_id: uploadId,
+            part_number: i + 1,
+          }),
+        });
+        if (!partRes.ok) throw new Error("Part-URL-Fehler (HTTP " + partRes.status + ")");
+        const partInfo = await partRes.json();
+
+        const chunkStartBytes = uploadedBytes;
+        const etag = await putChunkWithProgress(
+          partInfo.url, envelope,
+          (loaded, _total) => {
+            const cumulative = chunkStartBytes + loaded;
+            const frac = cumulative / totalCtBytes;
+            const pct = 8 + Math.round(frac * 87);
+            setProgress(
+              pct,
+              "// Chunk " + (i + 1) + "/" + numChunks + " · " +
+              fmtBytes(cumulative) + " / " + fmtBytes(totalCtBytes)
+            );
+          }
+        );
+        uploadedBytes += envelope.length;
+        parts.push({ PartNumber: i + 1, ETag: etag });
+      }
+
+      // 4. Complete
+      setProgress(97, "// Upload finalisieren …");
+      const completeRes = await fetch(API + "/upload/multipart/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          drop_id: dropId, upload_id: uploadId, parts,
+        }),
+      });
+      if (!completeRes.ok) throw new Error("Complete fehlgeschlagen (HTTP " + completeRes.status + ")");
+
+      return { id: dropId, rawKey, retention_hours: body.retention_hours };
+    } catch (err) {
+      // Best-effort abort — sweeper will clean up anyway after 6h
+      try {
+        await fetch(API + "/upload/multipart/abort", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ drop_id: dropId, upload_id: uploadId }),
+        });
+      } catch {}
+      throw err;
+    }
   }
 
   function putWithProgress(url, body, onProgress) {
@@ -190,7 +343,14 @@
     if (!emailGate) return true;  // no gate element = legacy page, bypass
 
     return new Promise((resolve) => {
-      const onCancel = () => { cleanup(); hideEmailGate(); resolve(false); };
+      const onCancel = (e) => {
+        const wasCloseBtn = e && e.target && e.target.closest && e.target.closest("#email-gate-close");
+        cleanup(); hideEmailGate(); resolve(false);
+        // If user hit the "lieber Wallet verbinden" button, jump into SIWE
+        if (wasCloseBtn && typeof window.connectWallet === "function") {
+          setTimeout(() => window.connectWallet(), 50);
+        }
+      };
       const onSubmit = async (e) => {
         e.preventDefault();
         emailError.classList.add("hidden");
@@ -266,41 +426,64 @@
         throw new Error("Nach Bündelung " + fmtBytes(blob.size) + " — Max " + fmtBytes(MAX));
       }
 
-      const { encrypted, rawKey } = await encryptBlob(blob);
-      if (aborted) throw Object.assign(new Error("abgebrochen"), { aborted: true });
+      const useChunked = blob.size >= CHUNKED_THRESHOLD;
+      let dropId, rawKey, ctByteCount;
 
-      setProgress(12, "// Signed-URL anfordern …");
-      const body = {
-        size: encrypted.length,
-        content_type: "application/octet-stream",
-        retention_hours: retentionHours,
-      };
-      if (burn) body.max_downloads = 1;
-      const r = await fetch(API + "/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (r.status === 429) throw new Error("Zu viele Uploads — kurz warten und nochmal.");
-      if (!r.ok) throw new Error("API-Fehler (HTTP " + r.status + ")");
-      const payload = await r.json();
+      if (useChunked) {
+        const body = {
+          size: blob.size + Math.ceil(blob.size / CHUNK_SIZE) * 28,
+          content_type: "application/octet-stream",
+          retention_hours: retentionHours,
+        };
+        if (burn) body.max_downloads = 1;
+        const res = await chunkedUpload(blob, body, blob.size);
+        dropId = res.id;
+        rawKey = res.rawKey;
+        ctByteCount = body.size;
+      } else {
+        const { encrypted, rawKey: k } = await encryptBlob(blob);
+        if (aborted) throw Object.assign(new Error("abgebrochen"), { aborted: true });
 
-      await putWithProgress(payload.url, encrypted, (frac) => {
-        const pct = 12 + Math.round(frac * 83);
-        setProgress(pct, "// Upload " + (frac * 100).toFixed(1) + "%");
-      });
+        setProgress(12, "// Signed-URL anfordern …");
+        const body = {
+          size: encrypted.length,
+          content_type: "application/octet-stream",
+          retention_hours: retentionHours,
+        };
+        if (burn) body.max_downloads = 1;
+        const r = await fetch(API + "/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(body),
+        });
+        if (r.status === 429) throw new Error("Zu viele Uploads — kurz warten und nochmal.");
+        if (!r.ok) throw new Error("API-Fehler (HTTP " + r.status + ")");
+        const payload = await r.json();
+
+        await putWithProgress(payload.url, encrypted, (frac) => {
+          const pct = 12 + Math.round(frac * 83);
+          setProgress(pct, "// Upload " + (frac * 100).toFixed(1) + "%");
+        });
+
+        dropId = payload.id;
+        rawKey = k;
+        ctByteCount = encrypted.length;
+      }
 
       setProgress(100, "// fertig");
 
       const keyB64 = u8ToB64Url(rawKey);
       const nameB64 = u8ToB64Url(new TextEncoder().encode(name));
-      const share = location.origin + "/d/" + payload.id + "#k=" + keyB64 + "&n=" + nameB64;
+      const share = location.origin + "/d/" + dropId + "#k=" + keyB64 + "&n=" + nameB64 +
+        (useChunked ? "&v=2&c=" + CHUNK_SIZE : "");
 
       shareUrlEl.value = share;
       metaEl.textContent =
         (bundled ? files.length + " Dateien · " : "1 Datei · ") +
-        fmtBytes(encrypted.length) + " verschlüsselt · " +
-        "verfügbar " + fmtRetention(payload.retention_hours || retentionHours) +
+        fmtBytes(ctByteCount) + " verschlüsselt · " +
+        (useChunked ? "chunked · " : "") +
+        "verfügbar " + fmtRetention(retentionHours) +
         (burn ? " · 🔥 Burn-after-Read" : "");
       renderQR(share);
       result.classList.remove("hidden");
@@ -314,7 +497,7 @@
           if (me.address) {
             const key = "dwinity_drop_meta_" + me.address.toLowerCase();
             const store = JSON.parse(localStorage.getItem(key) || "{}");
-            store[payload.id] = { filename: name, share_link: share, ts: Date.now() };
+            store[dropId] = { filename: name, share_link: share, ts: Date.now() };
             localStorage.setItem(key, JSON.stringify(store));
           }
         }

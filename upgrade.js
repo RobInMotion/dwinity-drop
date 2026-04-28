@@ -22,6 +22,10 @@
   const planRadios = modal.querySelectorAll('input[name="upgrade-plan"]');
   const assetRadios = modal.querySelectorAll('input[name="upgrade-asset"]');
   const createBtn = document.getElementById("upgrade-create-btn");
+  const promoInput = document.getElementById("upgrade-promo-input");
+  const promoCheckBtn = document.getElementById("upgrade-promo-check");
+  const promoFeedback = document.getElementById("upgrade-promo-feedback");
+  let validatedPromo = null;  // {code, discount_pct, final_display, asset, plan}
 
   // step 2
   const addrEl = document.getElementById("upgrade-receiver");
@@ -61,12 +65,27 @@
 
     const monthlyEl = modal.querySelector('[data-price="monthly"]');
     const yearlyEl = modal.querySelector('[data-price="yearly"]');
+    const lifetimeEl = modal.querySelector('[data-price="lifetime"]');
+    const monthlyPlusEl = modal.querySelector('[data-price="monthly_plus"]');
+    const yearlyPlusEl = modal.querySelector('[data-price="yearly_plus"]');
     if (src && src.enabled && src.monthly_display) {
       monthlyEl.innerHTML = '<span class="font-600">' + src.monthly_display + '</span> ' + suffix;
       yearlyEl.innerHTML = '<span class="font-600">' + src.yearly_display + '</span> ' + suffix;
+      if (lifetimeEl && src.lifetime_display) {
+        lifetimeEl.innerHTML = '<span class="font-600">' + src.lifetime_display + '</span> ' + suffix;
+      }
+      if (monthlyPlusEl && src.monthly_plus_display) {
+        monthlyPlusEl.innerHTML = '<span class="font-600">' + src.monthly_plus_display + '</span> ' + suffix;
+      }
+      if (yearlyPlusEl && src.yearly_plus_display) {
+        yearlyPlusEl.innerHTML = '<span class="font-600">' + src.yearly_plus_display + '</span> ' + suffix;
+      }
     } else {
       monthlyEl.textContent = "—";
       yearlyEl.textContent = "—";
+      if (lifetimeEl) lifetimeEl.textContent = "—";
+      if (monthlyPlusEl) monthlyPlusEl.textContent = "—";
+      if (yearlyPlusEl) yearlyPlusEl.textContent = "—";
     }
 
     // DWIN radio: enable/disable based on quote
@@ -77,11 +96,28 @@
       dwinRadio.disabled = false;
       dwinLabel.classList.remove("cursor-not-allowed", "opacity-60", "bg-void-800/50");
       dwinLabel.classList.add("bg-void-800", "hover:border-neon-500/40");
-      if (dwinNote) dwinNote.textContent = "Avalanche C-Chain · Ecosystem-native";
+      if (dwinNote) dwinNote.textContent = "Avalanche C-Chain · 25 % Ecosystem-Rabatt";
     } else {
       dwinRadio.disabled = true;
       dwinLabel.classList.add("cursor-not-allowed", "opacity-60");
       if (dwinNote) dwinNote.textContent = quote.dwin && quote.dwin.note || "DWIN-Payment bald verfügbar";
+    }
+
+    // Peg disclosure: show only when DWIN is the active asset (pre-DEX honesty)
+    const peg = quote.dwin && quote.dwin.peg_note;
+    let pegEl = document.getElementById("upgrade-dwin-peg");
+    const activeAsset = (Array.from(assetRadios).find(r => r.checked) || {}).value;
+    if (peg && activeAsset === "DWIN") {
+      if (!pegEl) {
+        pegEl = document.createElement("div");
+        pegEl.id = "upgrade-dwin-peg";
+        pegEl.className = "mt-2 p-2.5 rounded-lg bg-yellow-500/5 border border-yellow-500/20 text-[11px] font-mono text-yellow-200/80 leading-relaxed";
+        dwinLabel.after(pegEl);
+      }
+      pegEl.textContent = peg;
+      pegEl.classList.remove("hidden");
+    } else if (pegEl) {
+      pegEl.classList.add("hidden");
     }
   }
 
@@ -135,6 +171,47 @@
     return `ethereum:${inv.contract}@${inv.chain_id}/transfer?address=${inv.receiver}&uint256=${inv.amount_atomic}`;
   }
 
+  async function checkPromo() {
+    promoFeedback.classList.add("hidden");
+    validatedPromo = null;
+    const code = (promoInput.value || "").trim().toUpperCase();
+    if (!code) return;
+    const me = await getMe();
+    if (!me || !me.address) { show(notLogged); return; }
+    const plan = Array.from(planRadios).find(r => r.checked).value;
+    const asset = Array.from(assetRadios).find(r => r.checked).value;
+    promoCheckBtn.disabled = true;
+    promoCheckBtn.textContent = "// prüfe …";
+    try {
+      const r = await fetch(API + "/payment/promo/check", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, asset, plan }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        promoFeedback.className = "mt-2 text-xs font-mono text-red-400";
+        promoFeedback.textContent = "// " + (data.detail || "Code ungültig");
+        promoFeedback.classList.remove("hidden");
+        return;
+      }
+      validatedPromo = { ...data, code };
+      promoFeedback.className = "mt-2 text-xs font-mono text-neon-500";
+      const usesTxt = data.uses_left !== null ? ` · noch ${data.uses_left} Einsätze` : "";
+      promoFeedback.textContent =
+        `// ✓ ${data.discount_pct}% Rabatt · ${data.final_display} ${asset} statt ${data.base_display} ${asset}${usesTxt}`;
+      promoFeedback.classList.remove("hidden");
+    } catch (e) {
+      promoFeedback.className = "mt-2 text-xs font-mono text-red-400";
+      promoFeedback.textContent = "// Netzwerkfehler";
+      promoFeedback.classList.remove("hidden");
+    } finally {
+      promoCheckBtn.disabled = false;
+      promoCheckBtn.textContent = "Prüfen";
+    }
+  }
+
   async function createInvoice() {
     setErr("");
     const me = await getMe();
@@ -145,19 +222,26 @@
 
     const plan = Array.from(planRadios).find(r => r.checked).value;
     const asset = Array.from(assetRadios).find(r => r.checked).value;
+    // Promo is only applied if it was pre-validated for this exact asset+plan combo
+    const promoCode = validatedPromo
+      && validatedPromo.asset === asset
+      && validatedPromo.plan === plan
+      ? validatedPromo.code : null;
 
     createBtn.disabled = true;
     createBtn.textContent = "// erzeuge Invoice …";
     try {
+      const body = { plan, asset };
+      if (promoCode) body.promo_code = promoCode;
       const r = await fetch(API + "/payment/invoice", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, asset }),
+        body: JSON.stringify(body),
       });
       if (!r.ok) {
-        const body = await r.text();
-        throw new Error("Invoice-Erstellung fehlgeschlagen: " + body);
+        const bodyText = await r.text();
+        throw new Error("Invoice-Erstellung fehlgeschlagen: " + bodyText);
       }
       currentInvoice = await r.json();
       showStep2(currentInvoice);
@@ -210,18 +294,21 @@
   async function onPaid(inv) {
     hide(step2);
     show(step3);
-    const until = new Date((inv.paid_at + inv.duration_days * 86400) * 1000);
+    // Source of truth is /me.pro_until (accounts for pre-existing Pro
+    // that the matcher extends instead of replaces).
+    let proUntil = inv.paid_at + inv.duration_days * 86400; // fallback
+    try {
+      const me = await (await fetch(API + "/me", { credentials: "include" })).json();
+      if (me && me.pro_until) proUntil = me.pro_until;
+      const evt = new CustomEvent("dwinity:pro-updated", { detail: me });
+      window.dispatchEvent(evt);
+    } catch {}
+    const until = new Date(proUntil * 1000);
     doneMsg.innerHTML =
       "Pro aktiv bis <span class='text-neon-500 font-semibold'>" +
       until.toLocaleDateString("de-DE") + "</span>. " +
       "TX: <a href='https://snowtrace.io/tx/" + inv.paid_tx + "' target='_blank' rel='noopener' class='text-neon-500 hover:underline font-mono text-xs'>" +
       inv.paid_tx.slice(0, 10) + "…</a>";
-    // refresh wallet button state (auth.js re-fetches /me on next focus; we trigger directly)
-    try {
-      const me = await (await fetch(API + "/me", { credentials: "include" })).json();
-      const evt = new CustomEvent("dwinity:pro-updated", { detail: me });
-      window.dispatchEvent(evt);
-    } catch {}
   }
 
   async function payViaWallet() {
@@ -302,9 +389,28 @@
   cancelBtn.addEventListener("click", () => { stopPolling(); resetToStep1(); });
   createBtn.addEventListener("click", createInvoice);
   payBtn.addEventListener("click", payViaWallet);
+  if (promoCheckBtn) promoCheckBtn.addEventListener("click", checkPromo);
+  if (promoInput) {
+    promoInput.addEventListener("input", () => {
+      // Invalidate previous validation on edit
+      validatedPromo = null;
+      promoFeedback.classList.add("hidden");
+    });
+    promoInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); checkPromo(); }
+    });
+  }
 
   // Re-render prices when user flips asset
-  assetRadios.forEach((r) => r.addEventListener("change", () => renderPrices(currentQuote)));
+  assetRadios.forEach((r) => r.addEventListener("change", () => {
+    renderPrices(currentQuote);
+    validatedPromo = null;
+    if (promoFeedback) promoFeedback.classList.add("hidden");
+  }));
+  planRadios.forEach((r) => r.addEventListener("change", () => {
+    validatedPromo = null;
+    if (promoFeedback) promoFeedback.classList.add("hidden");
+  }));
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal();

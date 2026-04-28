@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dead Drop — Egress Top-up</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+<style>
+  body { background: #05060A; }
+  .stat-card { padding: 1rem 1.25rem; border-radius: 0.75rem; background: #0A0B10; border: 1px solid rgba(255,255,255,0.08); }
+</style>
+</head>
+<body class="text-white/90 font-sans">
+
+<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 md:gap-2">
+    <a href="/" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
+      <span class="truncate">Dead <span class="text-neon-500">Drop</span></span>
+      <span class="ml-1.5 text-[10px] text-white/40 font-mono uppercase tracking-widest hidden md:inline">Top-up</span>
+    </a>
+    <div class="flex items-center gap-1 md:gap-2 shrink-0">
+      <a href="/dashboard" class="shrink-0 inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/80 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition">
+        Dashboard
+      </a>
+      <div class="relative shrink-0">
+        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
+          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"></span>
+          <span id="wallet-btn-label" class="truncate">Wallet</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="pt-20 md:pt-28 pb-16 max-w-3xl mx-auto px-4 md:px-6">
+
+  <!-- Needs login -->
+  <section id="gate" class="hidden text-center py-20">
+    <h1 class="font-sans text-3xl font-600 mb-3" data-i18n="topup.gate.title">Egress Top-up</h1>
+    <p class="text-white/60 mb-6" data-i18n="topup.gate.sub">Verbinde deine Wallet, um Egress-Credits zu kaufen.</p>
+    <button data-action="connect-wallet" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="topup.gate.connect">
+      Wallet verbinden →
+    </button>
+  </section>
+
+  <!-- Main panel -->
+  <section id="panel" class="hidden">
+    <div class="mb-6">
+      <div class="font-mono text-[11px] uppercase tracking-widest text-neon-500 mb-2" data-i18n="topup.kicker">Pay-per-Use</div>
+      <h1 class="font-sans text-3xl md:text-4xl font-600 tracking-tight" data-i18n="topup.title">Egress-Credits aufladen</h1>
+      <p class="text-white/60 mt-2 text-sm md:text-base" data-i18n="topup.intro">
+        Pro-Monatscap aufgebraucht? Kaufe zusätzliche Egress-Bytes mit USDC oder DWIN auf Avalanche C-Chain.
+        Credits sind permanent — verfallen nicht zum Monatswechsel.
+      </p>
+    </div>
+
+    <!-- Current state -->
+    <div id="current-state" class="stat-card mb-6 text-sm font-mono">
+      <div class="text-white/40 mb-1 text-[10px] uppercase tracking-widest" data-i18n="topup.currentState">Aktueller Stand</div>
+      <div id="current-state-body" class="text-white/70">// lade …</div>
+    </div>
+
+    <!-- Step 1: choose -->
+    <div id="step-choose" class="stat-card mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2" data-i18n="topup.asset">Asset</label>
+          <div class="flex gap-2">
+            <label class="flex-1 cursor-pointer">
+              <input type="radio" name="topup-asset" value="USDC" checked class="sr-only peer" />
+              <div class="px-4 py-3 rounded-xl border border-white/10 peer-checked:border-neon-500/60 peer-checked:bg-neon-500/5 text-center text-sm font-mono transition">
+                USDC
+              </div>
+            </label>
+            <label class="flex-1 cursor-pointer" id="topup-dwin-label">
+              <input type="radio" name="topup-asset" value="DWIN" class="sr-only peer" />
+              <div class="px-4 py-3 rounded-xl border border-white/10 peer-checked:border-neon-500/60 peer-checked:bg-neon-500/5 text-center text-sm font-mono transition">
+                DWIN <span class="text-[9px] block text-neon-500 normal-case" data-i18n="topup.dwinBonus">+40 % Bonus</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2">
+            <span data-i18n="topup.volume">Egress-Volumen</span> <span id="gb-display" class="text-neon-500 ml-1">100 GB</span>
+          </label>
+          <input id="topup-gb" type="range" min="25" max="10000" step="25" value="100" class="w-full accent-neon-500" />
+          <div class="flex justify-between text-[10px] font-mono text-white/40 mt-1">
+            <span>25 GB</span>
+            <span>10 TB</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="quote-box" class="mt-5 p-4 rounded-xl bg-void-800 border border-white/5 font-mono text-sm">
+        <div class="flex items-center justify-between text-white/60 mb-1">
+          <span data-i18n="topup.quote.volume">Volumen</span>
+          <span id="quote-gb" class="text-white">— GB</span>
+        </div>
+        <div class="flex items-center justify-between text-white/60 mb-1">
+          <span data-i18n="topup.quote.price">Preis</span>
+          <span id="quote-amount" class="text-neon-500 text-base">— USDC</span>
+        </div>
+        <div class="flex items-center justify-between text-[10px] text-white/40">
+          <span data-i18n="topup.quote.chain">Kette</span>
+          <span>Avalanche C-Chain</span>
+        </div>
+        <div id="quote-note" class="mt-2 text-[11px] text-white/50"></div>
+      </div>
+
+      <div class="mt-5 flex gap-2">
+        <button id="topup-create-btn" class="flex-1 px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="topup.cta">
+          Top-up erstellen →
+        </button>
+      </div>
+      <div id="topup-error" class="hidden mt-3 text-xs font-mono text-red-400"></div>
+    </div>
+
+    <!-- Step 2: pay -->
+    <div id="step-pay" class="stat-card mb-6 hidden">
+      <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-2" data-i18n="topup.step2.kicker">Schritt 2 · Bezahlen</div>
+      <div class="text-sm text-white/70 mb-4" data-i18n="topup.step2.instructions">
+        Sende den exakten Betrag an die Empfänger-Adresse. Der genaue Betrag enthält einen
+        Cent-Tail zur eindeutigen Zuordnung — nicht runden, nicht abändern.
+      </div>
+
+      <div class="space-y-3 text-sm font-mono">
+        <div class="flex justify-between gap-3 flex-wrap">
+          <span class="text-white/40" data-i18n="topup.pay.receiver">Empfänger</span>
+          <span id="pay-receiver" class="text-white break-all text-right">—</span>
+        </div>
+        <div class="flex justify-between gap-3 flex-wrap">
+          <span class="text-white/40" data-i18n="topup.pay.contract">Token-Contract</span>
+          <span id="pay-contract" class="text-white break-all text-right">—</span>
+        </div>
+        <div class="flex justify-between gap-3 flex-wrap items-baseline">
+          <span class="text-white/40" data-i18n="topup.pay.amount">Genauer Betrag</span>
+          <span id="pay-amount" class="text-neon-500 text-base">—</span>
+        </div>
+        <div id="pay-status" class="text-[11px] text-white/60"></div>
+      </div>
+
+      <div class="mt-5 flex gap-2 flex-wrap">
+        <button id="pay-wallet-btn" class="flex-1 px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition min-w-[200px]" data-i18n="topup.pay.cta">
+          Mit Wallet bezahlen →
+        </button>
+        <button id="pay-cancel-btn" class="px-4 py-3 rounded-xl bg-void-800 border border-white/10 text-white/70 hover:text-white text-sm font-mono" data-i18n="topup.pay.cancel">
+          Abbrechen
+        </button>
+      </div>
+      <div id="pay-error" class="hidden mt-3 text-xs font-mono text-red-400"></div>
+    </div>
+
+    <!-- Step 3: done -->
+    <div id="step-done" class="stat-card mb-6 hidden text-center">
+      <div class="text-4xl mb-3">⚡</div>
+      <h2 class="font-sans text-2xl font-600 mb-2" data-i18n="topup.done.title">Credits gutgeschrieben</h2>
+      <div id="done-summary" class="text-white/60 text-sm font-mono mb-5">—</div>
+      <a href="/dashboard" class="inline-flex items-center px-5 py-3 rounded-xl bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="topup.done.cta">
+        Zum Dashboard →
+      </a>
+    </div>
+  </section>
+</main>
+
+<script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/auth.js"></script>
+<script src="/topup.js"></script>
+</body>
+</html>

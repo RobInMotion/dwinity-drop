@@ -60,7 +60,7 @@
       </a>
       <a href="/#dropzone" title="Neuer Drop" aria-label="Neuer Drop" class="shrink-0 inline-flex items-center gap-1 px-2.5 md:px-4 py-1.5 md:py-2 rounded-full bg-neon-500 text-void-950 hover:bg-neon-600 text-xs md:text-sm font-bold transition">
         <span class="md:hidden text-base leading-none">+</span>
-        <span class="hidden md:inline">+ Neuer Drop</span>
+        <span class="hidden md:inline" data-i18n="dash.newDrop">+ Neuer Drop</span>
       </a>
       <div class="relative shrink-0">
         <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
@@ -71,7 +71,7 @@
           <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1">Wallet</div>
           <div id="wallet-menu-addr" class="font-mono text-xs break-all text-white/80 mb-3">—</div>
           <div id="wallet-menu-pro" class="text-xs mb-3">—</div>
-          <a href="/rank" class="block mb-3 text-xs font-mono text-white/60 hover:text-neon-500 transition">🐉 Dragon Rank ansehen →</a>
+          <a href="/rank" class="block mb-3 text-xs font-mono text-white/60 hover:text-neon-500 transition" data-i18n="dash.viewRank">🐉 Dragon Rank ansehen →</a>
           <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2">// trennen</a>
         </div>
       </div>
@@ -117,6 +117,9 @@
         <a href="/#preise" class="text-neon-500 hover:underline" data-i18n="dash.proLink">· Pro</a>
       </div>
     </div>
+
+    <!-- Tier Hero Banner — populated by dashboard-tier-hero.js -->
+    <section id="tier-hero" class="hidden mb-5 md:mb-8 rounded-2xl overflow-hidden border relative"></section>
 
     <!-- Hero: Quota ring + Stats grid -->
     <section class="fx-aurora rounded-3xl bg-void-900/85 backdrop-blur border border-white/10 p-4 md:p-8 mb-5 md:mb-8">
@@ -169,6 +172,32 @@
       </div>
     </section>
 
+    <!-- Egress meter (Pay-per-Use) -->
+    <section id="egress-section" class="hidden mb-6 md:mb-8">
+      <div class="p-4 md:p-5 rounded-2xl bg-void-900/60 border border-white/10">
+        <div class="flex items-baseline justify-between gap-2 flex-wrap mb-3">
+          <div>
+            <div class="font-mono text-[10px] uppercase tracking-widest text-white/50" data-i18n="dash.egress.kicker">Egress · 30-Tage-Fenster</div>
+            <div class="text-xs md:text-sm text-white/60 mt-0.5" data-i18n="dash.egress.sub">Download-Volumen, das deine Empfänger durch deine Drops gezogen haben</div>
+          </div>
+          <a href="/topup" class="px-3 py-1.5 rounded-lg bg-neon-500 text-void-950 text-xs font-bold hover:bg-neon-600 transition shrink-0" data-i18n="dash.egress.topupBtn">
+            + Top-up
+          </a>
+        </div>
+        <div class="flex items-center justify-between text-xs font-mono mb-1.5">
+          <span class="text-white/70"><span id="egress-used">—</span> / <span id="egress-quota">—</span></span>
+          <span class="text-neon-500"><span id="egress-credits">+0 GB</span> <span data-i18n="dash.egress.credits">Credits</span></span>
+        </div>
+        <div class="h-2 rounded-full bg-void-800 overflow-hidden">
+          <div id="egress-bar" class="h-full bg-gradient-to-r from-neon-500 to-cyan-400 transition-all duration-700" style="width: 0%"></div>
+        </div>
+        <div class="flex items-center justify-between mt-2 text-[10px] font-mono text-white/40">
+          <span><span data-i18n="dash.egress.resetIn">Reset in</span> <span id="egress-reset-in">—</span></span>
+          <span id="egress-pct">0 %</span>
+        </div>
+      </div>
+    </section>
+
     <!-- Drops section -->
     <section class="mb-6 md:mb-8">
       <div class="flex items-center justify-between mb-4">
@@ -204,7 +233,7 @@
         <div class="p-4 md:p-5 text-[11px] text-white/40 leading-relaxed" data-i18n-html="dash.fragmentMap.text">
           Jeder Drop wird per Erasure-Coding <span class="text-white/60">29 of 80</span> auf Storj-Nodes weltweit verteilt.
           Klick einen Drop oben an → die relevanten Fragment-Nodes leuchten auf.
-          <span class="text-white/30">Darstellung repräsentativ — echte Node-Koordinaten sind nicht öffentlich.</span>
+          <span class="text-white/30" data-i18n="dash.nodemap.disclaimer">Darstellung repräsentativ — echte Node-Koordinaten sind nicht öffentlich.</span>
         </div>
         <div id="drop-map" class="min-h-[320px] md:min-h-[360px]"></div>
       </div>
@@ -235,6 +264,8 @@
 <script src="/auth.js"></script>
 <script src="/panic.js" defer></script>
 <script src="/dashboard.js"></script>
+<script src="/dashboard-egress.js" defer></script>
+<script src="/dashboard-tier-hero.js" defer></script>
 <script src="/netstream.js"></script>
 <script src="/popup.js" defer></script>
 <script src="/i18n.js"></script>

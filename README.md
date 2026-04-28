@@ -2,7 +2,7 @@
 
 Zero-Knowledge File-Transfer auf Storj DCS. Landing-Page-Phase, MVP folgt.
 
-- **Domain:** drop.mkwt-strategy.tech
+- **Domain:** deaddrop.digital
 - **Stack:** Static HTML + Tailwind CDN
 - **Deployment:** Hostinger VPS (srv1387332.hstgr.cloud)
 

@@ -169,6 +169,38 @@
     }
   }
 
+  function renderPendingShareBanner() {
+    let pending;
+    try { pending = localStorage.getItem("dd_pending_share"); } catch { return; }
+    if (!pending) return;
+    let existing = document.getElementById("pending-share-banner");
+    if (existing) existing.remove();
+    const banner = document.createElement("div");
+    banner.id = "pending-share-banner";
+    banner.className = "mb-5 p-4 rounded-xl bg-gradient-to-r from-neon-500/15 to-cyan-400/10 border border-neon-500/40 flex items-center justify-between gap-3 flex-wrap";
+    const labelReady = t("chat.share.ready", "Drop-Link bereit");
+    const labelChoose = t("chat.share.choose", "Wähle einen Room ↓");
+    const labelCancel = t("chat.share.cancel", "verwerfen");
+    banner.innerHTML =
+      '<div class="flex items-center gap-3 min-w-0 flex-1">' +
+        '<div class="shrink-0 w-9 h-9 rounded-lg bg-neon-500/20 grid place-items-center text-neon-500 text-base">⚡</div>' +
+        '<div class="min-w-0">' +
+          '<div class="font-mono text-[10px] uppercase tracking-widest text-neon-500">' + escapeHtml(labelReady) + '</div>' +
+          '<div class="text-xs text-white/70 font-mono truncate">' + escapeHtml(pending) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="flex gap-2 shrink-0">' +
+        '<span class="text-[11px] font-mono text-white/60">' + escapeHtml(labelChoose) + '</span>' +
+        '<button id="pending-share-cancel" class="text-[11px] font-mono text-white/40 hover:text-red-400 underline underline-offset-2">' + escapeHtml(labelCancel) + '</button>' +
+      '</div>';
+    listEl.parentNode.insertBefore(banner, listEl);
+    const cancelBtn = document.getElementById("pending-share-cancel");
+    if (cancelBtn) cancelBtn.addEventListener("click", () => {
+      try { localStorage.removeItem("dd_pending_share"); } catch {}
+      banner.remove();
+    });
+  }
+
   async function boot() {
     const me = await loadMe();
     if (!me || !me.address) {
@@ -179,6 +211,7 @@
     currentAddress = me.address;
     gate.classList.add("hidden");
     panel.classList.remove("hidden");
+    renderPendingShareBanner();
     await loadRooms();
 
     createBtn.addEventListener("click", openModal);

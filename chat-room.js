@@ -139,6 +139,43 @@
 
   // ---------- Rendering ----------
 
+  // Detect Dead Drop share-links (own domain only) and render as rich cards.
+  // Pattern: https://<host>/d/<id>#k=<key>[&v=<v>&n=<name>...]
+  const DROP_LINK_RE = /(https?:\/\/(?:[\w-]+\.)*mkwt-strategy\.tech\/d\/[\w-]+#[^\s<]+)/gi;
+
+  function dropCardHtml(url) {
+    let filename = "Verschlüsselter Drop";
+    let chunked = false;
+    try {
+      const u = new URL(url);
+      const params = new URLSearchParams(u.hash.slice(1));
+      if (params.get("n")) {
+        const decoded = decodeURIComponent(params.get("n"));
+        filename = decoded.length > 48 ? decoded.slice(0, 45) + "…" : decoded;
+      }
+      if (params.get("v") === "2") chunked = true;
+    } catch {}
+    const safeUrl = escapeHtml(url);
+    return (
+      '<a href="' + safeUrl + '" target="_blank" rel="noopener" ' +
+      'class="block mt-2 p-3 rounded-xl bg-void-900/80 border border-neon-500/30 ' +
+      'hover:border-neon-500/60 hover:bg-void-900 transition group no-underline">' +
+        '<div class="flex items-center gap-3">' +
+          '<div class="shrink-0 w-9 h-9 rounded-lg bg-neon-500/15 grid place-items-center text-neon-500 text-base">⚡</div>' +
+          '<div class="min-w-0 flex-1">' +
+            '<div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-0.5">' +
+              'Dead Drop' + (chunked ? ' · chunked' : '') +
+            '</div>' +
+            '<div class="text-sm text-white/90 truncate">' + escapeHtml(filename) + '</div>' +
+          '</div>' +
+          '<div class="shrink-0 text-xs font-mono text-neon-500 group-hover:translate-x-0.5 transition">' +
+            'Öffnen →' +
+          '</div>' +
+        '</div>' +
+      '</a>'
+    );
+  }
+
   function renderMessage(msg, decoded) {
     const isMe = msg.sender === currentAddress;
     const row = document.createElement("div");
@@ -151,7 +188,23 @@
     if (kind === "error") {
       contentHtml = '<span class="italic text-red-400">' + escapeHtml(decoded.text) + '</span>';
     } else {
-      contentHtml = escapeHtml(decoded?.text || "").replace(/\n/g, "<br>");
+      const text = decoded?.text || "";
+      const dropLinks = text.match(DROP_LINK_RE) || [];
+      if (dropLinks.length) {
+        // Strip drop-URLs from inline text, render rich cards instead
+        let stripped = text;
+        let cardsHtml = "";
+        for (const link of dropLinks) {
+          stripped = stripped.split(link).join("").trim();
+          cardsHtml += dropCardHtml(link);
+        }
+        const textPart = stripped
+          ? escapeHtml(stripped).replace(/\n/g, "<br>") + (cardsHtml ? "" : "")
+          : "";
+        contentHtml = textPart + cardsHtml;
+      } else {
+        contentHtml = escapeHtml(text).replace(/\n/g, "<br>");
+      }
     }
     row.innerHTML = `
       <div class="max-w-[80%] msg-bubble">
@@ -391,6 +444,43 @@
         doSend();
       }
     });
+
+    // Pending Drop-share-link from /upload-flow → prefill + flash button
+    try {
+      const pending = localStorage.getItem("dd_pending_share");
+      if (pending) {
+        input.value = pending;
+        localStorage.removeItem("dd_pending_share");
+        input.focus();
+        sendBtn.classList.add("ring-2", "ring-neon-500", "animate-pulse");
+        setTimeout(() => sendBtn.classList.remove("animate-pulse"), 2000);
+      }
+    } catch {}
+
+    // Mobile: scroll send-button into view when input gets focus (keyboard pushes content)
+    input.addEventListener("focus", () => {
+      setTimeout(() => {
+        try { sendBtn.scrollIntoView({ block: "end", behavior: "smooth" }); } catch {}
+      }, 300);
+    });
+
+    // Drop-from-Chat: attach-button → store room context + redirect to dropzone
+    const attachBtn = $("chat-attach-btn");
+    if (attachBtn) {
+      attachBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        try {
+          // Mark the room we should return to after upload
+          localStorage.setItem("dd_chat_return", JSON.stringify({
+            roomId: roomId,
+            keyB64: keyB64,
+            ts: Date.now(),
+          }));
+        } catch {}
+        // Navigate to dropzone — share-to-chat.js will handle the auto-return
+        window.location.href = "/#dropzone";
+      });
+    }
 
     shareBtn.addEventListener("click", async () => {
       const url = location.origin + "/chat/r/" + encodeURIComponent(roomId) + "#k=" + keyB64;

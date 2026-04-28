@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /d/
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /chat
+Disallow: /chat/
+Disallow: /api/
+
+Sitemap: https://deaddrop.digital/sitemap.xml

@@ -1,6 +1,14 @@
 /* Dead Drop — futuristic FX layer.
    Everything is pure CSS (no deps). Import after Tailwind CDN. */
 
+/* ---------- language switcher ---------- */
+.lang-btn.is-active {
+  color: #00FF9D;
+  background: rgba(0, 255, 157, 0.08);
+}
+.lang-btn { user-select: none; }
+.lang-btn + .lang-btn { border-left: 1px solid rgba(255, 255, 255, 0.08); }
+
 /* ---------- starfield / particles background ---------- */
 .fx-stars {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden;

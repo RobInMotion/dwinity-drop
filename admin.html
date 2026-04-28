@@ -108,6 +108,77 @@
       </div>
     </section>
 
+    <!-- Pay-per-Use Top-up KPIs -->
+    <section class="mb-10">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-sans text-2xl font-600">Pay-per-Use Top-up</h2>
+          <div class="text-[11px] font-mono text-white/40">User-getriebene Egress-Credit-Käufe via /topup</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div class="stat-card">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2">USDC paid</div>
+          <div class="text-2xl md:text-3xl font-600 text-neon-500" id="topup-usdc-total">—</div>
+          <div class="text-xs text-white/40 mt-1"><span id="topup-usdc-count">—</span> Käufe · <span id="topup-usdc-gb">—</span> GB</div>
+        </div>
+        <div class="stat-card">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2">DWIN paid</div>
+          <div class="text-2xl md:text-3xl font-600 text-neon-500" id="topup-dwin-total">—</div>
+          <div class="text-xs text-white/40 mt-1"><span id="topup-dwin-count">—</span> Käufe · <span id="topup-dwin-gb">—</span> GB</div>
+        </div>
+        <div class="stat-card">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2">GB total</div>
+          <div class="text-2xl md:text-3xl font-600" id="topup-gb-total">—</div>
+          <div class="text-xs text-white/40 mt-1">verkauft</div>
+        </div>
+        <div class="stat-card">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-2">Pending</div>
+          <div class="text-2xl md:text-3xl font-600" id="topup-pending">—</div>
+          <div class="text-xs text-white/40 mt-1">offene Invoices</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Egress Credits / Founder Allocation -->
+    <section class="mb-16">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="font-sans text-2xl font-600">Egress Credits</h2>
+          <div class="text-[11px] font-mono text-white/40">Manuelle Zuweisung — Founder Pass · OTC Top-up · Pre-DEX-DWIN</div>
+        </div>
+      </div>
+
+      <div class="stat-card mb-4">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-white/40 mb-3">Credits zu Wallet hinzufügen</div>
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
+          <div class="md:col-span-3">
+            <label class="block text-[10px] font-mono text-white/40 mb-1">Wallet</label>
+            <input id="egress-new-addr" maxlength="42" placeholder="0x…"
+              class="w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 font-mono text-xs focus:outline-none focus:border-neon-500/40" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-mono text-white/40 mb-1">GB</label>
+            <input id="egress-new-gb" type="number" min="1" max="10000" value="5000"
+              class="w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 font-mono focus:outline-none focus:border-neon-500/40" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-mono text-white/40 mb-1">Notiz</label>
+            <input id="egress-new-note" maxlength="200" placeholder="Founder Pass — Investor X"
+              class="w-full px-3 py-2 rounded-lg bg-void-800 border border-white/10 text-xs focus:outline-none focus:border-neon-500/40" />
+          </div>
+          <button id="egress-add-btn" class="px-4 py-2 rounded-lg bg-neon-500 hover:bg-neon-600 text-void-950 font-bold text-sm">
+            + Credits
+          </button>
+        </div>
+        <div id="egress-error" class="hidden mt-2 text-xs font-mono text-red-400"></div>
+      </div>
+
+      <div id="egress-list" class="space-y-1.5">
+        <div class="text-white/40 font-mono text-sm" data-i18n="admin.loading">// lade …</div>
+      </div>
+    </section>
+
     <!-- All Drops (admin view) -->
     <section class="mb-16">
       <div class="flex items-center justify-between mb-4">
