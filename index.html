@@ -117,6 +117,17 @@
         <button type="button" data-lang-switch="de" class="lang-btn px-2 md:px-2.5 py-1.5 text-white/50 hover:text-white transition">DE</button>
         <button type="button" data-lang-switch="en" class="lang-btn px-2 md:px-2.5 py-1.5 text-white/50 hover:text-white transition">EN</button>
       </div>
+      <!-- Wallet-Balance ribbon -->
+      <div id="wallet-balance" class="hidden items-center gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full bg-void-900/60 border border-white/10 text-[10px] md:text-[11px] font-mono text-white/60 shrink-0">
+        <span data-bal="avax" class="hidden sm:inline">— AVAX</span>
+        <span class="hidden sm:inline opacity-30">·</span>
+        <span data-bal="usdc">$—</span>
+        <span class="opacity-30">·</span>
+        <span data-bal="dwin" class="text-purple-300">— DWIN</span>
+        <button id="wallet-balance-hide" title="Balance ausblenden" class="ml-1 opacity-40 hover:opacity-100 transition">×</button>
+      </div>
+      <button id="wallet-balance-show" class="hidden items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-900/60 border border-white/10 text-[10px] md:text-[11px] font-mono text-white/40 hover:text-white shrink-0" title="Balance einblenden">💰</button>
+
       <!-- Wallet button -->
       <div class="relative">
         <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[140px] md:max-w-none">
@@ -161,8 +172,7 @@
         Wir sehen nix. Das ist ein Feature, kein Bug.
       </p>
       <p class="mt-4 md:mt-5 text-sm sm:text-base md:text-lg text-white/55 max-w-2xl mx-auto leading-relaxed px-2 md:px-0" data-i18n-html="hero.leadSub">
-        Drop verschlüsselt deine Dateien <strong class="text-white/80">im Browser</strong>, bevor sie unseren Server sehen — der Schlüssel bleibt bei dir.
-        Mit Wallet-Login kommst du gleich in Chat 2.0 (Beta) rein.
+        <strong class="text-white/80">Drop</strong> verschlüsselt Dateien browser-side · <strong class="text-white/80">Chat 2.0</strong> Wallet-Login · <strong class="text-purple-300">Vault</strong> macht deine Daten zu mDWIN — alles aus einer Wallet.
       </p>
 
       <!-- Tri-CTA row on desktop -->
@@ -209,6 +219,7 @@
               <option value="24" data-i18n="drop.expire.24h">24 Stunden</option>
               <option value="168" selected data-i18n="drop.expire.7d">7 Tage</option>
               <option value="720" data-i18n="drop.expire.30d">30 Tage (Pro)</option>
+              <option value="2160" disabled data-i18n="drop.expire.90d">90 Tage (Pro+)</option>
             </select>
           </div>
           <label class="flex items-center gap-2 cursor-pointer select-none">
@@ -270,6 +281,165 @@
       </button>
     </form>
     <p class="mt-3 text-center text-sm text-white/40 font-mono" data-i18n="waitlist.count">#2847 Anmeldungen · Beta-Zugang Sommer 2026</p>
+  </div>
+</section>
+
+<!-- ===== DWINITY VAULT — DATEN-ÖKONOMIE SECTION ===== -->
+<section class="relative py-20 md:py-28 border-t border-white/5 overflow-hidden">
+  <!-- subtle aurora -->
+  <div class="pointer-events-none absolute inset-0 opacity-[0.18]"
+       style="background: radial-gradient(ellipse 80% 60% at 30% 20%, rgba(80,227,194,0.5), transparent 60%), radial-gradient(ellipse 70% 60% at 70% 80%, rgba(167,139,250,0.4), transparent 60%);"></div>
+
+  <div class="relative max-w-6xl mx-auto px-4 md:px-6">
+    <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+      <!-- Left: copy -->
+      <div>
+        <span class="chip fx-chip-holo text-purple-300 mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-[11px] font-mono uppercase tracking-widest">
+          <span class="w-1.5 h-1.5 rounded-full bg-purple-400 pulse-dot"></span>
+          Vault · Phase 3b Beta
+        </span>
+        <h2 class="font-sans text-3xl md:text-5xl font-600 leading-[1.1] tracking-tight mb-5 mt-3" data-i18n-html="vaultTeaser.title">
+          Deine Daten arbeiten —<br>
+          <span class="fx-glow-text">für dich</span>, nicht für Big Tech.
+        </h2>
+        <p class="text-white/70 text-base md:text-lg leading-relaxed mb-5" data-i18n-html="vaultTeaser.p1">
+          Strava, Apple Health, Spotify, Google — du lädst sie hoch in deinen <strong class="text-white">wallet-gebundenen Vault</strong>. Browser-side pseudonymisiert. Server-side AES-verschlüsselt.
+          Du behältst die Hoheit.
+        </p>
+        <p class="text-white/60 text-sm md:text-base leading-relaxed mb-4" data-i18n-html="vaultTeaser.p2">
+          Forscher, Marken, andere Apps zahlen für anonyme Aggregate aus den Pools. <strong class="text-neon-500">70 % gehen direkt an Contributors</strong> — proportional zu deinem Beitrag.
+          Dazu: <strong class="text-purple-300">mDWIN-Airdrop</strong> bei jedem Upload als Sofort-Reward.
+        </p>
+        <div class="text-xs text-white/45 leading-relaxed mb-6 px-3 py-2 rounded-lg border border-white/8 bg-white/[0.02]" data-i18n-html="vaultTeaser.eco">
+          🧬 <strong class="text-white/70">Teil des Dwinity-Ökosystems.</strong> Vault hier ist der Self-Custody-Layer — der eigentliche
+          <a href="https://dwinity.shop" target="_blank" rel="noopener" class="text-neon-500 hover:underline">Digital Twin</a>
+          läuft auf der Dwinity Blockchain Cloud. Beide werden via API verknüpft (in Arbeit).
+        </div>
+
+        <!-- Three quick stats -->
+        <div class="grid grid-cols-3 gap-3 mb-6">
+          <div class="rounded-xl border border-neon-500/20 bg-void-900/50 p-3">
+            <div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Pools</div>
+            <div class="text-2xl font-700 text-neon-500">6</div>
+            <div class="text-[10px] text-white/40">Running · Health · Music · Location · Consumer · Drop</div>
+          </div>
+          <div class="rounded-xl border border-purple-500/20 bg-void-900/50 p-3">
+            <div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Reward-Split</div>
+            <div class="text-2xl font-700 text-purple-300">70/20/10</div>
+            <div class="text-[10px] text-white/40" data-i18n="vaultTeaser.splitSub">Contributors · Treasury · Plattform</div>
+          </div>
+          <div class="rounded-xl border border-cyan-500/20 bg-void-900/50 p-3">
+            <div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Privacy</div>
+            <div class="text-2xl font-700 text-cyan-400">k≥5</div>
+            <div class="text-[10px] text-white/40">k-Anonymity per Pool-Listing</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <a href="/vault" class="px-5 py-3 rounded-full bg-neon-500 text-void-950 font-700 hover:bg-neon-600 transition shadow-lg shadow-neon-500/20" data-i18n="vaultTeaser.cta">
+            Vault öffnen →
+          </a>
+          <a href="/docs/marketplace" class="px-5 py-3 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-neon-500/40 text-sm font-mono transition" data-i18n="vaultTeaser.how">
+            Wie funktioniert das?
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: neural map preview -->
+      <div class="relative">
+        <div class="rounded-3xl border border-white/10 bg-gradient-to-br from-neon-500/[0.03] via-transparent to-purple-500/[0.03] p-4 md:p-6">
+          <svg viewBox="0 0 480 380" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block">
+            <defs>
+              <radialGradient id="vault-preview-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#50e3c2" stop-opacity="0.5"/>
+                <stop offset="40%" stop-color="#50e3c2" stop-opacity="0.12"/>
+                <stop offset="100%" stop-color="#50e3c2" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- ambient particles -->
+            <g opacity="0.5">
+              <circle cx="60" cy="50" r="0.7" fill="#50e3c2"/>
+              <circle cx="100" cy="220" r="0.9" fill="#50e3c2"/>
+              <circle cx="180" cy="80" r="0.6" fill="#a78bfa"/>
+              <circle cx="380" cy="140" r="0.8" fill="#a78bfa"/>
+              <circle cx="420" cy="290" r="0.7" fill="#fb7185"/>
+              <circle cx="240" cy="350" r="0.6" fill="#facc15"/>
+              <circle cx="40" cy="320" r="0.5" fill="#50e3c2"/>
+              <circle cx="320" cy="60" r="0.7" fill="#50e3c2"/>
+            </g>
+
+            <!-- thin filigree connections -->
+            <g fill="none" stroke-linecap="round">
+              <path d="M240,190 C220,150 180,130 130,100" stroke="#50e3c2" stroke-opacity="0.5" stroke-width="0.9"/>
+              <path d="M240,190 C280,150 340,130 380,100" stroke="#fb7185" stroke-opacity="0.5" stroke-width="0.9"/>
+              <path d="M240,190 C200,240 140,280 100,310" stroke="#facc15" stroke-opacity="0.5" stroke-width="0.9"/>
+              <path d="M240,190 C290,240 350,280 400,310" stroke="#a78bfa" stroke-opacity="0.5" stroke-width="0.9"/>
+              <!-- animated flow on top -->
+              <path d="M240,190 C220,150 180,130 130,100" stroke="#50e3c2" stroke-opacity="0.95" stroke-width="0.5" stroke-dasharray="3 12">
+                <animate attributeName="stroke-dashoffset" from="0" to="-60" dur="6s" repeatCount="indefinite"/>
+              </path>
+              <path d="M240,190 C280,150 340,130 380,100" stroke="#fb7185" stroke-opacity="0.95" stroke-width="0.5" stroke-dasharray="3 12">
+                <animate attributeName="stroke-dashoffset" from="0" to="-60" dur="7s" repeatCount="indefinite"/>
+              </path>
+              <path d="M240,190 C200,240 140,280 100,310" stroke="#facc15" stroke-opacity="0.95" stroke-width="0.5" stroke-dasharray="3 12">
+                <animate attributeName="stroke-dashoffset" from="0" to="-60" dur="8s" repeatCount="indefinite"/>
+              </path>
+              <path d="M240,190 C290,240 350,280 400,310" stroke="#a78bfa" stroke-opacity="0.95" stroke-width="0.5" stroke-dasharray="3 12">
+                <animate attributeName="stroke-dashoffset" from="0" to="-60" dur="6.5s" repeatCount="indefinite"/>
+              </path>
+            </g>
+
+            <!-- synapse dots along paths -->
+            <g>
+              <circle cx="200" cy="160" r="1" fill="#50e3c2" opacity="0.7"/>
+              <circle cx="170" cy="135" r="1" fill="#50e3c2" opacity="0.6"/>
+              <circle cx="280" cy="160" r="1" fill="#fb7185" opacity="0.7"/>
+              <circle cx="320" cy="135" r="1" fill="#fb7185" opacity="0.6"/>
+              <circle cx="195" cy="225" r="1" fill="#facc15" opacity="0.7"/>
+              <circle cx="160" cy="265" r="1" fill="#facc15" opacity="0.6"/>
+              <circle cx="290" cy="225" r="1" fill="#a78bfa" opacity="0.7"/>
+              <circle cx="335" cy="265" r="1" fill="#a78bfa" opacity="0.6"/>
+            </g>
+
+            <!-- center neuron -->
+            <circle cx="240" cy="190" r="60" fill="url(#vault-preview-glow)"/>
+            <circle cx="240" cy="190" r="34" fill="#0c0d10" stroke="#50e3c2" stroke-opacity="0.6" stroke-width="1"/>
+            <circle cx="240" cy="190" r="34" fill="none" stroke="#50e3c2" stroke-opacity="0">
+              <animate attributeName="r" from="34" to="80" dur="3.5s" repeatCount="indefinite"/>
+              <animate attributeName="stroke-opacity" from="0.5" to="0" dur="3.5s" repeatCount="indefinite"/>
+            </circle>
+            <text x="240" y="183" text-anchor="middle" dominant-baseline="middle" font-size="20">🧬</text>
+            <text x="240" y="200" text-anchor="middle" font-size="6.5" fill="rgba(255,255,255,0.7)" font-family="JetBrains Mono, monospace" font-weight="700" letter-spacing="2">DIGITAL TWIN</text>
+            <text x="240" y="212" text-anchor="middle" font-size="6.5" fill="rgba(255,255,255,0.4)" font-family="JetBrains Mono, monospace" data-i18n="vaultTeaser.svgWallet">deine wallet</text>
+
+            <!-- 4 source cards -->
+            <g>
+              <rect x="80" y="80" width="100" height="40" rx="10" fill="rgba(15,18,23,0.88)" stroke="#50e3c2" stroke-opacity="0.55" stroke-width="0.9"/>
+              <text x="130" y="93" text-anchor="middle" font-size="13">🏃</text>
+              <text x="130" y="106" text-anchor="middle" font-size="7.5" fill="#50e3c2" font-family="JetBrains Mono, monospace" font-weight="700" letter-spacing="1">RUNNING</text>
+              <text x="130" y="115" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.85)">Strava</text>
+
+              <rect x="330" y="80" width="100" height="40" rx="10" fill="rgba(15,18,23,0.88)" stroke="#fb7185" stroke-opacity="0.55" stroke-width="0.9"/>
+              <text x="380" y="93" text-anchor="middle" font-size="13">❤️</text>
+              <text x="380" y="106" text-anchor="middle" font-size="7.5" fill="#fb7185" font-family="JetBrains Mono, monospace" font-weight="700" letter-spacing="1">HEALTH</text>
+              <text x="380" y="115" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.85)">Apple Health</text>
+
+              <rect x="50" y="290" width="100" height="40" rx="10" fill="rgba(15,18,23,0.88)" stroke="#facc15" stroke-opacity="0.55" stroke-width="0.9"/>
+              <text x="100" y="303" text-anchor="middle" font-size="13">🌐</text>
+              <text x="100" y="316" text-anchor="middle" font-size="7.5" fill="#facc15" font-family="JetBrains Mono, monospace" font-weight="700" letter-spacing="1">GOOGLE</text>
+              <text x="100" y="325" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.85)">Takeout</text>
+
+              <rect x="350" y="290" width="100" height="40" rx="10" fill="rgba(15,18,23,0.88)" stroke="#a78bfa" stroke-opacity="0.55" stroke-width="0.9"/>
+              <text x="400" y="303" text-anchor="middle" font-size="13">🎧</text>
+              <text x="400" y="316" text-anchor="middle" font-size="7.5" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-weight="700" letter-spacing="1">MUSIC</text>
+              <text x="400" y="325" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.85)">Spotify</text>
+            </g>
+          </svg>
+          <div class="text-[10px] font-mono text-white/40 uppercase tracking-widest text-center mt-3" data-i18n="vaultTeaser.demoCaption">Live Demo · klick „Vault öffnen" für deine eigene Karte</div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -628,8 +798,8 @@
       <h2 class="font-sans text-2xl sm:text-3xl md:text-4xl font-600 tracking-tight leading-tight" data-i18n-html="eco.title">
         Teil eines größeren <span class="fx-glow-text">Ecosystems</span>.
       </h2>
-      <p class="mt-3 md:mt-4 text-sm md:text-base text-white/55 max-w-xl mx-auto" data-i18n="eco.sub">
-        Drop steht für sich — aber du kannst mit demselben Wallet auch Chat 2.0 nutzen und später in den Digital Twin migrieren.
+      <p class="mt-3 md:mt-4 text-sm md:text-base text-white/55 max-w-xl mx-auto">
+        Drop, Chat, Vault — eine Wallet, drei Tools, ein Ökosystem. Self-Custody als Default.
       </p>
     </div>
 
@@ -654,14 +824,16 @@
         <p class="text-sm text-white/60 leading-relaxed" data-i18n-html="eco.chat.text">Wallet-gated Rooms mit Link-to-join. <span class="text-white/40">Weiterentwicklung von Crypto Chat 1.0 aus der Blockchain Cloud.</span></p>
       </a>
 
-      <!-- Digital Twin: external, live -->
-      <a href="https://dwinity.shop" target="_blank" rel="noopener" class="group block p-5 md:p-6 rounded-2xl bg-void-900 border border-white/10 hover:border-neon-500/40 transition">
+      <!-- Vault — live, ours -->
+      <a href="/vault" class="group block p-5 md:p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 to-void-900 border border-purple-500/40 hover:border-purple-500/70 transition">
         <div class="flex items-center gap-2 mb-3">
-          <span class="px-1.5 py-0.5 rounded bg-white/10 text-white/70 text-[9px] font-mono uppercase tracking-widest">Dwinity IP</span>
+          <span class="px-1.5 py-0.5 rounded bg-purple-500/25 text-purple-300 text-[9px] font-mono uppercase tracking-widest">Beta · Phase 3b</span>
           <span class="font-mono text-[10px] text-white/40">03</span>
         </div>
-        <div class="text-xl md:text-2xl font-600 mb-2">Digital Twin 🧬</div>
-        <p class="text-sm text-white/60 leading-relaxed" data-i18n-html="eco.twin.text">Wallet-bound Datenraum auf der <span class="text-white/80">Dwinity Blockchain Cloud</span>. <span class="text-white/40">Drop-Integration auf der Roadmap.</span></p>
+        <div class="text-xl md:text-2xl font-600 mb-2">Vault 🧬</div>
+        <p class="text-sm text-white/60 leading-relaxed">
+          Strava · Apple Health · Spotify · Google in <strong class="text-white">eine Wallet</strong>. Pseudonymisiert. Verschlüsselt. <strong class="text-purple-300">Verdiene mDWIN</strong>, wenn jemand anonyme Insights kauft.
+        </p>
       </a>
 
       <!-- Tax: private beta, subtle -->
@@ -671,7 +843,7 @@
           <span class="font-mono text-[10px] text-white/40">04</span>
         </div>
         <div class="text-xl md:text-2xl font-600 mb-2 text-white/80">Tax 📊</div>
-        <p class="text-sm text-white/50 leading-relaxed" data-i18n-html="eco.tax.text">Krypto-Steuerreport (DE). <span class="text-white/40">Sehr früh — auf Anfrage.</span></p>
+        <p class="text-sm text-white/70 leading-relaxed" data-i18n-html="eco.tax.text">Krypto-Steuerreport (DE). <span class="text-white/50">Sehr früh — auf Anfrage.</span></p>
       </a>
     </div>
 
@@ -755,7 +927,7 @@
       </details>
     </div>
 
-    <p class="mt-8 text-center text-xs md:text-sm text-white/50" data-i18n-html="faq.footer">
+    <p class="mt-8 text-center text-xs md:text-sm text-white/70" data-i18n-html="faq.footer">
       Noch offene Fragen? <a href="mailto:hello@dwinity.de" class="text-neon-500 hover:underline">hello@dwinity.de</a> — Antwort meist innerhalb eines Tages.
     </p>
   </div>
@@ -1058,7 +1230,9 @@
 <script src="/app.js"></script>
 <script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
 <script src="/ref-capture.js" defer></script>
+<script src="/wallet-connect.js"></script>
 <script src="/auth.js"></script>
+<script src="/wallet-balance.js" defer></script>
 <script src="/panic.js" defer></script>
 <script src="/upgrade.js"></script>
 <script src="/share-to-chat.js" defer></script>

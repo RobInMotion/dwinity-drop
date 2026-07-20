@@ -1,3 +1,10 @@
+
+function vt(key, fallback, vars) {
+  let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+  if (!v || v === key) v = fallback;
+  if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+  return v;
+}
 (function() {
   function handle(form, successEl) {
     form.addEventListener('submit', async (e) => {
@@ -15,17 +22,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, product: 'drop' }),
         });
-        if (r.status === 429) throw new Error('Zu viele Anfragen — bitte später erneut.');
-        if (!r.ok) throw new Error('Server-Fehler: HTTP ' + r.status);
+        if (r.status === 429) throw new Error(vt('wl.tooMany', 'Zu viele Anfragen — bitte später erneut.'));
+        if (!r.ok) throw new Error(vt('wl.serverErr', 'Server-Fehler: HTTP ') + r.status);
         form.reset();
         if (successEl) {
           successEl.classList.remove('hidden');
           successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
-          alert('// eingetragen');
+          alert(vt('wl.done', '// eingetragen'));
         }
       } catch (err) {
-        alert('// Fehler: ' + (err.message || err));
+        alert(vt('wl.errPrefix', '// Fehler: ') + (err.message || err));
       } finally {
         button.disabled = false;
         button.textContent = origLabel;
@@ -46,3 +53,11 @@
     });
   });
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "wl.serverErr": "Server error: HTTP ",
+  "wl.errPrefix": "// Error: ",
+} });
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "wl.tooMany": "Too many requests — please try again later.",
+  "wl.done": "// you're on the list",
+} });

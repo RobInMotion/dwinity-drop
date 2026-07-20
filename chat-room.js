@@ -139,12 +139,13 @@
 
   // ---------- Rendering ----------
 
-  // Detect Dead Drop share-links (own domain only) and render as rich cards.
+  // Detect Dead Drop share-links (own domains only) and render as rich cards.
   // Pattern: https://<host>/d/<id>#k=<key>[&v=<v>&n=<name>...]
-  const DROP_LINK_RE = /(https?:\/\/(?:[\w-]+\.)*mkwt-strategy\.tech\/d\/[\w-]+#[^\s<]+)/gi;
+  // Matches both deaddrop.digital (current) and *.mkwt-strategy.tech (legacy).
+  const DROP_LINK_RE = /(https?:\/\/(?:[\w-]+\.)*(?:deaddrop\.digital|mkwt-strategy\.tech)\/d\/[\w-]+#[^\s<]+)/gi;
 
   function dropCardHtml(url) {
-    let filename = "Verschlüsselter Drop";
+    let filename = t("room.encryptedDrop", "Verschlüsselter Drop");
     let chunked = false;
     try {
       const u = new URL(url);
@@ -508,3 +509,6 @@
 
   boot();
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "room.encryptedDrop": "Encrypted drop",
+} });

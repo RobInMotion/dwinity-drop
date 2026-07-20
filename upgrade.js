@@ -1,4 +1,11 @@
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   // Pro upgrade modal + invoice flow.
   // Requires: auth.js has already populated #wallet-btn. Opens when a button
   // with data-action="open-upgrade" is clicked, or by calling window.openUpgrade().
@@ -96,11 +103,11 @@
       dwinRadio.disabled = false;
       dwinLabel.classList.remove("cursor-not-allowed", "opacity-60", "bg-void-800/50");
       dwinLabel.classList.add("bg-void-800", "hover:border-neon-500/40");
-      if (dwinNote) dwinNote.textContent = "Avalanche C-Chain · 25 % Ecosystem-Rabatt";
+      if (dwinNote) dwinNote.textContent = vt("up.dwinNote", "Avalanche C-Chain · 25 % Ecosystem-Rabatt");
     } else {
       dwinRadio.disabled = true;
       dwinLabel.classList.add("cursor-not-allowed", "opacity-60");
-      if (dwinNote) dwinNote.textContent = quote.dwin && quote.dwin.note || "DWIN-Payment bald verfügbar";
+      if (dwinNote) dwinNote.textContent = quote.dwin && quote.dwin.note || vt("up.dwinSoon", "DWIN-Payment bald verfügbar");
     }
 
     // Peg disclosure: show only when DWIN is the active asset (pre-DEX honesty)
@@ -181,7 +188,7 @@
     const plan = Array.from(planRadios).find(r => r.checked).value;
     const asset = Array.from(assetRadios).find(r => r.checked).value;
     promoCheckBtn.disabled = true;
-    promoCheckBtn.textContent = "// prüfe …";
+    promoCheckBtn.textContent = vt("up.checking", "// prüfe …");
     try {
       const r = await fetch(API + "/payment/promo/check", {
         method: "POST",
@@ -192,23 +199,31 @@
       const data = await r.json();
       if (!r.ok) {
         promoFeedback.className = "mt-2 text-xs font-mono text-red-400";
-        promoFeedback.textContent = "// " + (data.detail || "Code ungültig");
+        const ptt = (key, fb) => {
+          const v = window.DDI18n && window.DDI18n.t && window.DDI18n.t(key);
+          return v && v !== key ? v : fb;
+        };
+        promoFeedback.textContent = "// " + (
+          r.status === 401 ? ptt("err.promoLogin", "Bitte zuerst Wallet verbinden")
+          : r.status === 410 ? ptt("err.promoExpired", "Code abgelaufen oder aufgebraucht")
+          : ptt("err.promoInvalid", "Code ungültig")
+        );
         promoFeedback.classList.remove("hidden");
         return;
       }
       validatedPromo = { ...data, code };
       promoFeedback.className = "mt-2 text-xs font-mono text-neon-500";
-      const usesTxt = data.uses_left !== null ? ` · noch ${data.uses_left} Einsätze` : "";
+      const usesTxt = data.uses_left !== null ? vt('up.usesLeft', ' · noch {n} Einsätze', { n: data.uses_left }) : "";
       promoFeedback.textContent =
-        `// ✓ ${data.discount_pct}% Rabatt · ${data.final_display} ${asset} statt ${data.base_display} ${asset}${usesTxt}`;
+        vt("up.promoOk", "// ✓ {pct}% Rabatt · {fin} {asset} statt {base} {asset}", { pct: data.discount_pct, fin: data.final_display, base: data.base_display, asset }) + usesTxt;
       promoFeedback.classList.remove("hidden");
     } catch (e) {
       promoFeedback.className = "mt-2 text-xs font-mono text-red-400";
-      promoFeedback.textContent = "// Netzwerkfehler";
+      promoFeedback.textContent = vt("up.netErr", "// Netzwerkfehler");
       promoFeedback.classList.remove("hidden");
     } finally {
       promoCheckBtn.disabled = false;
-      promoCheckBtn.textContent = "Prüfen";
+      promoCheckBtn.textContent = vt("up.check", "Prüfen");
     }
   }
 
@@ -241,7 +256,7 @@
       });
       if (!r.ok) {
         const bodyText = await r.text();
-        throw new Error("Invoice-Erstellung fehlgeschlagen: " + bodyText);
+        throw new Error(vt("up.invoiceFailed", "Invoice-Erstellung fehlgeschlagen: ") + bodyText);
       }
       currentInvoice = await r.json();
       showStep2(currentInvoice);
@@ -260,7 +275,7 @@
     amountEl.textContent = inv.amount_display + " " + inv.asset;
     assetEl.textContent = inv.asset;
     renderQR(buildPaymentURI(inv));
-    statusEl.innerHTML = '<span class="text-white/60">// warte auf Zahlung · Chain-Scan alle 30 s</span>';
+    statusEl.innerHTML = '<span class="text-white/60">' + vt("up.waiting", "// warte auf Zahlung · Chain-Scan alle 30 s") + '</span>';
     startPolling();
   }
 
@@ -278,7 +293,7 @@
             return;
           }
           if (inv.status === "expired") {
-            statusEl.innerHTML = '<span class="text-red-400">// Invoice abgelaufen — neu erzeugen</span>';
+            statusEl.innerHTML = '<span class="text-red-400">' + vt("up.invoiceExpired", "// Invoice abgelaufen — neu erzeugen") + '</span>';
             return;
           }
           const secs = Math.max(0, inv.expires_at - Math.floor(Date.now() / 1000));
@@ -305,7 +320,7 @@
     } catch {}
     const until = new Date(proUntil * 1000);
     doneMsg.innerHTML =
-      "Pro aktiv bis <span class='text-neon-500 font-semibold'>" +
+      vt("up.proUntil", "Pro aktiv bis ") + "<span class='text-neon-500 font-semibold'>" +
       until.toLocaleDateString("de-DE") + "</span>. " +
       "TX: <a href='https://snowtrace.io/tx/" + inv.paid_tx + "' target='_blank' rel='noopener' class='text-neon-500 hover:underline font-mono text-xs'>" +
       inv.paid_tx.slice(0, 10) + "…</a>";
@@ -314,11 +329,11 @@
   async function payViaWallet() {
     if (!currentInvoice) return;
     if (!window.ethereum) {
-      setErr("Keine Wallet erkannt — Adresse + Betrag extern bezahlen.");
+      setErr(vt("up.noWallet", "Keine Wallet erkannt — Adresse + Betrag extern bezahlen."));
       return;
     }
     payBtn.disabled = true;
-    payBtn.textContent = "// warte auf Wallet-Bestätigung …";
+    payBtn.textContent = vt("up.waitingWallet", "// warte auf Wallet-Bestätigung …");
     setErr("");
     try {
       // 1) switch chain if needed
@@ -361,7 +376,7 @@
         }],
       });
       statusEl.innerHTML =
-        '<span class="text-neon-500">// TX gesendet · warte auf Bestätigung auf Avalanche …</span> ' +
+        '<span class="text-neon-500">' + vt("up.txSent", "// TX gesendet · warte auf Bestätigung auf Avalanche …") + '</span> ' +
         '<a href="https://snowtrace.io/tx/' + txHash + '" target="_blank" rel="noopener" class="text-xs text-neon-500 hover:underline font-mono">' +
         txHash.slice(0, 10) + '…</a>';
     } catch (e) {
@@ -418,3 +433,21 @@
 
   window.openUpgrade = openModal;
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "up.usesLeft": " · {n} uses left",
+  "up.invoiceFailed": "Invoice creation failed: ",
+  "up.waiting": "// waiting for payment · chain scan every 30 s",
+  "up.invoiceExpired": "// invoice expired — create a new one",
+  "up.proUntil": "Pro active until ",
+  "up.noWallet": "No wallet detected — pay the address + amount externally.",
+  "up.txSent": "// TX sent · waiting for confirmation on Avalanche …",
+} });
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "up.dwinNote": "Avalanche C-Chain · 25% ecosystem discount",
+  "up.dwinSoon": "DWIN payments coming soon",
+  "up.checking": "// checking …",
+  "up.promoOk": "// ✓ {pct}% off · {fin} {asset} instead of {base} {asset}",
+  "up.netErr": "// network error",
+  "up.check": "Check",
+  "up.waitingWallet": "// waiting for wallet confirmation …",
+} });

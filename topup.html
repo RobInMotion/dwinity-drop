@@ -18,6 +18,7 @@
 </style>
 </head>
 <body class="text-white/90 font-sans">
+<a href="#main" class="skip-link" data-i18n="a11y.skip">Zum Inhalt springen</a>
 
 <header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
   <div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 md:gap-2">
@@ -31,7 +32,7 @@
         Dashboard
       </a>
       <div class="relative shrink-0">
-        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
+        <button id="wallet-btn" data-state="out" aria-haspopup="menu" aria-controls="wallet-menu" aria-expanded="false" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
           <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"></span>
           <span id="wallet-btn-label" class="truncate">Wallet</span>
         </button>
@@ -40,7 +41,7 @@
   </div>
 </header>
 
-<main class="pt-20 md:pt-28 pb-16 max-w-3xl mx-auto px-4 md:px-6">
+<main id="main" class="pt-20 md:pt-28 pb-16 max-w-3xl mx-auto px-4 md:px-6">
 
   <!-- Needs login -->
   <section id="gate" class="hidden text-center py-20">
@@ -173,6 +174,8 @@
 </main>
 
 <script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/i18n.js"></script>
+<script src="/wallet-connect.js"></script>
 <script src="/auth.js"></script>
 <script src="/topup.js"></script>
 </body>

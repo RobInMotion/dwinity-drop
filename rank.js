@@ -1,4 +1,11 @@
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   const API = "/api/identity";
 
   const $ = (id) => document.getElementById(id);
@@ -60,10 +67,10 @@
       if (!r.ok) throw new Error("HTTP " + r.status);
       await boot();
     } catch (e) {
-      errEl.textContent = "Fehler: " + (e.message || e);
+      errEl.textContent = vt("rk.errPrefix", "Fehler: ") + (e.message || e);
       errEl.classList.remove("hidden");
       btn.disabled = false;
-      btn.textContent = "🐉 Dragon Rank aktivieren";
+      btn.textContent = vt("rk.activate", "🐉 Dragon Rank aktivieren");
     }
   }
 
@@ -77,8 +84,8 @@
     const btn = $("copy-ref");
     try {
       await navigator.clipboard.writeText(link);
-      btn.textContent = "✓ Link kopiert";
-      setTimeout(() => btn.textContent = "Link kopieren", 1500);
+      btn.textContent = vt("rk.linkCopied", "✓ Link kopiert");
+      setTimeout(() => btn.textContent = vt("ui.copy.label", "Link kopieren"), 1500);
     } catch {
       prompt("Ref-Link kopieren:", link);
     }
@@ -87,7 +94,7 @@
   function renderXpBreakdown(counts, xp) {
     const el = $("xp-breakdown");
     const rows = [
-      ["📦", "Drops erstellt",   counts.drops_created,       xp.drops_created],
+      ["📦", vt("rk.dropsCreated", "Drops erstellt"),   counts.drops_created,       xp.drops_created],
       ["⬇",  "Drop-Downloads",   counts.drops_downloaded,    xp.drops_downloaded],
       ["💬", "Chat-Messages",    counts.chat_messages,       xp.chat_messages],
       ["🏠", "Chat-Rooms",       counts.chat_rooms_created,  xp.chat_rooms_created],
@@ -132,7 +139,7 @@
       if (!r.ok) throw new Error("HTTP " + r.status);
       const data = await r.json();
       if (!data.leaderboard.length) {
-        el.innerHTML = '<div class="text-white/40 text-sm font-mono py-3">// noch keine Einträge — sei der erste!</div>';
+        el.innerHTML = '<div class="text-white/40 text-sm font-mono py-3">// ' + vt("rk.noEntries", "noch keine Einträge — sei der erste!") + '</div>';
         return;
       }
       el.innerHTML = data.leaderboard.map((e, i) => {
@@ -157,7 +164,7 @@
         `;
       }).join("");
     } catch {
-      el.innerHTML = '<div class="text-red-400 text-sm font-mono">Leaderboard nicht verfügbar</div>';
+      el.innerHTML = '<div class="text-red-400 text-sm font-mono">' + vt("rk.lbUnavailable", "Leaderboard nicht verfügbar") + '</div>';
     }
   }
 
@@ -197,7 +204,7 @@
     if (data.rank.next && data.rank.next.name) {
       $("next-rank").textContent = `${data.rank.next.name} ab ${fmtNum(data.rank.next.min_xp)} XP`;
     } else {
-      $("next-rank").textContent = "🏆 höchster Rang erreicht";
+      $("next-rank").textContent = vt("rk.maxRank", "🏆 höchster Rang erreicht");
     }
 
     renderXpBreakdown(data.counts, data.xp_per_type);
@@ -213,7 +220,7 @@
   async function doDataExport() {
     const btn = $("data-export-btn");
     btn.disabled = true;
-    btn.textContent = "// lade …";
+    btn.textContent = vt("rk.loading", "// lade …");
     try {
       const r = await fetch(API + "/me/data-export", { credentials: "include" });
       if (!r.ok) throw new Error("HTTP " + r.status);
@@ -230,7 +237,7 @@
       btn.textContent = "✓ heruntergeladen";
       setTimeout(() => { btn.textContent = "JSON herunterladen"; btn.disabled = false; }, 2000);
     } catch (e) {
-      alert("Fehler: " + e.message);
+      alert(vt("rk.errPrefix", "Fehler: ") + e.message);
       btn.disabled = false;
       btn.textContent = "JSON herunterladen";
     }
@@ -254,7 +261,7 @@
 
     const refByBlock = refBy ? `
       <div class="mb-4 p-3 rounded-lg bg-void-800/60 text-xs font-mono">
-        <span class="text-white/40">du wurdest eingeladen von:</span>
+        <span class="text-white/40">${vt("rk.invitedBy", "du wurdest eingeladen von:")}</span>
         <span class="text-white/70 break-all">${escapeHtml(refBy.referrer_wallet.slice(0,10))}…</span>
         <span class="text-white/40">via</span>
         <span class="text-neon-500">${escapeHtml(refBy.ref_code)}</span>
@@ -270,7 +277,7 @@
           ${r.paid > 0 ? '✓ Pro · +500 XP' + reward : 'Signup · +100 XP'}
         </div>
       </div>
-    `; }).join("") : `<div class="text-white/40 text-sm font-mono py-3">// noch keine Referrals — teile deinen Link oben</div>`;
+    `; }).join("") : `<div class="text-white/40 text-sm font-mono py-3">// ${vt("rk.noReferrals", "noch keine Referrals — teile deinen Link oben")}</div>`;
 
     const earnedGb = data.earned_credits_gb || 0;
 
@@ -323,3 +330,15 @@
 
   boot();
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "rk.errPrefix": "Error: ",
+  "rk.activate": "🐉 Activate Dragon Rank",
+  "rk.linkCopied": "✓ Link copied",
+  "rk.dropsCreated": "Drops created",
+  "rk.noEntries": "no entries yet — be the first!",
+  "rk.lbUnavailable": "Leaderboard unavailable",
+  "rk.maxRank": "🏆 highest rank reached",
+  "rk.loading": "// loading …",
+  "rk.invitedBy": "you were invited by:",
+  "rk.noReferrals": "no referrals yet — share your link above",
+} });

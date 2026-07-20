@@ -43,6 +43,14 @@
     return (n / 1024 / 1024).toFixed(2) + " MB";
   }
 
+  // i18n helper: translated string if DDI18n is loaded, German fallback otherwise
+  function tt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   function showError(msg) {
     errorEl.textContent = msg;
     errorEl.classList.remove("hidden");
@@ -73,8 +81,8 @@
     if (files.length === 1) {
       return { blob: files[0], name: files[0].name, bundled: false };
     }
-    if (!window.JSZip) throw new Error("ZIP-Bibliothek nicht geladen");
-    setProgress(2, "// " + files.length + " Dateien werden gebündelt …");
+    if (!window.JSZip) throw new Error(tt("err.zipLibMissing", "ZIP-Bibliothek nicht geladen"));
+    setProgress(2, tt("ui.progress.bundling", "// {n} Dateien werden gebündelt …", { n: files.length }));
     const zip = new JSZip();
     for (const f of files) zip.file(f.name, f);
     const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
@@ -83,7 +91,7 @@
   }
 
   async function encryptBlob(blob) {
-    setProgress(8, "// verschlüsseln …");
+    setProgress(8, tt("ui.progress.encrypting", "// verschlüsseln …"));
     const key = await crypto.subtle.generateKey(
       { name: "AES-GCM", length: 256 },
       true,
@@ -104,12 +112,30 @@
   // ——— Chunked / multipart upload ———
   //
   // Envelope format (per chunk):   [IV(12) bytes] [AES-GCM ciphertext+tag]
-  // AAD per chunk = chunk_index as 4-byte big-endian (prevents reordering)
   // Key is generated once per drop; shared via URL fragment (#k=…).
+  //
+  // v=2 AAD = chunk_index (4 bytes BE)         — prevents reordering only.
+  // v=3 AAD = chunk_index || total_chunks || total_size (4+4+8 BE)
+  //          — additionally prevents truncation: a server that drops the
+  //          tail of the file would have to forge a final-chunk tag against
+  //          a different total_chunks, which the recipient rejects.
+  // Receivers parse `&v=2|3` from the URL fragment to pick the matching AAD.
 
-  function aadFor(index) {
+  function aadV2(index) {
     const a = new Uint8Array(4);
-    new DataView(a.buffer).setUint32(0, index, false); // big-endian
+    new DataView(a.buffer).setUint32(0, index, false);
+    return a;
+  }
+
+  function aadV3(index, totalChunks, totalSize) {
+    const a = new Uint8Array(16);
+    const dv = new DataView(a.buffer);
+    dv.setUint32(0, index, false);
+    dv.setUint32(4, totalChunks, false);
+    // 64-bit size, big-endian: hi32 || lo32. JS Number is precise to 2^53,
+    // far above any realistic drop size on this platform (max ~5 GB Pro+).
+    dv.setUint32(8, Math.floor(totalSize / 0x100000000), false);
+    dv.setUint32(12, totalSize >>> 0, false);
     return a;
   }
 
@@ -129,12 +155,12 @@
           const etag = xhr.getResponseHeader("ETag") || "";
           resolve(etag);
         } else {
-          reject(new Error("Chunk-Upload fehlgeschlagen (HTTP " + xhr.status + ")"));
+          reject(new Error(tt("err.chunkUploadFailed", "Chunk-Upload fehlgeschlagen (HTTP {n})", { n: xhr.status })));
         }
       };
       xhr.onerror = () => {
         currentXhr = null;
-        reject(new Error("Netzwerk-Fehler während Chunk-Upload"));
+        reject(new Error(tt("err.netDuringChunkUpload", "Netzwerk-Fehler während Chunk-Upload")));
       };
       xhr.onabort = () => {
         currentXhr = null;
@@ -148,15 +174,15 @@
 
   async function chunkedUpload(blob, body, totalSize) {
     // 1. Init multipart
-    setProgress(4, "// Multipart initialisieren …");
+    setProgress(4, tt("ui.progress.multipartInit", "// Multipart initialisieren …"));
     const initRes = await fetch(API + "/upload/multipart/init", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify(body),
     });
-    if (initRes.status === 429) throw new Error("Zu viele Uploads — kurz warten.");
-    if (!initRes.ok) throw new Error("Init fehlgeschlagen (HTTP " + initRes.status + ")");
+    if (initRes.status === 429) throw new Error(tt("err.tooManyUploads", "Zu viele Uploads — kurz warten."));
+    if (!initRes.ok) throw new Error(tt("err.initFailed", "Init fehlgeschlagen (HTTP {n})", { n: initRes.status }));
     const init = await initRes.json();
     const dropId = init.drop_id;
     const uploadId = init.upload_id;
@@ -184,7 +210,8 @@
 
         const iv = crypto.getRandomValues(new Uint8Array(12));
         const ct = new Uint8Array(await crypto.subtle.encrypt(
-          { name: "AES-GCM", iv, additionalData: aadFor(i) }, key, plain
+          { name: "AES-GCM", iv, additionalData: aadV3(i, numChunks, blob.size) },
+          key, plain,
         ));
         const envelope = new Uint8Array(iv.length + ct.length);
         envelope.set(iv, 0);
@@ -201,7 +228,7 @@
             part_number: i + 1,
           }),
         });
-        if (!partRes.ok) throw new Error("Part-URL-Fehler (HTTP " + partRes.status + ")");
+        if (!partRes.ok) throw new Error(tt("err.partUrlFailed", "Part-URL-Fehler (HTTP {n})", { n: partRes.status }));
         const partInfo = await partRes.json();
 
         const chunkStartBytes = uploadedBytes;
@@ -223,7 +250,7 @@
       }
 
       // 4. Complete
-      setProgress(97, "// Upload finalisieren …");
+      setProgress(97, tt("ui.progress.finalizing", "// Upload finalisieren …"));
       const completeRes = await fetch(API + "/upload/multipart/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -232,7 +259,7 @@
           drop_id: dropId, upload_id: uploadId, parts,
         }),
       });
-      if (!completeRes.ok) throw new Error("Complete fehlgeschlagen (HTTP " + completeRes.status + ")");
+      if (!completeRes.ok) throw new Error(tt("err.completeFailed", "Complete fehlgeschlagen (HTTP {n})", { n: completeRes.status }));
 
       return { id: dropId, rawKey, retention_hours: body.retention_hours };
     } catch (err) {
@@ -261,11 +288,11 @@
       xhr.onload = () => {
         currentXhr = null;
         if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error("Upload fehlgeschlagen (HTTP " + xhr.status + ")"));
+        else reject(new Error(tt("err.uploadFailed", "Upload fehlgeschlagen (HTTP {n})", { n: xhr.status })));
       };
       xhr.onerror = () => {
         currentXhr = null;
-        reject(new Error("Netzwerk-Fehler während Upload"));
+        reject(new Error(tt("err.netDuringUpload", "Netzwerk-Fehler während Upload")));
       };
       xhr.onabort = () => {
         currentXhr = null;
@@ -299,9 +326,9 @@
   function fmtRetention(hours) {
     if (hours >= 24) {
       const d = Math.round(hours / 24);
-      return d + (d === 1 ? " Tag" : " Tage");
+      return d + (d === 1 ? tt("ui.retention.day", " Tag") : tt("ui.retention.days", " Tage"));
     }
-    return hours + (hours === 1 ? " Stunde" : " Stunden");
+    return hours + (hours === 1 ? tt("ui.retention.hour", " Stunde") : tt("ui.retention.hours", " Stunden"));
   }
 
   // ——— Free-tier email gate ———
@@ -356,12 +383,12 @@
         emailError.classList.add("hidden");
         const email = (emailInput.value || "").trim();
         if (!emailConsent.checked) {
-          emailError.textContent = "Bitte Datenschutzhinweise bestätigen.";
+          emailError.textContent = tt("err.confirmPrivacy", "Bitte Datenschutzhinweise bestätigen.");
           emailError.classList.remove("hidden");
           return;
         }
         if (!/.+@.+\..+/.test(email)) {
-          emailError.textContent = "Bitte eine gültige E-Mail angeben.";
+          emailError.textContent = tt("err.invalidEmail", "Bitte eine gültige E-Mail angeben.");
           emailError.classList.remove("hidden");
           return;
         }
@@ -373,12 +400,12 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, product: "drop-free" }),
           });
-          if (res.status === 429) throw new Error("Zu viele Anfragen — kurz warten.");
+          if (res.status === 429) throw new Error(tt("err.tooManyRequests", "Zu viele Anfragen — kurz warten."));
           if (!res.ok) throw new Error("HTTP " + res.status);
           localStorage.setItem(EMAIL_KEY, email);
           cleanup(); hideEmailGate(); resolve(true);
         } catch (err) {
-          emailError.textContent = "Fehler: " + (err.message || err);
+          emailError.textContent = tt("err.genericPrefix", "Fehler: ") + (err.message || err);
           emailError.classList.remove("hidden");
         } finally {
           btn.disabled = false; btn.textContent = orig;
@@ -409,7 +436,7 @@
     let total = 0;
     for (const f of files) total += f.size;
     if (total > MAX) {
-      showError("Zu groß: " + fmtBytes(total) + " (Max " + fmtBytes(MAX) + " pro Drop)");
+      showError(tt("err.tooBig", "Zu groß: {size} (Max {max} pro Drop)", { size: fmtBytes(total), max: fmtBytes(MAX) }));
       return;
     }
 
@@ -423,7 +450,7 @@
       const { blob, name, bundled } = await bundleIfNeeded(Array.from(files));
       if (aborted) throw Object.assign(new Error("abgebrochen"), { aborted: true });
       if (blob.size > MAX) {
-        throw new Error("Nach Bündelung " + fmtBytes(blob.size) + " — Max " + fmtBytes(MAX));
+        throw new Error(tt("err.afterBundle", "Nach Bündelung {size} — Max {max}", { size: fmtBytes(blob.size), max: fmtBytes(MAX) }));
       }
 
       const useChunked = blob.size >= CHUNKED_THRESHOLD;
@@ -444,7 +471,7 @@
         const { encrypted, rawKey: k } = await encryptBlob(blob);
         if (aborted) throw Object.assign(new Error("abgebrochen"), { aborted: true });
 
-        setProgress(12, "// Signed-URL anfordern …");
+        setProgress(12, tt("ui.progress.requestUrl", "// Signed-URL anfordern …"));
         const body = {
           size: encrypted.length,
           content_type: "application/octet-stream",
@@ -457,8 +484,8 @@
           credentials: "include",
           body: JSON.stringify(body),
         });
-        if (r.status === 429) throw new Error("Zu viele Uploads — kurz warten und nochmal.");
-        if (!r.ok) throw new Error("API-Fehler (HTTP " + r.status + ")");
+        if (r.status === 429) throw new Error(tt("err.tooManyUploadsRetry", "Zu viele Uploads — kurz warten und nochmal."));
+        if (!r.ok) throw new Error(tt("err.apiError", "API-Fehler (HTTP {n})", { n: r.status }));
         const payload = await r.json();
 
         await putWithProgress(payload.url, encrypted, (frac) => {
@@ -466,45 +493,73 @@
           setProgress(pct, "// Upload " + (frac * 100).toFixed(1) + "%");
         });
 
+        // Server-side confirm: the drop only becomes downloadable once the
+        // API has verified the object really exists on Storj. Catches silent
+        // upload failures (e.g. storage-side 403) before we hand out a link.
+        setProgress(96, tt("ui.progress.confirming", "// Upload bestätigen …"));
+        let confirmRes = await fetch(API + "/drops/" + payload.id + "/confirm", {
+          method: "POST",
+          credentials: "include",
+        });
+        if (confirmRes.status === 409) {
+          await new Promise((res) => setTimeout(res, 1500));
+          confirmRes = await fetch(API + "/drops/" + payload.id + "/confirm", {
+            method: "POST",
+            credentials: "include",
+          });
+        }
+        if (!confirmRes.ok) {
+          throw new Error(tt("err.confirmFailed", "Upload konnte nicht bestätigt werden (HTTP {n}) — die Datei ist nicht sicher angekommen. Bitte erneut versuchen.", { n: confirmRes.status }));
+        }
+
         dropId = payload.id;
         rawKey = k;
         ctByteCount = encrypted.length;
       }
 
-      setProgress(100, "// fertig");
+      setProgress(100, tt("ui.progress.done", "// fertig"));
 
       const keyB64 = u8ToB64Url(rawKey);
       const nameB64 = u8ToB64Url(new TextEncoder().encode(name));
+      // v=3 binds total_chunks (t) and total_size (s) into each chunk's AAD —
+      // recipients refuse to accept a stream that's missing trailing chunks
+      // or that ends short. Legacy v=2 links keep working unchanged.
+      const numChunks = useChunked ? Math.ceil(blob.size / CHUNK_SIZE) : 0;
       const share = location.origin + "/d/" + dropId + "#k=" + keyB64 + "&n=" + nameB64 +
-        (useChunked ? "&v=2&c=" + CHUNK_SIZE : "");
+        (useChunked
+          ? "&v=3&c=" + CHUNK_SIZE + "&t=" + numChunks + "&s=" + blob.size
+          : "");
 
       shareUrlEl.value = share;
       metaEl.textContent =
-        (bundled ? files.length + " Dateien · " : "1 Datei · ") +
-        fmtBytes(ctByteCount) + " verschlüsselt · " +
+        (bundled ? tt("ui.meta.files", "{n} Dateien · ", { n: files.length }) : tt("ui.meta.oneFile", "1 Datei · ")) +
+        fmtBytes(ctByteCount) + " " + tt("ui.meta.encrypted", "verschlüsselt") + " · " +
         (useChunked ? "chunked · " : "") +
-        "verfügbar " + fmtRetention(retentionHours) +
+        tt("ui.meta.available", "verfügbar ") + fmtRetention(retentionHours) +
         (burn ? " · 🔥 Burn-after-Read" : "");
       renderQR(share);
       result.classList.remove("hidden");
 
-      // Save drop metadata to localStorage (per wallet) so the dashboard
-      // can show the filename and a working share link on this device.
+      // Save drop metadata to sessionStorage (per wallet) so the dashboard
+      // can show the filename and a working share link within this tab session.
+      // Intentional NOT localStorage: share_link contains the AES key in its
+      // URL fragment — persisting it across tab/browser sessions would defeat
+      // the "we see nothing" guarantee against a compromised device disk.
       try {
         const meRes = await fetch("/api/me", { credentials: "include" });
         if (meRes.ok) {
           const me = await meRes.json();
           if (me.address) {
             const key = "dwinity_drop_meta_" + me.address.toLowerCase();
-            const store = JSON.parse(localStorage.getItem(key) || "{}");
+            const store = JSON.parse(sessionStorage.getItem(key) || "{}");
             store[dropId] = { filename: name, share_link: share, ts: Date.now() };
-            localStorage.setItem(key, JSON.stringify(store));
+            sessionStorage.setItem(key, JSON.stringify(store));
           }
         }
       } catch {}
     } catch (err) {
       if (err && err.aborted) {
-        showError("// abgebrochen · keine Daten auf Storj");
+        showError(tt("err.abortedNoData", "// abgebrochen · keine Daten auf Storj"));
       } else {
         showError(err.message || String(err));
       }
@@ -543,8 +598,8 @@
   copyBtn.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(shareUrlEl.value);
-      copyBtn.textContent = "✓ kopiert";
-      setTimeout(() => (copyBtn.textContent = "Link kopieren"), 1500);
+      copyBtn.textContent = tt("ui.copy.done", "✓ kopiert");
+      setTimeout(() => (copyBtn.textContent = tt("ui.copy.label", "Link kopieren")), 1500);
     } catch {
       shareUrlEl.select();
       document.execCommand("copy");
@@ -565,33 +620,44 @@
   });
 
   // ——— load tier limits from /api/me and adjust UI ———
+  let LAST_ME = null;
+
   function applyLimits(me) {
     MAX = me.max_size;
     MAX_RETENTION_HOURS = me.max_retention_hours;
     IS_PRO = !!me.pro;
+    LAST_ME = me;
+
+    const t = (key, fallback) => {
+      const v = window.DDI18n && window.DDI18n.t && window.DDI18n.t(key);
+      return v && v !== key ? v : fallback;
+    };
 
     // Dropzone hint text
     const hint = zone.querySelector(".text-white\\/50.text-sm.mb-6");
     if (hint) {
-      const sizeText = IS_PRO
-        ? "bis 2 GB (Pro) · Verschlüsselung im Browser"
-        : "bis 100 MB · Verschlüsselung im Browser · Pro = bis 2 GB";
-      hint.textContent = sizeText + " · mehrere Dateien → ZIP";
+      hint.textContent = me.proplus
+        ? t("drop.meta.proplus", "bis 5 GB (Pro+) · Verschlüsselung im Browser · mehrere Dateien → ZIP")
+        : IS_PRO
+        ? t("drop.meta.pro", "bis 2 GB (Pro) · Verschlüsselung im Browser · mehrere Dateien → ZIP")
+        : t("drop.meta.free", "bis 100 MB · Verschlüsselung im Browser · Pro = bis 2 GB · mehrere Dateien → ZIP");
     }
 
-    // Retention <select>: disable/gate 720h option for Free users
-    const opt30 = retentionSel.querySelector('option[value="720"]');
-    if (opt30) {
-      if (IS_PRO) {
-        opt30.disabled = false;
-        opt30.textContent = "30 Tage";
-      } else {
-        opt30.disabled = true;
-        opt30.textContent = "30 Tage (Pro)";
-        if (parseInt(retentionSel.value, 10) > MAX_RETENTION_HOURS) {
-          retentionSel.value = String(MAX_RETENTION_HOURS);
-        }
-      }
+    // Retention <select>: gate 720h (Pro) and 2160h (Pro+) options by tier
+    const gateOption = (value, key, lockedFallback, unlockedFallback) => {
+      const opt = retentionSel.querySelector('option[value="' + value + '"]');
+      if (!opt) return;
+      const unlocked = MAX_RETENTION_HOURS >= value;
+      opt.disabled = !unlocked;
+      opt.textContent = unlocked
+        ? t(key + ".unlocked", unlockedFallback)
+        : t(key, lockedFallback);
+    };
+    gateOption(720, "drop.expire.30d", "30 Tage (Pro)", "30 Tage");
+    gateOption(2160, "drop.expire.90d", "90 Tage (Pro+)", "90 Tage");
+
+    if (parseInt(retentionSel.value, 10) > MAX_RETENTION_HOURS) {
+      retentionSel.value = String(MAX_RETENTION_HOURS);
     }
   }
 
@@ -605,5 +671,12 @@
   }
 
   window.addEventListener("dwinity:pro-updated", loadLimits);
+  // Re-apply tier-specific texts after a language switch (applyAll resets
+  // the data-i18n options/hint to their locked base labels).
+  window.addEventListener("dd:lang-changed", () => { if (LAST_ME) applyLimits(LAST_ME); });
   loadLimits();
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "err.afterBundle": "After bundling {size} — max {max}",
+  "err.abortedNoData": "// cancelled · no data on Storj",
+} });

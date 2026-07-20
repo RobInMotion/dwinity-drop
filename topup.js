@@ -1,4 +1,11 @@
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   // Standalone egress-credit top-up flow. Independent of upgrade.js (which
   // covers Pro subscription invoices) — fewer cross-cutting changes.
 
@@ -33,11 +40,11 @@
     if (!me || !me.address) { body.textContent = t("topup.notLogged", "// nicht eingeloggt"); return; }
     const eg = me.egress || { bytes_used: 0, bytes_quota: 0, bytes_credits: 0, bytes_available: 0 };
     body.innerHTML =
-      'Pro: <span class="' + (me.pro ? "text-neon-500" : "text-white/50") + '">' + (me.pro ? "aktiv" : "inaktiv") + '</span>' +
+      'Pro: <span class="' + (me.pro ? "text-neon-500" : "text-white/50") + '">' + (me.pro ? vt("tp.active", "aktiv") : vt("tp.inactive", "inaktiv")) + '</span>' +
       ' · used <span class="text-white">' + fmtBytes(eg.bytes_used) + '</span>' +
       ' / quota <span class="text-white">' + fmtBytes(eg.bytes_quota) + '</span>' +
       ' · credits <span class="text-neon-500">' + fmtBytes(eg.bytes_credits) + '</span>' +
-      ' · verfügbar <span class="text-neon-500">' + fmtBytes(eg.bytes_available) + '</span>';
+      ' · ' + vt('tp.available', 'verfügbar') + ' <span class="text-neon-500">' + fmtBytes(eg.bytes_available) + '</span>';
   }
 
   async function loadQuote() {
@@ -58,7 +65,7 @@
       $("quote-note").textContent = q.note || "";
     } catch (e) {
       $("quote-amount").textContent = "—";
-      $("quote-note").textContent = "Quote fehlgeschlagen";
+      $("quote-note").textContent = vt("tp.quoteFailed", "Quote fehlgeschlagen");
     }
   }
 
@@ -191,7 +198,7 @@
         }],
       });
       $("pay-status").innerHTML =
-        '// TX gesendet · warte auf Bestätigung · ' +
+        vt('tp.txSent', '// TX gesendet · warte auf Bestätigung · ') +
         '<a href="https://snowtrace.io/tx/' + txHash + '" target="_blank" rel="noopener" class="text-neon-500 hover:underline">' +
         txHash.slice(0, 10) + '…</a>';
     } catch (e) {
@@ -252,3 +259,10 @@
 
   boot();
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "tp.active": "active",
+  "tp.inactive": "inactive",
+  "tp.quoteFailed": "Quote failed",
+  "tp.txSent": "// TX sent · waiting for confirmation · ",
+  "tp.available": "available",
+} });

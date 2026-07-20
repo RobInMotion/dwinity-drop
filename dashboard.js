@@ -1,4 +1,11 @@
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   // Dashboard: shows this wallet's drops, storage usage, and a fragment map.
 
   const API = "/api";
@@ -16,10 +23,7 @@
   const statTotal = document.getElementById("stat-total");
   const statUsed = document.getElementById("stat-used");
   const statQuota = document.getElementById("stat-quota");
-  const statPct = document.getElementById("stat-pct");
-  const statDl = document.getElementById("stat-dl");
-  const ringProgress = document.getElementById("ring-progress");
-  const RING_CIRC = 553;  // 2π × 88 — matches SVG stroke-dasharray
+  const statBar = document.getElementById("stat-bar"); // may be null in the new ring-based design
 
   const listEl = document.getElementById("drops-list");
   const emptyEl = document.getElementById("drops-empty");
@@ -29,19 +33,6 @@
   let selectedDropId = null;
   let map = null;
   let nodeMarkers = [];
-
-  // Details arrow rotation — Leaflet map is inside <details>, rotate ▾ to ▴ on open
-  document.querySelectorAll("details").forEach((el) => {
-    const arrow = el.querySelector("[data-details-arrow]");
-    if (!arrow) return;
-    el.addEventListener("toggle", () => {
-      arrow.style.transform = el.open ? "rotate(180deg)" : "";
-      if (el.open && map) {
-        // Leaflet needs a size-recompute when its container becomes visible
-        setTimeout(() => { try { map.invalidateSize(); } catch {} }, 100);
-      }
-    });
-  });
 
   // ——— utils ———
   function fmtBytes(n) {
@@ -56,14 +47,26 @@
   }
   function fmtRelative(ts) {
     const d = ts - Math.floor(Date.now() / 1000);
-    if (d <= 0) return "abgelaufen";
+    if (d <= 0) return vt("dd.expired", "abgelaufen");
     if (d < 3600) return Math.round(d / 60) + " min";
     if (d < 86400) return Math.round(d / 3600) + " h";
-    return Math.round(d / 86400) + " Tage";
+    return Math.round(d / 86400) + " " + vt("dd.days", "Tage");
   }
   function lsKey(addr) { return LS_KEY_PREFIX + addr.toLowerCase(); }
   function getMeta(addr) {
-    try { return JSON.parse(localStorage.getItem(lsKey(addr)) || "{}"); } catch { return {}; }
+    // sessionStorage (not localStorage): share_link includes AES key — must
+    // not persist across browser restarts. See app.js for rationale.
+    const k = lsKey(addr);
+    try {
+      // One-shot migration: lift any pre-existing localStorage entry into
+      // sessionStorage on first dashboard load, then purge from disk.
+      const legacy = localStorage.getItem(k);
+      if (legacy && !sessionStorage.getItem(k)) {
+        sessionStorage.setItem(k, legacy);
+      }
+      if (legacy) localStorage.removeItem(k);
+      return JSON.parse(sessionStorage.getItem(k) || "{}");
+    } catch { return {}; }
   }
 
   // ——— node coordinates (representative global distribution) ———
@@ -109,6 +112,7 @@
   // ——— map ———
   function initMap() {
     if (map) return;
+    if (!document.getElementById("drop-map")) return; // map removed from layout
     map = L.map("drop-map", {
       worldCopyJump: false,
       zoomControl: false,
@@ -125,6 +129,7 @@
   }
 
   function renderMapMarkers() {
+    if (!map) return; // map removed in new layout — nothing to render
     nodeMarkers.forEach((m) => m.remove());
     nodeMarkers = [];
     const active = selectedDropId ? shardsFor(selectedDropId) : null;
@@ -142,32 +147,6 @@
   }
 
   // ——— data ———
-  async function probeAdmin() {
-    // If the logged-in wallet is a chat/drop admin, show a shortcut in the
-    // header with a badge of open reports. Silent no-op for non-admins.
-    try {
-      const ar = await fetch("/api/admin/stats", { credentials: "include" });
-      if (!ar.ok) return;
-      const astats = await ar.json();
-      let hdr = document.getElementById("admin-shortcut");
-      if (!hdr) {
-        // Insert into the right-side button group in the new header
-        const group = document.querySelector("header .max-w-6xl > div:last-child");
-        if (!group) return;
-        hdr = document.createElement("a");
-        hdr.id = "admin-shortcut";
-        hdr.href = "/admin";
-        hdr.className = "hidden sm:inline-flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 text-[11px] font-mono uppercase tracking-widest transition";
-        // prepend before the "+ Neuer Drop" button
-        group.insertBefore(hdr, group.querySelector('a[href="/"]') || group.firstChild);
-      }
-      const open = (astats.reports && astats.reports.open) || 0;
-      hdr.innerHTML = "Admin" + (open > 0
-        ? ` <span class="ml-1 px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px]">${open}</span>`
-        : "");
-    } catch {}
-  }
-
   async function loadMine() {
     try {
       const r = await fetch(API + "/drops/mine", { credentials: "include" });
@@ -195,7 +174,7 @@
     // badges
     if (data.pro) {
       const untilStr = new Date(data.pro_until * 1000).toLocaleDateString("de-DE");
-      proBadgeText.textContent = "Pro aktiv bis " + untilStr;
+      proBadgeText.textContent = vt("dd.proUntil", "Pro aktiv bis ") + untilStr;
       show(proBadge); hide(freeBadge);
     } else {
       show(freeBadge); hide(proBadge);
@@ -206,11 +185,8 @@
     statTotal.textContent = data.stats.total_count;
     statUsed.textContent = fmtBytes(data.stats.storage_used);
     statQuota.textContent = fmtBytes(data.stats.storage_quota);
-    const totalDls = allDrops.reduce((s, d) => s + (d.download_count || 0), 0);
-    if (statDl) statDl.textContent = totalDls;
     const pct = Math.min(100, Math.round((data.stats.storage_used / Math.max(1, data.stats.storage_quota)) * 100));
-    if (statPct) statPct.textContent = pct + " %";
-    if (ringProgress) ringProgress.setAttribute("stroke-dashoffset", RING_CIRC * (1 - pct / 100));
+    if (statBar) statBar.style.width = pct + "%";
 
     // list
     renderList();
@@ -218,13 +194,19 @@
     show(dash);
     hide(noLogin);
     initMap();
-    probeAdmin();  // fire-and-forget async
     if (!selectedDropId && allDrops[0]) {
       selectedDropId = allDrops[0].id;
       renderMapMarkers();
     }
 
-    startBubbles();
+    // bubbles: canvas is now visible, measure + build (no-op if removed from layout)
+    if (_BUBBLE_OK) {
+      fitCanvas();
+      if (allDrops.length === 0) bubbleEmpty.classList.remove("hidden");
+      else bubbleEmpty.classList.add("hidden");
+      buildBubbles(allDrops);
+      startBubbles();
+    }
   }
 
   function renderList() {
@@ -239,130 +221,96 @@
     allDrops.forEach((d) => {
       const m = meta[d.id] || {};
       const isOpen = d.id === selectedDropId;
+      const wrapper = document.createElement("div");
+      wrapper.className = (isOpen ? "bg-void-800/40" : "") + " transition";
+      wrapper.dataset.id = d.id;
+
+      // row summary
+      const row = document.createElement("div");
+      row.className = "p-4 hover:bg-void-800/60 transition cursor-pointer flex items-start gap-4";
+      row.dataset.row = "1";
       const isBurn = d.max_downloads === 1;
       const downloaded = (d.download_count || 0) > 0;
-      const hasKey = !!m.share_link;
-
-      const card = document.createElement("article");
-      card.className = "drop-card rounded-2xl bg-void-900/80 backdrop-blur border border-white/10 overflow-hidden";
-      card.dataset.id = d.id;
-
-      // Expiry urgency accent on card border
-      const remaining = d.expires_at - Math.floor(Date.now() / 1000);
-      let expiryBadgeCls = "text-neon-500";
-      if (remaining < 3600) expiryBadgeCls = "text-red-400";
-      else if (remaining < 86400) expiryBadgeCls = "text-yellow-400";
-
-      const filename = escapeHtml(m.filename || "Drop");
-      const burnChip = isBurn
-        ? `<span class="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-orange-300 text-[10px] font-mono">🔥 ${d.download_count}/1</span>`
+      const burnBadge = isBurn
+        ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-orange-300 text-[10px] font-mono">🔥 ${d.download_count}/1</span>`
         : "";
-      const keyChip = !hasKey
-        ? `<span class="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-[10px] font-mono" title="Schlüssel auf diesem Gerät nicht verfügbar">Kein Key</span>`
-        : "";
+      const dlInfo = downloaded
+        ? `<span class="text-white/70">⬇ ${d.download_count} · ${vt("dd.lastAgo", "zuletzt {t} her", { t: fmtRelative(d.last_download_at) })}</span>`
+        : `<span class="text-white/40">${vt("dd.notDownloaded", "noch nicht geladen")}</span>`;
 
-      const dlLine = downloaded
-        ? `<span class="text-white/70">⬇ ${d.download_count}${d.last_download_at ? ` · vor ${fmtRelative(d.last_download_at)}` : ''}</span>`
-        : `<span class="text-white/40">noch nicht geladen</span>`;
-      const urlLine = (d.url_issued_count || 0) > (d.download_count || 0)
-        ? `<span class="text-white/40" title="URL-Abrufe (inkl. Tab-Refresh)">◐ ${d.url_issued_count}</span>`
-        : "";
-
-      // ——— card header (always visible) ———
-      const header = document.createElement("div");
-      header.className = "p-4 cursor-pointer select-none";
-      header.dataset.role = "header";
-      header.innerHTML = `
-        <div class="flex items-start gap-3 mb-2.5">
-          <div class="shrink-0 w-9 h-9 rounded-lg bg-neon-500/10 text-neon-500 grid place-items-center font-mono text-[10px]">29/80</div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
-              <div class="font-600 truncate">${filename}</div>
-              ${burnChip}
-              ${keyChip}
-            </div>
-            <div class="font-mono text-[10px] text-white/30 truncate">${d.id.slice(0, 16)}…</div>
+      row.innerHTML = `
+        <div class="shrink-0 w-10 h-10 rounded-lg bg-neon-500/10 text-neon-500 grid place-items-center font-mono text-xs">29/80</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="font-600 text-sm truncate">${escapeHtml(m.filename || "Drop")}</div>
+            ${burnBadge}
+            <span class="font-mono text-[10px] text-white/40">${d.id.slice(0,10)}…</span>
           </div>
-          <div class="shrink-0 text-white/30 text-xs">${isOpen ? "▲" : "▾"}</div>
+          <div class="text-xs text-white/50 mt-1 font-mono flex flex-wrap gap-x-4 gap-y-1">
+            <span>${fmtBytes(d.size)} ${vt("ui.meta.encrypted", "verschlüsselt")}</span>
+            <span>${vt("dd.created", "erstellt")} ${fmtDate(d.created_at)}</span>
+            <span class="text-neon-500">Ablauf in ${fmtRelative(d.expires_at)}</span>
+            ${dlInfo}
+          </div>
         </div>
-        <div class="grid grid-cols-3 gap-2 text-[11px] font-mono pt-2.5 border-t border-white/5">
-          <div>
-            <div class="text-white/30 mb-0.5">Größe</div>
-            <div class="text-white/80">${fmtBytes(d.size)}</div>
-          </div>
-          <div>
-            <div class="text-white/30 mb-0.5">Ablauf</div>
-            <div class="${expiryBadgeCls}">${fmtRelative(d.expires_at)}</div>
-          </div>
-          <div>
-            <div class="text-white/30 mb-0.5">Downloads</div>
-            <div class="flex items-center gap-1.5 flex-wrap">
-              ${dlLine}
-              ${urlLine}
-            </div>
-          </div>
+        <div class="shrink-0 flex items-center gap-1">
+          <div class="text-white/40 text-xs mr-1 select-none">${isOpen ? "▲" : "▼"}</div>
+          <button data-act="delete" class="p-2 rounded-md hover:bg-red-500/10 text-white/60 hover:text-red-400" title="Drop löschen">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
         </div>
       `;
-      card.appendChild(header);
+      wrapper.appendChild(row);
 
-      // ——— expanded share panel ———
+      // expanded share panel (only if selected)
       if (isOpen) {
-        const panel = document.createElement("div");
-        panel.className = "border-t border-white/10 bg-void-800/30 p-4";
-        if (hasKey) {
-          panel.innerHTML = `
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
-              <div class="shrink-0 self-center sm:self-start p-2 rounded-xl bg-white" style="width:116px;height:116px;">
-                <canvas data-qr="${d.id}" width="100" height="100"></canvas>
+        const share = document.createElement("div");
+        share.className = "px-4 pb-5 border-b border-white/10";
+        if (m.share_link) {
+          share.innerHTML = `
+            <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500 mb-3">Teilen</div>
+            <div class="flex flex-col md:flex-row items-stretch md:items-start gap-4">
+              <div class="shrink-0 p-2 rounded-xl bg-white" style="width:136px;height:136px;">
+                <canvas data-qr="${d.id}" width="120" height="120"></canvas>
               </div>
-              <div class="flex-1 min-w-0 flex flex-col gap-2">
-                <div class="font-mono text-[10px] uppercase tracking-widest text-neon-500">Share-Link</div>
-                <div class="flex gap-2">
-                  <input data-share-input value="${escapeAttr(m.share_link)}" readonly class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-void-900 border border-white/10 text-neon-400 font-mono text-[11px] focus:outline-none focus:border-neon-500/60" />
-                  <button data-act="copy-full" class="shrink-0 px-3 py-2 rounded-lg bg-neon-500 text-void-950 font-bold text-xs hover:bg-neon-600 transition">Kopieren</button>
+              <div class="flex-1 min-w-0">
+                <div class="flex gap-2 mb-2">
+                  <input data-share-input value="${escapeAttr(m.share_link)}" readonly class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-void-800 border border-white/10 text-neon-400 font-mono text-xs focus:outline-none focus:border-neon-500/60" />
+                  <button data-act="copy-full" class="px-4 py-2 rounded-lg bg-neon-500 text-void-950 font-bold text-xs hover:bg-neon-600 transition whitespace-nowrap">Kopieren</button>
                 </div>
                 <p class="text-[11px] text-white/40 font-mono leading-relaxed">
-                  Alles nach dem <span class="text-neon-500">#</span> bleibt im Browser — der Schlüssel verlässt unseren Server nie.
+                  Alles nach dem <span class="text-neon-500">#</span> bleibt im Browser des Empfängers — der Schlüssel geht nie an unseren Server.
+                  Link funktioniert bis zum Ablauf.
                 </p>
-                <div class="flex justify-end pt-1">
-                  <button data-act="delete" class="inline-flex items-center gap-1.5 text-[11px] font-mono text-white/50 hover:text-red-400 transition">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-                    Drop löschen
-                  </button>
-                </div>
               </div>
             </div>
           `;
         } else {
-          panel.innerHTML = `
-            <div class="p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/30 text-[13px]">
-              <div class="font-600 text-yellow-400 mb-1">Share-Link auf diesem Gerät nicht verfügbar</div>
-              <div class="text-white/70 leading-relaxed">
-                Dieser Drop wurde auf einem anderen Browser erstellt. Der Decryption-Schlüssel lebt nur dort — <strong>wir können ihn nicht rekonstruieren</strong>. Hast du den Link noch irgendwo? Dann weiterleiten, sonst löschen + neu hochladen.
-              </div>
-              <div class="flex justify-end mt-3">
-                <button data-act="delete" class="inline-flex items-center gap-1.5 text-[11px] font-mono text-white/50 hover:text-red-400 transition">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
-                  Drop löschen
-                </button>
+          share.innerHTML = `
+            <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-3">${vt("dd.share", "Teilen")}</div>
+            <div class="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/30 text-sm">
+              <div class="font-600 text-yellow-400 mb-2">${vt("dd.shareUnavailable", "Share-Link nicht verfügbar auf diesem Gerät")}</div>
+              <div class="text-white/70 text-[13px] leading-relaxed">
+                ${vt("dd.shareUnavailableBody", 'Dieser Drop wurde auf einem anderen Browser erstellt. Der Decryption-Schlüssel lebt nur dort im Speicher — <strong>wir können ihn nicht rekonstruieren</strong>, das ist das Self-Custody-Prinzip.<br/><br/>Hast du den Link noch per Nachricht / E-Mail? Den kannst du direkt weiterschicken. Alternativ: diesen Drop löschen und neu hochladen.')}
               </div>
             </div>
           `;
         }
-        card.appendChild(panel);
+        wrapper.appendChild(share);
 
+        // render QR into the canvas after it's in the DOM
         queueMicrotask(() => {
-          const c = card.querySelector('canvas[data-qr]');
+          const c = wrapper.querySelector('canvas[data-qr]');
           if (c && m.share_link && typeof QRious !== "undefined") {
             try {
-              new QRious({ element: c, value: m.share_link, size: 100, level: "M",
+              new QRious({ element: c, value: m.share_link, size: 120, level: "M",
                 background: "#ffffff", foreground: "#05060A" });
             } catch {}
           }
         });
       }
 
-      listEl.appendChild(card);
+      listEl.appendChild(wrapper);
     });
   }
 
@@ -375,22 +323,22 @@
   }
 
   async function deleteDrop(id) {
-    if (!confirm("Diesen Drop wirklich löschen? Der Share-Link wird sofort ungültig.")) return;
+    if (!confirm(vt("dd.confirmDelete", "Diesen Drop wirklich löschen? Der Share-Link wird sofort ungültig."))) return;
     try {
       const r = await fetch(API + "/drops/" + encodeURIComponent(id), {
         method: "DELETE",
         credentials: "include",
       });
       if (!r.ok) throw new Error("HTTP " + r.status);
-      // purge localStorage meta
+      // purge sessionStorage meta
       const meta = getMeta(currentAddress);
       delete meta[id];
-      localStorage.setItem(lsKey(currentAddress), JSON.stringify(meta));
+      sessionStorage.setItem(lsKey(currentAddress), JSON.stringify(meta));
       if (selectedDropId === id) selectedDropId = null;
       const data = await loadMine();
       if (data) render(data);
     } catch (e) {
-      alert("Konnte Drop nicht löschen: " + (e.message || e));
+      alert(vt("dd.deleteFailed", "Konnte Drop nicht löschen: ") + (e.message || e));
     }
   }
 
@@ -398,7 +346,7 @@
     const meta = getMeta(currentAddress);
     const link = meta[id] && meta[id].share_link;
     if (!link) {
-      alert("Dieser Share-Link ist auf einem anderen Gerät erzeugt worden und hier nicht verfügbar. Der Drop existiert noch — nur der Decryption-Key ist nicht mehr in deinem Browser.");
+      alert(vt("dd.linkOtherDevice", "Dieser Share-Link ist auf einem anderen Gerät erzeugt worden und hier nicht verfügbar. Der Drop existiert noch — nur der Decryption-Key ist nicht mehr in deinem Browser."));
       return;
     }
     try {
@@ -438,7 +386,7 @@
       try { document.execCommand("copy"); } catch {}
     }
     const prev = btn.textContent;
-    btn.textContent = "✓ kopiert";
+    btn.textContent = vt("ui.copy.done", "✓ kopiert");
     setTimeout(() => (btn.textContent = prev), 1500);
   }
 
@@ -448,6 +396,214 @@
       if (b) b.click();
     });
   }
+
+  // ——— Bubble browser ———
+  // The bubble visualization was removed from dashboard.html in a redesign.
+  // We keep the bubble code but stub out its DOM hooks so the rest of the
+  // file (boot + render) still runs.
+  const bubbleCanvas = document.getElementById("bubble-canvas");
+  const bubbleTip = document.getElementById("bubble-tooltip");
+  const bubbleEmpty = document.getElementById("bubble-empty");
+  const _BUBBLE_OK = !!(bubbleCanvas && bubbleTip && bubbleEmpty);
+  // Bubble browser was removed from dashboard.html in a redesign. Below we keep
+  // the original code, but every function null-checks bubbleCanvas first so the
+  // rest of the file (boot + render) still runs when nodes are missing.
+  const bubbleTipName = _BUBBLE_OK ? bubbleTip.querySelector("[data-tip-name]") : null;
+  const bubbleTipMeta = _BUBBLE_OK ? bubbleTip.querySelector("[data-tip-meta]") : null;
+
+  let bubbles = [];
+  let bubbleRaf = null;
+  let bubbleW = 0, bubbleH = 280;
+  let bubbleHover = null;
+
+  function fitCanvas() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const rect = bubbleCanvas.getBoundingClientRect();
+    bubbleW = rect.width;
+    bubbleH = rect.height;
+    bubbleCanvas.width = Math.floor(bubbleW * dpr);
+    bubbleCanvas.height = Math.floor(bubbleH * dpr);
+    const ctx = bubbleCanvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function bubbleRadius(size) {
+    // sqrt-scaled, min 14 (always visible), max 60
+    const kb = Math.max(1, size / 1024);
+    return Math.max(14, Math.min(60, 14 + Math.sqrt(kb) * 2.5));
+  }
+
+  function expiryColor(expiresAt) {
+    const now = Date.now() / 1000;
+    const total = expiresAt - now;
+    if (total <= 0) return { fill: "rgba(239,68,68,0.35)", stroke: "rgba(239,68,68,0.8)" };
+    const days = total / 86400;
+    if (days > 10) return { fill: "rgba(0,255,157,0.20)", stroke: "rgba(0,255,157,0.9)" };
+    if (days > 3)  return { fill: "rgba(77,255,184,0.22)", stroke: "rgba(77,255,184,0.95)" };
+    if (days > 1)  return { fill: "rgba(251,191,36,0.22)", stroke: "rgba(251,191,36,0.95)" };
+    return { fill: "rgba(251,146,60,0.25)", stroke: "rgba(251,146,60,0.95)" };
+  }
+
+  function buildBubbles(drops) {
+    const meta = getMeta(currentAddress);
+    const prev = new Map(bubbles.map((b) => [b.drop.id, b]));
+    bubbles = drops.map((d) => {
+      const r = bubbleRadius(d.size);
+      const existing = prev.get(d.id);
+      return {
+        drop: d,
+        name: (meta[d.id] && meta[d.id].filename) || "Drop " + d.id.slice(0, 6),
+        r,
+        x: existing ? existing.x : Math.random() * Math.max(1, bubbleW - 2 * r) + r,
+        y: existing ? existing.y : Math.random() * Math.max(1, bubbleH - 2 * r) + r,
+        vx: existing ? existing.vx : (Math.random() - 0.5) * 0.5,
+        vy: existing ? existing.vy : (Math.random() - 0.5) * 0.5,
+      };
+    });
+  }
+
+  function stepPhysics() {
+    const cx = bubbleW / 2, cy = bubbleH / 2;
+    for (const b of bubbles) {
+      // gentle pull toward center
+      b.vx += (cx - b.x) * 0.0015;
+      b.vy += (cy - b.y) * 0.0015;
+      // friction
+      b.vx *= 0.94; b.vy *= 0.94;
+    }
+    // pair-wise collision
+    for (let i = 0; i < bubbles.length; i++) {
+      for (let j = i + 1; j < bubbles.length; j++) {
+        const a = bubbles[i], c = bubbles[j];
+        const dx = c.x - a.x, dy = c.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
+        const minD = a.r + c.r + 2;
+        if (dist < minD) {
+          const push = (minD - dist) * 0.5;
+          const nx = dx / dist, ny = dy / dist;
+          a.x -= nx * push; a.y -= ny * push;
+          c.x += nx * push; c.y += ny * push;
+        }
+      }
+    }
+    // integrate + clamp to canvas
+    for (const b of bubbles) {
+      b.x += b.vx; b.y += b.vy;
+      if (b.x - b.r < 0)          { b.x = b.r;           b.vx *= -0.5; }
+      if (b.x + b.r > bubbleW)    { b.x = bubbleW - b.r; b.vx *= -0.5; }
+      if (b.y - b.r < 0)          { b.y = b.r;           b.vy *= -0.5; }
+      if (b.y + b.r > bubbleH)    { b.y = bubbleH - b.r; b.vy *= -0.5; }
+    }
+  }
+
+  function drawBubbles() {
+    const ctx = bubbleCanvas.getContext("2d");
+    ctx.clearRect(0, 0, bubbleW, bubbleH);
+    for (const b of bubbles) {
+      const col = expiryColor(b.drop.expires_at);
+      const isSelected = b.drop.id === selectedDropId;
+      const isHover = b === bubbleHover;
+
+      // soft glow
+      if (isSelected || isHover) {
+        const g = ctx.createRadialGradient(b.x, b.y, b.r * 0.5, b.x, b.y, b.r * 2);
+        g.addColorStop(0, col.stroke.replace(/[\d.]+\)$/, "0.4)"));
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 2, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // filled circle
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = col.fill;
+      ctx.fill();
+      ctx.lineWidth = isSelected ? 2.5 : 1.5;
+      ctx.strokeStyle = col.stroke;
+      ctx.stroke();
+
+      // size label (only if bubble large enough)
+      if (b.r > 22) {
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.font = "500 11px JetBrains Mono, monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(fmtBytes(b.drop.size), b.x, b.y);
+      }
+    }
+  }
+
+  function bubbleLoop() {
+    stepPhysics();
+    drawBubbles();
+    bubbleRaf = requestAnimationFrame(bubbleLoop);
+  }
+
+  function startBubbles() {
+    if (bubbleRaf) return;
+    bubbleLoop();
+  }
+
+  function hitTestBubble(mx, my) {
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      const dx = mx - b.x, dy = my - b.y;
+      if (dx * dx + dy * dy <= b.r * b.r) return b;
+    }
+    return null;
+  }
+
+  if (_BUBBLE_OK) {
+  bubbleCanvas.addEventListener("mousemove", (e) => {
+    const rect = bubbleCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const hit = hitTestBubble(mx, my);
+    bubbleHover = hit;
+    if (hit) {
+      bubbleCanvas.style.cursor = "pointer";
+      bubbleTipName.textContent = hit.name;
+      bubbleTipMeta.textContent =
+        fmtBytes(hit.drop.size) + " · Ablauf " + fmtRelative(hit.drop.expires_at);
+      bubbleTip.style.left = Math.min(bubbleW - 200, mx + 14) + "px";
+      bubbleTip.style.top = Math.max(8, my - 48) + "px";
+      bubbleTip.classList.remove("hidden");
+    } else {
+      bubbleCanvas.style.cursor = "default";
+      bubbleTip.classList.add("hidden");
+    }
+  });
+  bubbleCanvas.addEventListener("mouseleave", () => {
+    bubbleHover = null;
+    bubbleTip.classList.add("hidden");
+  });
+  bubbleCanvas.addEventListener("click", (e) => {
+    const rect = bubbleCanvas.getBoundingClientRect();
+    const hit = hitTestBubble(e.clientX - rect.left, e.clientY - rect.top);
+    if (!hit) return;
+    selectedDropId = (selectedDropId === hit.drop.id) ? null : hit.drop.id;
+    renderList();
+    renderMapMarkers();
+  });
+  window.addEventListener("resize", () => { fitCanvas(); });
+
+  // Robust resize detection: if the canvas container ever changes size (e.g.
+  // the dashboard-screen becomes visible after login), re-measure and nudge
+  // any bubbles that landed outside the new box back into bounds.
+  if (typeof ResizeObserver !== "undefined") {
+    const ro = new ResizeObserver(() => {
+      const prevW = bubbleW, prevH = bubbleH;
+      fitCanvas();
+      if ((prevW === 0 || prevH === 0) && bubbleW > 0) {
+        // first real measurement — seed positions inside the new canvas
+        for (const b of bubbles) {
+          b.x = Math.random() * Math.max(1, bubbleW - 2 * b.r) + b.r;
+          b.y = Math.random() * Math.max(1, bubbleH - 2 * b.r) + b.r;
+        }
+      }
+    });
+    ro.observe(bubbleCanvas);
+  }
+  } // end if (_BUBBLE_OK) — bubble browser block
 
   // auth.js raises this after successful SIWE or pro update
   window.addEventListener("dwinity:pro-updated", async () => {
@@ -462,3 +618,17 @@
     else { show(noLogin); hide(dash); }
   })();
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "dd.expired": "expired",
+  "dd.days": "days",
+  "dd.proUntil": "Pro active until ",
+  "dd.lastAgo": "last {t} ago",
+  "dd.notDownloaded": "not downloaded yet",
+  "dd.created": "created",
+  "dd.share": "Share",
+  "dd.shareUnavailable": "Share link not available on this device",
+  "dd.shareUnavailableBody": "This drop was created in a different browser. The decryption key lives only there in memory — <strong>we cannot reconstruct it</strong>; that's the self-custody principle.<br/><br/>Still have the link in a message or email? You can forward it directly. Alternatively: delete this drop and upload again.",
+  "dd.confirmDelete": "Really delete this drop? The share link becomes invalid immediately.",
+  "dd.deleteFailed": "Could not delete drop: ",
+  "dd.linkOtherDevice": "This share link was created on a different device and isn't available here. The drop still exists — only the decryption key is no longer in your browser.",
+} });

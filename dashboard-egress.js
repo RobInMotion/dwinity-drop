@@ -2,6 +2,13 @@
 // dashboard.js, so Robin's WIP there stays untouched. Hooked up in
 // dashboard.html via plain <script>.
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   const $ = (id) => document.getElementById(id);
   const PERIOD_SEC = 30 * 24 * 3600;
 
@@ -14,7 +21,7 @@
   }
 
   function fmtRemain(secs) {
-    if (secs <= 0) return "jetzt";
+    if (secs <= 0) return vt("de.now", "jetzt");
     const d = Math.floor(secs / 86400);
     if (d > 0) return d + "d " + Math.floor((secs % 86400) / 3600) + "h";
     const h = Math.floor(secs / 3600);
@@ -65,3 +72,6 @@
   loadAndRender();
   setInterval(loadAndRender, 60_000);
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "de.now": "now",
+} });

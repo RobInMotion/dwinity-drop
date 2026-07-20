@@ -1,0 +1,169 @@
+/* Wrapped Story — full-viewport slide stack with auto-advance + tap controls. */
+.wrapped-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: linear-gradient(180deg, #0c0d10, #1a1d24 60%, #0c0d10);
+  color: #fff; font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  -webkit-user-select: none; user-select: none;
+}
+
+.wrapped-slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 6vh 2rem; text-align: center;
+  opacity: 0; transform: translateY(20px); pointer-events: none;
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+.wrapped-slide.active {
+  opacity: 1; transform: translateY(0); pointer-events: auto;
+}
+
+.wrapped-slide h1 {
+  font-size: clamp(2.2rem, 7vw, 5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+.wrapped-slide h2 {
+  font-size: clamp(1.2rem, 3.5vw, 2rem);
+  font-weight: 500;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
+.wrapped-slide p {
+  max-width: 560px;
+  opacity: 0.65;
+  margin-top: 1.25rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+  line-height: 1.55;
+}
+
+/* Big number display */
+.wrapped-counter {
+  font-size: clamp(4rem, 16vw, 10rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  background: linear-gradient(180deg, #fff, rgba(255,255,255,0.6));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 0.95;
+  margin-bottom: 1rem;
+}
+
+.wrapped-archetype-icon {
+  font-size: clamp(5rem, 17vw, 12rem);
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 6px 16px rgba(80, 227, 194, 0.18));
+}
+
+.wrapped-pool-tag {
+  margin-top: 2rem;
+  font-size: 0.78rem;
+  opacity: 0.45;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.wrapped-accent { color: #50e3c2; }
+
+/* Progress bars */
+.wrapped-progress {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+.wrapped-progress-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.wrapped-progress-bar > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #50e3c2;
+  transition: width 80ms linear;
+}
+
+/* Skip button */
+.wrapped-skip {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 10;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  transition: color 200ms, background 200ms;
+}
+.wrapped-skip:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+
+/* CTAs (final slide) */
+.wrapped-cta {
+  margin-top: 2.5rem;
+  display: inline-flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.wrapped-cta-primary {
+  background: #50e3c2;
+  color: #0c0d10;
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: background 200ms, transform 200ms;
+  box-shadow: 0 8px 24px rgba(80, 227, 194, 0.25);
+}
+.wrapped-cta-primary:hover {
+  background: #6cf2d3;
+  transform: translateY(-1px);
+}
+.wrapped-cta-secondary {
+  color: rgba(255,255,255,0.6);
+  text-decoration: underline;
+  font-size: 0.95rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 1rem;
+}
+.wrapped-cta-secondary:hover { color: #fff; }
+
+/* Pause hint */
+.wrapped-pause-hint {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  opacity: 0.35;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>404 — Dead Drop</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+</head>
+<body class="font-sans text-white antialiased min-h-screen bg-void-950">
+  <main class="min-h-screen flex flex-col items-center justify-center text-center px-6">
+    <a href="/" class="mb-10 opacity-80 hover:opacity-100 transition">
+      <img src="/img/deaddrop-logo-256.png" alt="Dead Drop" class="h-14 w-14 mx-auto" />
+    </a>
+    <div class="font-mono text-xs uppercase tracking-widest text-neon-500 mb-4" data-i18n="notfound.kicker">› HTTP 404</div>
+    <h1 class="font-sans text-5xl md:text-7xl font-600 tracking-tight leading-none mb-5">
+      <span data-i18n="notfound.title">Hier liegt nichts.</span>
+    </h1>
+    <p class="text-white/60 text-sm md:text-base leading-relaxed max-w-md mb-10" data-i18n="notfound.body">
+      Diese Seite existiert nicht — oder der Drop ist bereits verbrannt oder abgelaufen.
+      Drop-Links funktionieren nur, solange die Datei lebt. Das ist kein Fehler, das ist das Design.
+    </p>
+    <a href="/" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="notfound.cta">
+      Neuen Drop starten →
+    </a>
+    <div class="mt-14 font-mono text-[10px] uppercase tracking-widest text-white/30">
+      Dead Drop · Self-Custody File Transfer
+    </div>
+  </main>
+  <script src="/i18n.js"></script>
+</body>
+</html>

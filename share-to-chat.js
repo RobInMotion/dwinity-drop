@@ -3,6 +3,13 @@
 //  (1) User clicks "→ In Chat" on a fresh upload → /chat (room picker)
 //  (2) User clicked "+Drop" inside a chat-room → return directly to that room
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   const btn = document.getElementById("drop-share-chat-btn");
   const urlInput = document.getElementById("drop-share-url");
 
@@ -35,7 +42,7 @@
         // Show inline confirmation before redirect
         const banner = document.createElement("div");
         banner.className = "mt-3 p-3 rounded-xl bg-neon-500/15 border border-neon-500/40 text-sm text-neon-500 font-mono text-center";
-        banner.textContent = "⚡ → zurück in den Chat-Room (1s)…";
+        banner.textContent = vt("sc.back", "⚡ → zurück in den Chat-Room (1s)…");
         urlInput.parentNode.parentNode.insertBefore(banner, urlInput.parentNode.parentNode.firstChild);
         setTimeout(() => {
           window.location.href = "/chat/r/" + encodeURIComponent(chatReturn.roomId) +
@@ -70,3 +77,6 @@
     window.location.href = "/chat";
   });
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "sc.back": "⚡ → back to the chat room (1s)…",
+} });

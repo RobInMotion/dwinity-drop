@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title data-i18n="vault.pageTitle">Dwinity Vault — Dein digitales Leben, in einer Lade</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+<link rel="stylesheet" href="/wrapped.css" />
+<link rel="stylesheet" href="/dwinity-shared.css" />
+<style>
+  body { background: #05060A; }
+  .card { padding: 1.25rem; border-radius: 0.75rem; background: #0A0B10; border: 1px solid rgba(255,255,255,0.08); }
+  .card-hover { transition: border-color .15s, transform .15s; }
+  .card-hover:hover { border-color: rgba(0,255,157,0.4); transform: translateY(-1px); }
+  .source-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; background: rgba(0,255,157,0.08); color: #00FF9D; }
+  .pill { display:inline-block; padding:0.125rem 0.5rem; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  .pill-pending { background: rgba(250,204,21,0.1); color: #facc15; }
+  .pill-parsed  { background: rgba(0,255,157,0.1);  color: #00FF9D; }
+  .pill-failed  { background: rgba(248,113,113,0.1); color: #f87171; }
+  .dropzone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 0.75rem; padding: 2rem; text-align:center; transition: all .15s; }
+  .dropzone.over { border-color: #00FF9D; background: rgba(0,255,157,0.05); }
+</style>
+</head>
+<body class="text-white/90 font-sans">
+<a href="#main" class="skip-link" data-i18n="a11y.skip">Zum Inhalt springen</a>
+
+<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 md:gap-2">
+    <a href="/" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
+      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
+      <span class="truncate">Dwinity <span class="text-neon-500">Vault</span></span>
+      <span class="ml-1.5 text-[10px] text-white/40 font-mono uppercase tracking-widest hidden md:inline">Beta</span>
+    </a>
+    <div class="flex items-center gap-1 md:gap-2 shrink-0">
+      <a href="/dashboard" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/80 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition">Drop</a>
+      <button id="pro-mode-toggle" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/60 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition" title="Pro-Mode an/aus">
+        🔧 <span class="hidden md:inline">Pro-Mode:</span> AUS
+      </button>
+
+      <!-- Wallet-Balance ribbon (klein, ausblendbar) -->
+      <div id="wallet-balance" class="hidden items-center gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full bg-void-900/60 border border-white/10 text-[10px] md:text-[11px] font-mono text-white/60">
+        <span data-bal="avax" class="hidden sm:inline">— AVAX</span>
+        <span class="hidden sm:inline opacity-30">·</span>
+        <span data-bal="usdc">$—</span>
+        <span class="opacity-30">·</span>
+        <span data-bal="dwin" class="text-purple-300">— DWIN</span>
+        <button id="wallet-balance-hide" title="Balance ausblenden" class="ml-1 opacity-40 hover:opacity-100 transition">×</button>
+      </div>
+      <button id="wallet-balance-show" class="hidden items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-900/60 border border-white/10 text-[10px] md:text-[11px] font-mono text-white/40 hover:text-white" title="Balance einblenden">
+        💰
+      </button>
+
+      <div class="relative">
+        <button id="wallet-btn" data-state="out" aria-haspopup="menu" aria-controls="wallet-menu" aria-expanded="false" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition">
+          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
+          <span id="wallet-btn-label" class="truncate">Wallet</span>
+        </button>
+        <div id="wallet-menu" role="menu" aria-labelledby="wallet-btn" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-void-900 border border-white/10 shadow-xl p-4 text-sm z-50">
+          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1">Wallet</div>
+          <div id="wallet-menu-addr" class="font-mono text-xs break-all text-white/80 mb-3">—</div>
+          <div id="wallet-menu-pro" class="text-xs mb-4">—</div>
+          <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2">// trennen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="pt-20 md:pt-28 pb-16 max-w-6xl mx-auto px-4 md:px-6">
+
+  <!-- Hero -->
+  <section class="mb-10">
+    <div class="font-mono text-[11px] uppercase tracking-widest text-neon-500 mb-2">Digital Twin · Phase 1</div>
+    <h1 class="font-sans text-3xl md:text-5xl font-600 tracking-tight mb-3" data-i18n="vault.heroTitle">Dein digitales Leben, in einer Lade.</h1>
+    <a href="/rewards" class="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full border border-neon-500/40 bg-neon-500/10 text-neon-500 text-[11px] font-mono uppercase tracking-widest hover:bg-neon-500/20 transition" data-i18n="vault.rewardsBadge">🏆 Early Data Rewards · 250.000 DWIN →</a>
+    <p class="text-white/60 max-w-2xl" data-i18n="vault.heroSub">
+      Lade GDPR-Exporte von Strava, Spotify, Apple Health, Google Takeout und mehr in deinen wallet-gebundenen Vault.
+      Wir parsen sie zu einer einheitlichen Timeline — du behältst die Rohdaten verschlüsselt auf Storj.
+      Recovery via Seed-Phrase. Wir können dich nicht aussperren.
+    </p>
+  </section>
+
+  <!-- Login Gate -->
+  <section id="gate" class="hidden card text-center py-16 mb-8">
+    <div class="text-2xl font-600 mb-2" data-i18n="vault.gateTitle">Wallet verbinden</div>
+    <p class="text-white/60 mb-6" data-i18n="vault.gateSub">Vault ist wallet-gebunden — alle Imports laufen unter deiner Adresse.</p>
+    <button data-action="connect-wallet" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="vault.gateConnect">
+      Wallet verbinden →
+    </button>
+  </section>
+
+  <!-- Authenticated UI -->
+  <section id="app" class="hidden">
+
+    <!-- Dashboard (visible after Wrapped+Contribute) -->
+    <section id="dashboard-section" class="hidden mb-10"></section>
+
+    <!-- Stats row -->
+    <div id="stats-row" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+      <div class="card"><div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Imports</div><div id="stat-imports" class="text-2xl font-600">—</div></div>
+      <div class="card"><div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Activities</div><div id="stat-activities" class="text-2xl font-600">—</div></div>
+      <div class="card"><div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1" data-i18n="vault.statStorage">Speicher</div><div id="stat-storage" class="text-2xl font-600">—</div></div>
+      <div class="card"><div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Tier</div><div id="stat-tier" class="text-2xl font-600">—</div></div>
+    </div>
+
+    <!-- Source catalog -->
+    <h2 class="text-xl md:text-2xl font-600 mb-4" data-i18n="vault.chooseSource">Quelle wählen</h2>
+    <div id="source-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- Live-Sync (OAuth) — Phase 2: trades self-custody for live freshness -->
+    <section id="oauth-section" class="mb-10 hidden">
+      <div class="flex items-baseline gap-3 mb-1">
+        <h2 class="text-xl md:text-2xl font-600">Live-Sync</h2>
+        <span class="text-[10px] font-mono text-amber-400/80 uppercase tracking-widest" data-i18n="vault.liveSyncBadge">Beta · kein Self-Custody</span>
+      </div>
+      <p class="text-white/60 text-sm mb-4" data-i18n-html="vault.liveSyncSub">
+        Statt regelmäßig GDPR-Exporte hochzuladen kannst du dich direkt verbinden — wir holen
+        deine neuen Activities automatisch. <strong class="text-amber-400/90">Du verlässt damit
+        Self-Custody:</strong> wir halten ein OAuth-Token mit dem wir dein Konto auslesen können.
+        Kann jederzeit getrennt werden.
+      </p>
+      <div id="oauth-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- filled by JS -->
+      </div>
+    </section>
+
+    <!-- Privacy Disclaimer Modal for OAuth connect -->
+    <div id="oauth-disclaimer" class="hidden fixed inset-0 z-50 bg-void-950/90 backdrop-blur-sm items-center justify-center p-4" role="dialog" aria-labelledby="oauth-disclaimer-title" aria-modal="true">
+      <div class="max-w-lg w-full bg-void-900 border border-amber-500/40 rounded-2xl p-6 shadow-2xl">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="text-3xl" aria-hidden="true">🔓</div>
+          <div>
+            <h3 id="oauth-disclaimer-title" class="text-xl font-700 mb-1" data-i18n="vault.oauth.title">Du verlässt Self-Custody</h3>
+            <div class="text-[11px] font-mono text-amber-400/80 uppercase tracking-widest" data-i18n="vault.oauth.kicker">Bitte einmal lesen</div>
+          </div>
+        </div>
+        <div class="space-y-3 text-sm text-white/80 leading-relaxed">
+          <p><span data-i18n="vault.oauth.introPre">Wenn du</span> <strong id="oauth-disclaimer-provider" class="text-white">Strava</strong> <span data-i18n="vault.oauth.introPost">verbindest, autorisierst du Dwinity, deine Daten in deinem Namen abzurufen. Konkret:</span></p>
+          <ul class="list-disc pl-5 space-y-1 text-white/70 text-[13px]">
+            <li data-i18n-html="vault.oauth.li1">Wir erhalten ein <strong class="text-white">OAuth-Refresh-Token</strong>, gespeichert verschlüsselt auf unserem Server</li>
+            <li data-i18n-html="vault.oauth.li2">Damit können wir <strong class="text-white">jederzeit</strong> dein Konto auslesen — auch ohne dass du angemeldet bist</li>
+            <li data-i18n="vault.oauth.li3">Im Vault-Modus „Datei-Upload" haben wir das nicht — der ist und bleibt Self-Custody</li>
+            <li data-i18n-html="vault.oauth.li4">Du kannst die Verbindung jederzeit unten in der Live-Sync-Sektion <strong class="text-white">trennen</strong>; wir löschen das Token sofort</li>
+          </ul>
+          <p class="text-white/60 text-[13px]" data-i18n-html="vault.oauth.legal">Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (deine Einwilligung). Details in der <a href="/datenschutz.html" class="text-neon-500 hover:underline" target="_blank">Datenschutzerklärung</a>.</p>
+        </div>
+        <div class="flex gap-3 mt-5">
+          <button id="oauth-disclaimer-cancel" class="flex-1 px-4 py-2.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 font-mono text-sm transition" data-i18n="vault.oauth.cancel">Abbrechen</button>
+          <a id="oauth-disclaimer-go" href="#" class="flex-1 px-4 py-2.5 rounded-full bg-amber-500 text-void-950 font-bold hover:bg-amber-400 text-center transition" data-i18n="vault.oauth.go">Verstanden, verbinden →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div id="upload-panel" class="card mb-10 hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="text-[10px] font-mono text-white/40 uppercase tracking-widest" data-i18n="vault.step2">Schritt 2</div>
+          <h3 class="text-xl font-600"><span data-i18n="vault.uploadTitle">Datei hochladen</span> <span id="upload-source-name" class="text-neon-500"></span></h3>
+        </div>
+        <button id="upload-cancel" class="text-xs font-mono text-white/40 hover:text-white" data-i18n="vault.uploadCancel">× abbrechen</button>
+      </div>
+      <p id="upload-hint" class="text-white/60 text-sm mb-4"></p>
+      <p id="upload-instructions" class="text-white/60 text-xs mb-4"></p>
+      <div id="dropzone" class="dropzone cursor-pointer" role="button" tabindex="0" aria-label="Datei zum Hochladen auswählen oder per Drag-and-Drop ablegen" aria-describedby="upload-hint dropzone-formats">
+        <input id="file-input" type="file" class="hidden" aria-label="Datei auswählen" />
+        <div id="dropzone-idle">
+          <div class="text-2xl mb-2">📦</div>
+          <div class="font-600 mb-1" data-i18n="vault.dropzoneIdle">Datei hier ablegen oder klicken</div>
+          <div class="text-xs text-white/40 font-mono" id="dropzone-formats">.zip · .csv</div>
+        </div>
+        <div id="dropzone-busy" class="hidden" aria-live="polite" aria-atomic="true">
+          <div class="text-2xl mb-2" aria-hidden="true">⚡</div>
+          <div class="font-600 mb-1" id="upload-status" data-i18n="vault.uploading">Lade hoch…</div>
+          <div class="w-full bg-white/5 rounded-full h-1.5 mt-3 overflow-hidden" role="progressbar" aria-labelledby="upload-status" aria-valuemin="0" aria-valuemax="100"><div id="upload-bar" class="bg-neon-500 h-full transition-all" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div id="upload-result" class="hidden mt-4 card" style="border-color: rgba(0,255,157,0.3);" role="status" aria-live="polite"></div>
+    </div>
+
+    <!-- Imports list -->
+    <h2 class="text-xl md:text-2xl font-600 mb-4"><span data-i18n="vault.yourImports">Deine Imports</span> <span id="imports-wallet" class="text-[11px] font-mono text-white/40 align-middle"></span></h2>
+    <div id="imports-list" class="space-y-3 mb-10">
+      <div class="text-white/40 font-mono text-sm">// lade …</div>
+    </div>
+
+  </section>
+
+</main>
+
+<script src="/pro-mode.js"></script>
+<script src="/effects.js"></script>
+<script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
+<script src="/i18n.js"></script>
+<script src="/wallet-connect.js"></script>
+<script src="/auth.js"></script>
+<script src="/pseudonymizer.js"></script>
+<script src="/archetypes.js"></script>
+<script src="/archetypes-health.js"></script>
+<script src="/archetypes-google.js"></script>
+<script src="/archetypes-music.js"></script>
+<script src="/wrapped.js"></script>
+<script src="/wrapped-strava.js"></script>
+<script src="/wrapped-health.js"></script>
+<script src="/wrapped-google.js"></script>
+<script src="/wrapped-music.js"></script>
+<script src="/timeline.js"></script>
+<script src="/mindmap.js"></script>
+<script src="/vault-dashboard.js"></script>
+<script src="/wallet-balance.js" defer></script>
+<script src="/vault.js"></script>
+</body>
+</html>

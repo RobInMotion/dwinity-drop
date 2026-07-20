@@ -1,4 +1,11 @@
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   // Standalone Pro+ subscription flow. Independent of upgrade.js, so Robin's
   // WIP there stays untouched.
 
@@ -129,9 +136,9 @@
   async function showDone(inv) {
     $("step-pay").classList.add("hidden");
     $("step-done").classList.remove("hidden");
-    const months = inv.duration_days >= 365 ? "12 Monate" : "1 Monat";
+    const months = inv.duration_days >= 365 ? vt("pl.months12", "12 Monate") : vt("pl.month1", "1 Monat");
     $("done-summary").innerHTML =
-      months + " Pro+ aktiviert<br/>" +
+      months + " " + vt("pl.activated", "Pro+ aktiviert") + "<br/>" +
       '<span class="text-[11px]">tx: <a href="https://snowtrace.io/tx/' + inv.paid_tx +
       '" target="_blank" rel="noopener" class="text-cyan-400 hover:underline">' +
       (inv.paid_tx ? inv.paid_tx.slice(0, 10) + "…" : "—") + "</a></span>";
@@ -188,7 +195,7 @@
         }],
       });
       $("pay-status").innerHTML =
-        '// TX gesendet · warte auf Bestätigung · ' +
+        vt('tp.txSent', '// TX gesendet · warte auf Bestätigung · ') +
         '<a href="https://snowtrace.io/tx/' + txHash + '" target="_blank" rel="noopener" class="text-cyan-400 hover:underline">' +
         txHash.slice(0, 10) + '…</a>';
     } catch (e) {
@@ -227,7 +234,7 @@
         if (div) {
           div.classList.remove("opacity-50");
           const sub = div.querySelector("span");
-          if (sub) sub.textContent = "+25% Rabatt";
+          if (sub) sub.textContent = vt("pl.dwinDiscount", "+25% Rabatt");
         }
       }
     }
@@ -240,3 +247,11 @@
 
   boot();
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "pl.months12": "12 months",
+  "pl.month1": "1 month",
+  "pl.activated": "of Pro+ activated",
+} });
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "pl.dwinDiscount": "+25% discount",
+} });

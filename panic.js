@@ -1,4 +1,11 @@
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   // Floating panic button — 2-click wipe for the logged-in wallet.
   // Click 1: arm (10s cooldown, red pulse).
   // Click 2 while armed: fullscreen overlay → sequential wipes:
@@ -21,7 +28,7 @@
     btn = document.createElement("button");
     btn.id = "panic-btn";
     btn.type = "button";
-    btn.setAttribute("aria-label", "Panic — alles löschen");
+    btn.setAttribute("aria-label", vt("pn.title", "Panic — alles löschen"));
     // On chat-room pages the input bar is pinned to the viewport bottom;
     // shift the panic button above it so it can't collide with "Senden".
     const isChatRoom = /^\/chat\/r\//.test(location.pathname);
@@ -58,7 +65,7 @@
         <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
     `;
-    btn.title = "Panic-Wipe · 1. Klick scharf stellen, 2. Klick löscht alles";
+    btn.title = vt("pn.hint", "Panic-Wipe · 1. Klick scharf stellen, 2. Klick löscht alles");
     document.body.appendChild(btn);
 
     // Tooltip (shown while armed) — anchored above the button
@@ -149,7 +156,7 @@
     }
     ov.innerHTML = `
       <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.25em; color: rgba(239,68,68,0.9); margin-bottom: 20px;">
-        · Panic Wipe aktiv ·
+        · ${vt('pn.active', 'Panic Wipe aktiv')} ·
       </div>
       <div style="font-size: 32px; font-weight: 700; max-width: 520px; line-height: 1.1; margin-bottom: 24px;">
         ${text}
@@ -163,7 +170,7 @@
 
   async function executeWipe() {
     armedUntil = 0;
-    const ov = showOverlay("Lösche Chat-Daten …");
+    const ov = showOverlay(vt("pn.wipingChat", "Lösche Chat-Daten …"));
     const prog = document.getElementById("panic-progress");
     const set = (pct) => { if (prog) prog.style.width = pct + "%"; };
 
@@ -175,10 +182,10 @@
 
     await tryPost("/api/chat/panic");
     set(33);
-    ov.querySelector("div:nth-child(2)").textContent = "Lösche Drops …";
+    ov.querySelector("div:nth-child(2)").textContent = vt("pn.wipingDrops", "Lösche Drops …");
     await tryPost("/api/drops/panic");
     set(66);
-    ov.querySelector("div:nth-child(2)").textContent = "Lösche Identität …";
+    ov.querySelector("div:nth-child(2)").textContent = vt("pn.wipingIdentity", "Lösche Identität …");
     await tryPost("/api/identity/panic");
     set(100);
     ov.querySelector("div:nth-child(2)").textContent = "Wipe abgeschlossen.";
@@ -244,3 +251,13 @@
     boot();
   }
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "pn.title": "Panic — wipe everything",
+  "pn.hint": "Panic wipe · 1st click arms it, 2nd click wipes everything",
+  "pn.active": "Panic wipe active",
+} });
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "pn.wipingChat": "Wiping chat data …",
+  "pn.wipingDrops": "Wiping drops …",
+  "pn.wipingIdentity": "Wiping identity …",
+} });

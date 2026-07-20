@@ -1,3 +1,10 @@
+
+function vt(key, fallback, vars) {
+  let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+  if (!v || v === key) v = fallback;
+  if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+  return v;
+}
 (function() {
   const m = document.getElementById('report-modal');
   const link = document.getElementById('report-link');
@@ -39,8 +46,11 @@
       ok.classList.remove('hidden');
       setTimeout(close, 2500);
     } catch (e) {
-      err.textContent = 'Fehler: ' + (e.message || e);
+      err.textContent = vt('rp.errPrefix', 'Fehler: ') + (e.message || e);
       err.classList.remove('hidden');
     } finally { submit.disabled = false; }
   });
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "rp.errPrefix": "Error: ",
+} });

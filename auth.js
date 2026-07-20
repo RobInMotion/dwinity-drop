@@ -40,7 +40,8 @@
     const tt = (window.DDI18n && window.DDI18n.t && window.DDI18n.t("nav.walletConnect"));
     label.textContent = (tt && tt !== "nav.walletConnect") ? tt : "Wallet verbinden";
     dot.className = "w-1.5 h-1.5 rounded-full bg-white/50";
-    menu.classList.add("hidden");
+    if (menu) menu.classList.add("hidden");
+    btn.setAttribute("aria-expanded", "false");
     btn.dataset.state = "out";
   }
 
@@ -164,20 +165,22 @@
     dot.className = "w-1.5 h-1.5 rounded-full " + cfg.dot + " pulse-dot shrink-0";
 
     // Build menu sections
-    menuAddr.textContent = me.address;
+    if (menuAddr) menuAddr.textContent = me.address;
     const tierBlock = renderTierBlock(me);
     const egressBlock = renderEgressBlock(me);
-    menuPro.innerHTML = tierBlock + egressBlock +
+    if (menuPro) menuPro.innerHTML = tierBlock + egressBlock +
       '<a href="/dashboard" class="block text-[11px] font-mono text-white/60 hover:text-neon-500 transition">→ ' +
       t("nav.dashboard", "Dashboard") + '</a>';
 
-    // Add rank link below dashboard, will fill async
+    // Add rank link below dashboard, will fill async (menu markup may be
+    // absent on gate-style pages like /topup — skip the slot there)
     let rankSlot = document.getElementById("wallet-menu-rank");
-    if (!rankSlot) {
+    if (!rankSlot && menuPro) {
       rankSlot = document.createElement("div");
       rankSlot.id = "wallet-menu-rank";
       menuPro.appendChild(rankSlot);
     }
+    if (!rankSlot) { probeAdmin(); return; }
     rankSlot.innerHTML = "";
 
     // Probe admin + fetch rank async
@@ -247,23 +250,41 @@
     );
   }
 
-  async function connect() {
-    if (!window.ethereum) {
-      alert(
-        "Keine Wallet erkannt.\n\n" +
-        "Installiere MetaMask (oder eine kompatible Wallet wie Rabby/Trust) " +
-        "und lade die Seite neu."
-      );
-      return;
-    }
+  async function connect(opts) {
+    opts = opts || {};
+    const forceWC = !!opts.walletConnect;
+    const useWC = forceWC || !window.ethereum;
 
     if (hasHeader) {
       label.textContent = t("nav.walletConnecting", "// verbinden …");
       btn.disabled = true;
     }
 
+    let provider;
+    if (useWC) {
+      if (!window.dwinityWC) {
+        alert(t("nav.noWalletNoWC", "Keine Wallet erkannt und WalletConnect nicht geladen.\n\nInstalliere MetaMask (Chrome/Edge/Firefox) oder lade die Seite neu."));
+        renderLoggedOut();
+        if (hasHeader) btn.disabled = false;
+        return;
+      }
+      try {
+        provider = await window.dwinityWC.ensureConnected();
+      } catch (e) {
+        const msg = (e && e.message) || String(e);
+        if (!/reject|cancel|user closed|modal closed/i.test(msg)) {
+          alert("Wallet-Verbindung fehlgeschlagen: " + msg);
+        }
+        renderLoggedOut();
+        if (hasHeader) btn.disabled = false;
+        return;
+      }
+    } else {
+      provider = window.ethereum;
+    }
+
     try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
       const raw = (accounts && accounts[0]) || "";
       if (!raw) throw new Error("Kein Wallet-Account");
       const address = toChecksumAddress(raw);
@@ -271,7 +292,7 @@
       const { nonce } = await requestChallenge();
       const message = buildSiweMessage({ address, nonce });
 
-      const signature = await window.ethereum.request({
+      const signature = await provider.request({
         method: "personal_sign",
         params: [message, address],
       });
@@ -315,11 +336,22 @@
     try {
       await fetch(API + "/logout", { method: "POST", credentials: "include" });
     } catch {}
+    // If we're connected via WalletConnect, drop that session too — otherwise
+    // the user stays "connected" in the WC sense even after our cookie is gone.
+    if (window.dwinityWC && window.ethereum && window.ethereum.__dwinityWC) {
+      try { await window.dwinityWC.disconnect(); } catch {}
+    }
     renderLoggedOut();
   }
 
   // --- Global triggers (work on ALL pages, with or without header) ---
   document.addEventListener("click", (e) => {
+    const wcTrigger = e.target.closest('[data-action="connect-wallet-qr"]');
+    if (wcTrigger) {
+      e.preventDefault();
+      connect({ walletConnect: true });
+      return;
+    }
     const trigger = e.target.closest('[data-action="connect-wallet"]');
     if (trigger) {
       e.preventDefault();
@@ -327,28 +359,43 @@
     }
   });
   window.connectWallet = connect;
+  window.connectWalletQR = () => connect({ walletConnect: true });
 
   // --- Header-specific wiring: only if #wallet-btn exists ---
   if (hasHeader) {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       if (btn.dataset.state === "in") {
+        if (!menu) return;
+        const willOpen = menu.classList.contains("hidden");
         menu.classList.toggle("hidden");
+        btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
       } else {
         connect();
       }
     });
 
-    menuLogout.addEventListener("click", (e) => {
+    if (menuLogout) menuLogout.addEventListener("click", (e) => {
       e.preventDefault();
-      menu.classList.add("hidden");
+      if (menu) menu.classList.add("hidden");
+      btn.setAttribute("aria-expanded", "false");
       logout();
     });
 
     // click outside closes menu
     document.addEventListener("click", (e) => {
-      if (!btn.contains(e.target) && !menu.contains(e.target)) {
+      if (menu && !btn.contains(e.target) && !menu.contains(e.target)) {
         menu.classList.add("hidden");
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // Escape key closes menu (a11y best practice for popups)
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && menu && !menu.classList.contains("hidden")) {
+        menu.classList.add("hidden");
+        btn.setAttribute("aria-expanded", "false");
+        btn.focus();
       }
     });
   }
@@ -358,6 +405,16 @@
     if (e && e.detail && e.detail.address) renderLoggedIn(e.detail);
   });
 
+  // Re-render the logged-out label after a language switch (the label is
+  // JS-managed, so applyAll() can't translate it without clobbering the
+  // connected-state address).
+  window.addEventListener("dd:lang-changed", () => {
+    if (hasHeader && btn.dataset.state === "out") renderLoggedOut();
+  });
+
   // boot — only refresh/render the header if it exists
   if (hasHeader) refreshMe();
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "nav.noWalletNoWC": "No wallet detected and WalletConnect not loaded.\n\nInstall MetaMask (Chrome/Edge/Firefox) or reload the page.",
+} });

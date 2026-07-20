@@ -1,0 +1,3 @@
+/* Dwinity shared CSS — Pro-Mode toggle visibility rules. */
+html[data-pro-mode="off"] .pro-only         { display: none !important; }
+html[data-pro-mode="on"]  .pro-only-inverse { display: none !important; }

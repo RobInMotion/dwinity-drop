@@ -1,11 +1,18 @@
 (function () {
+  function vt(key, fallback, vars) {
+    let v = (window.DDI18n && window.DDI18n.t && window.DDI18n.t(key)) || "";
+    if (!v || v === key) v = fallback;
+    if (vars) for (const k in vars) v = v.replace("{" + k + "}", vars[k]);
+    return v;
+  }
+
   // Aggressive discount popup for the LAUNCH50 campaign.
   // Triggers: 15s on page, or exit-intent (mouse leaves top on desktop).
   // Cooldown: dismissed → 7 days silence. Claimed (clicked CTA) → 30 days silence.
 
   const PROMO_CODE = "LAUNCH50";
   const DISCOUNT_PCT = 50;
-  const VALID_UNTIL = Date.UTC(2026, 4, 15, 23, 59, 59);  // 2026-05-15 23:59:59 UTC
+  const VALID_UNTIL = Date.UTC(2026, 8, 30, 23, 59, 59);  // 2026-09-30 23:59:59 UTC — muss zu promos.valid_until in identity.db passen
   const DELAY_MS = 15_000;
   const COOLDOWN_DISMISS_MS = 7 * 24 * 3600 * 1000;
   const COOLDOWN_CLAIMED_MS = 30 * 24 * 3600 * 1000;
@@ -33,7 +40,7 @@
 
   function fmtRemaining() {
     const diff = VALID_UNTIL - now();
-    if (diff <= 0) return "abgelaufen";
+    if (diff <= 0) return vt("pp.expired", "abgelaufen");
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
@@ -57,7 +64,7 @@
              style="box-shadow: 0 0 60px rgba(0,255,157,0.25), 0 0 120px rgba(0,255,157,0.12);">
 
           <!-- Close -->
-          <button id="launch-promo-close" aria-label="Schließen" class="absolute top-2.5 right-2.5 md:top-3 md:right-3 z-10 w-10 h-10 md:w-9 md:h-9 rounded-full bg-void-950/70 hover:bg-void-800 text-white/60 hover:text-white grid place-items-center transition text-xl leading-none">
+          <button id="launch-promo-close" aria-label="${vt('pp.close', 'Schließen')}" class="absolute top-2.5 right-2.5 md:top-3 md:right-3 z-10 w-10 h-10 md:w-9 md:h-9 rounded-full bg-void-950/70 hover:bg-void-800 text-white/60 hover:text-white grid place-items-center transition text-xl leading-none">
             ×
           </button>
 
@@ -65,7 +72,7 @@
           <div class="px-5 md:px-6 pt-14 md:pt-12 pb-5 md:pb-6 text-center">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-300 text-[10px] font-mono uppercase tracking-widest mb-5 md:mb-6">
               <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping shrink-0"></span>
-              <span class="relative z-10">Launch Deal · Limitiert</span>
+              <span class="relative z-10">${vt('pp.ribbon', 'Launch Deal · Limitiert')}</span>
             </div>
 
             <div class="font-sans text-[3.25rem] sm:text-6xl md:text-7xl font-700 leading-none mb-3"
@@ -74,34 +81,34 @@
             </div>
 
             <h3 class="font-sans text-xl sm:text-2xl md:text-3xl font-600 tracking-tight mb-3">
-              auf Dead Drop <span class="text-neon-500">Pro</span>
+              ${vt('pp.on', 'auf')} Dead Drop <span class="text-neon-500">Pro</span>
             </h3>
 
             <p class="text-white/70 text-[13px] sm:text-sm leading-relaxed mb-5 md:mb-6">
-              Self-Custody Pro für <span class="line-through text-white/40">7,50 USDC</span>
-              <span class="text-neon-500 font-600">3,75 USDC / Monat</span>.
-              Gilt für USDC und DWIN. Nur solange der Launch läuft.
+              ${vt('pp.bodyPre', 'Self-Custody Pro für')} <span class="line-through text-white/40">9 USDC</span>
+              <span class="text-neon-500 font-600">${vt('pp.bodyPrice', '4,50 USDC / Monat')}</span>.
+              ${vt('pp.bodyPost', 'Gilt für USDC und DWIN. Nur solange der Launch läuft.')}
             </p>
 
             <!-- Countdown -->
             <div class="mb-5 md:mb-6 p-3 md:p-4 rounded-xl bg-void-950/50 border border-white/10">
-              <div class="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">Endet in</div>
+              <div class="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">${vt('pp.endsIn', 'Endet in')}</div>
               <div id="launch-promo-countdown" class="font-sans text-xl sm:text-2xl font-600 text-neon-500">—</div>
             </div>
 
             <!-- Code display -->
             <div class="mb-4 p-3 rounded-xl border-2 border-dashed border-neon-500/50 bg-neon-500/5">
-              <div class="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">Dein Code</div>
+              <div class="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">${vt('pp.yourCode', 'Dein Code')}</div>
               <div class="font-mono text-xl sm:text-2xl font-700 text-neon-500 tracking-widest select-all break-all">${PROMO_CODE}</div>
             </div>
 
             <!-- CTA -->
             <button id="launch-promo-cta" class="w-full px-6 py-3.5 md:py-4 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition text-sm md:text-lg">
-              Jetzt einlösen →
+              ${vt('pp.cta', 'Jetzt einlösen →')}
             </button>
 
             <button id="launch-promo-later" class="mt-2 md:mt-3 w-full text-xs font-mono text-white/40 hover:text-white/70 py-2">
-              // Später erinnern
+              // ${vt('pp.later', 'Später erinnern')}
             </button>
           </div>
         </div>
@@ -214,3 +221,16 @@
     setupExitIntent();
   }
 })();
+(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "pp.expired": "expired",
+  "pp.close": "Close",
+  "pp.ribbon": "Launch deal · Limited",
+  "pp.on": "on",
+  "pp.bodyPre": "Self-custody Pro for",
+  "pp.bodyPrice": "4.50 USDC / month",
+  "pp.bodyPost": "Valid for USDC and DWIN. Only while the launch lasts.",
+  "pp.endsIn": "Ends in",
+  "pp.yourCode": "Your code",
+  "pp.cta": "Redeem now →",
+  "pp.later": "Remind me later",
+} });

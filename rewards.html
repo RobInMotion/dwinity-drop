@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title data-i18n="rw.pageTitle">Early Data Rewards — 250.000 DWIN · Dead Drop Vault</title>
+<meta name="description" content="Early Data Rewards: 250.000 DWIN für die ersten Daten-Contributors im Dwinity Vault — bis 31.12.2026." />
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+</head>
+<body class="font-sans text-white antialiased min-h-screen bg-void-950">
+
+<header class="border-b border-white/10 mb-10">
+  <div class="max-w-3xl mx-auto px-4 md:px-6 py-5 flex items-center justify-between gap-4">
+    <a href="/vault" class="flex items-center gap-3 text-white/80 hover:text-white transition">
+      <span class="text-xl">←</span>
+      <span class="font-mono text-sm" data-i18n="rw.back">← Zurück zum Vault</span>
+    </a>
+    <div class="text-xs font-mono text-neon-500 uppercase tracking-widest">Early Data Rewards</div>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 md:px-6 pb-24">
+
+  <div class="text-[11px] font-mono text-neon-500 uppercase tracking-widest mb-3" data-i18n="rw.kicker">Vault · Bootstrap-Programm · bis 31.12.2026</div>
+  <h1 class="font-sans text-3xl md:text-5xl font-600 tracking-tight leading-[1.1] mb-5" data-i18n="rw.title">250.000 DWIN für die, die zuerst kommen.</h1>
+  <p class="text-white/70 text-base md:text-lg leading-relaxed mb-6 max-w-2xl" data-i18n="rw.lead">
+    Daten-Pools werden erst wertvoll, wenn Menschen beitragen. Bis echte Käufer da sind, ist
+    Dwinity deshalb selbst der Anker-Käufer — und belohnt jeden frühen Contributor aus einem
+    festen Topf von 250.000 DWIN. Keine Lotterie, keine vagen Punkte: feste Regeln, hartes
+    Budget, On-Chain-Auszahlung.
+  </p>
+
+  <div class="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5 mb-10">
+    <div class="font-600 text-amber-400 mb-2" data-i18n="rw.honest.title">Das ehrliche Kleingedruckte, zuerst</div>
+    <p class="text-white/70 text-sm leading-relaxed m-0" data-i18n="rw.honest.body">
+      Vault läuft auf dem Avalanche-Fuji-Testnetz. Alles, was du jetzt verdienst, wird als
+      mDWIN (Test-Token) ausgezahlt und im Programm-Ledger festgehalten. Beim Mainnet-Start —
+      der erst nach dem bestandenen externen Smart-Contract-Audit passiert — wird dein
+      Programm-Guthaben 1:1 in echte DWIN getauscht. No audit, no mainnet. Diese Reihenfolge
+      ist Absicht.
+    </p>
+  </div>
+
+  <h2 class="text-xl md:text-2xl font-600 mb-4" data-i18n="rw.now">Gerade live</h2>
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <div class="rounded-xl border border-neon-500/20 bg-void-900/50 p-4">
+      <div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1" data-i18n="rw.mult">Early-Bird-Multiplikator</div>
+      <div id="rw-mult" class="text-3xl font-700 text-neon-500">—</div>
+      <div class="text-[10px] text-white/40 mt-1" data-i18n="rw.multNote">Jul–Aug ×1,5 · Sep–Okt ×1,25 · Nov–Dez ×1,0 — früher zahlt mehr.</div>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-void-900/50 p-4">
+      <div class="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1" data-i18n="rw.ends">Programm endet</div>
+      <div class="text-3xl font-700">31.12.2026</div>
+      <div id="rw-days" class="text-[10px] text-white/40 mt-1"></div>
+    </div>
+  </div>
+  <div id="rw-pots" class="space-y-3 mb-12">
+    <div class="text-white/40 font-mono text-sm">// lade …</div>
+  </div>
+
+  <div id="rw-me" class="hidden rounded-2xl border border-neon-500/30 bg-neon-500/5 p-5 mb-12">
+    <div class="font-600 mb-2" data-i18n="rw.me.title">Dein Programm-Stand</div>
+    <div class="flex flex-wrap gap-x-8 gap-y-2 font-mono text-sm">
+      <div><span id="rw-me-earned" class="text-neon-500 text-xl font-700">0</span> <span class="text-white/50" data-i18n="rw.me.earned">direkt verdiente Boni</span></div>
+      <div><span id="rw-me-headroom" class="text-white/80 text-xl font-700">2500</span> <span class="text-white/50" data-i18n="rw.me.headroom">Luft bis zum Wallet-Cap</span></div>
+    </div>
+  </div>
+
+  <h2 class="text-xl md:text-2xl font-600 mb-4" data-i18n="rw.how">Vier Wege zu verdienen</h2>
+  <div class="space-y-4 mb-12">
+    <div class="rounded-xl border border-white/10 bg-void-900/50 p-5">
+      <div class="font-600 mb-1">📦 <span data-i18n="rw.way1.title">Daten beitragen — Sofort-Bonus</span></div>
+      <p class="text-white/60 text-sm leading-relaxed m-0" data-i18n="rw.way1.body">
+        Jeder Pool-Beitrag zahlt sofort: Basis 10 DWIN plus Größen-Anteil mit Wurzel-Gewichtung
+        (10× so viele Daten ≈ 3× so viel Bonus — Qualität schlägt Masse), mal dem aktuellen
+        Early-Bird-Multiplikator. Deckel: 250 DWIN pro Upload.
+      </p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-void-900/50 p-5">
+      <div class="font-600 mb-1">🛒 <span data-i18n="rw.way2.title">Anker-Käufe — Dwinity kauft zuerst</span></div>
+      <p class="text-white/60 text-sm leading-relaxed m-0" data-i18n="rw.way2.body">
+        Jede Woche kauft Dwinity Pool-Insights über exakt denselben On-Chain-Weg wie ein echter
+        Kunde: 40 DWIN je aktivem Contributor und Pool (Deckel 1.500/Pool/Woche, ab 3
+        Contributors). Der Contract verteilt jeden Kauf automatisch: 70 % an Contributors,
+        20 % Pool-Treasury, 10 % Plattform. Dein Anteil wächst mit deiner Beitragsgröße.
+      </p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-void-900/50 p-5">
+      <div class="font-600 mb-1">🔄 <span data-i18n="rw.way3.title">Aktiv bleiben — Streaks & Vielfalt</span></div>
+      <p class="text-white/60 text-sm leading-relaxed m-0" data-i18n="rw.way3.body">
+        +25 DWIN für jede Woche, in der dein Live-Sync verbunden ist und synchronisiert (bis zu
+        8 Wochen). +100 DWIN einmalig für jeden weiteren Pool, zu dem du beiträgst — vom
+        zweiten bis zum fünften.
+      </p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-void-900/50 p-5">
+      <div class="font-600 mb-1">🤝 <span data-i18n="rw.way4.title">Freunde bringen — Referrals</span></div>
+      <p class="text-white/60 text-sm leading-relaxed m-0" data-i18n="rw.way4.body">
+        Macht jemand, den du geworben hast, seinen ersten Pool-Beitrag, bekommt ihr beide
+        +50 DWIN.
+      </p>
+    </div>
+  </div>
+
+  <h2 class="text-xl md:text-2xl font-600 mb-4" data-i18n="rw.rules">Regeln & Deckel</h2>
+  <ul class="space-y-2 text-sm text-white/60 leading-relaxed mb-12 list-disc pl-5">
+    <li data-i18n="rw.rule1">Festes Gesamtbudget: 250.000 DWIN. Ist ein Topf leer, ist er leer — wer zuerst kommt.</li>
+    <li data-i18n="rw.rule2">Wallet-Deckel für direkte Boni: 2.500 DWIN (1 % des Programms). Anker-Käufe verteilen proportional on-chain und liegen außerhalb dieses Deckels.</li>
+    <li data-i18n="rw.rule3">Jeder Datensatz zählt einmal — der On-Chain-Commitment-Hash verhindert, dass doppelte Uploads doppelt verdienen.</li>
+    <li data-i18n="rw.rule4">Programm endet am 31.12.2026, 23:59 UTC. Verdiente Guthaben bleiben für die Mainnet-Konversion im Ledger festgehalten.</li>
+  </ul>
+
+  <a href="/vault" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="rw.cta">
+    Jetzt beitragen →
+  </a>
+
+</main>
+
+<script src="/i18n.js"></script>
+<script src="/rewards.js"></script>
+</body>
+</html>

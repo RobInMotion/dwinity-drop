@@ -32,6 +32,7 @@
 </style>
 </head>
 <body class="font-sans text-white antialiased min-h-screen" data-dragons="1">
+<a href="#main" class="skip-link" data-i18n="a11y.skip">Zum Inhalt springen</a>
 <canvas id="netstream-bg"></canvas>
 
 <header class="sticky top-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
@@ -46,7 +47,7 @@
         Dashboard
       </a>
       <div class="relative shrink-0">
-        <button id="wallet-btn" data-state="out" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
+        <button id="wallet-btn" data-state="out" aria-haspopup="menu" aria-controls="wallet-menu" aria-expanded="false" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 backdrop-blur text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition min-w-0 max-w-[120px] md:max-w-none">
           <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50 shrink-0"></span>
           <span id="wallet-btn-label" class="truncate">Wallet</span>
         </button>
@@ -61,7 +62,7 @@
   </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 relative">
+<main id="main" class="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 relative">
   <div class="absolute top-0 right-0 w-[400px] h-[400px] rounded-full blur-[120px] pointer-events-none" style="background:rgba(0,255,157,0.05);"></div>
 
   <!-- HERO -->
@@ -202,11 +203,12 @@
 <!-- scripts -->
 <script src="/lib/sha3.min.js" integrity="sha384-+JAeTqUiH9WuByObPHouP4rQKYUTLQ9AQW4HHJZ4uNmkA2+nkDpbssQNGsVXnJpe" crossorigin="anonymous"></script>
 <script src="/ref-capture.js" defer></script>
+<script src="/i18n.js"></script>
+<script src="/wallet-connect.js"></script>
 <script src="/auth.js"></script>
 <script src="/panic.js" defer></script>
 <script src="/rank.js"></script>
 <script src="/netstream.js"></script>
 <script src="/dragons.js" defer></script>
-<script src="/i18n.js"></script>
 </body>
 </html>

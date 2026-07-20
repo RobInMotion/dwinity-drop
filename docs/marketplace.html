@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title data-i18n="docs.mkt.pageTitle">Was ist der Vault Marketplace? — Dwinity</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+<style>
+  body { background: #05060A; color: #e1e6ee; font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; }
+  h1, h2, h3 { font-weight: 600; }
+  h1 { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 1rem; line-height: 1.1; }
+  h2 { font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 0.75rem; color: #50e3c2; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  p { line-height: 1.65; opacity: 0.85; margin-bottom: 1rem; }
+  ul { list-style: disc; margin-left: 1.5rem; line-height: 1.65; opacity: 0.85; }
+  ul li { margin-bottom: 0.5rem; }
+  .lead { font-size: 1.15rem; opacity: 0.75; }
+  .accent { color: #50e3c2; }
+  .step {
+    border-left: 2px solid #50e3c2;
+    padding: 0.5rem 0 0.5rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .step-num {
+    color: #50e3c2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+  }
+  code {
+    background: rgba(80,227,194,0.08);
+    color: #50e3c2;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="border-b border-white/10 mb-8 pb-4">
+  <div class="max-w-3xl mx-auto px-4 md:px-6 pt-6 flex items-center justify-between gap-4">
+    <a href="/vault" class="flex items-center gap-3 text-white/80 hover:text-white transition">
+      <span class="text-xl">←</span>
+      <span class="font-mono text-sm" data-i18n="docs.mkt.back">zurück zum Vault</span>
+    </a>
+    <div class="text-xs font-mono text-white/40 uppercase tracking-widest" data-i18n="docs.mkt.docLabel">Doku</div>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 md:px-6 pb-24">
+
+  <div class="text-[11px] font-mono text-neon-500 uppercase tracking-widest mb-3">Vault · Marketplace</div>
+  <h1 data-i18n="docs.mkt.h1">Was ist das eigentlich?</h1>
+
+  <p class="lead" data-i18n-html="docs.mkt.lead">
+    Der Dwinity Vault Marketplace lässt dich an deinen <span class="accent">eigenen Daten verdienen</span> —
+    ohne dass du sie hergibst. Du behältst die Hoheit, bekommst aber Geld wenn jemand
+    aggregierte, anonyme Insights aus dem Pool kauft, in dem du Mitglied bist.
+  </p>
+
+  <h2 data-i18n="docs.mkt.h2how">Wie funktioniert das, ohne Privacy zu opfern?</h2>
+
+  <div class="step">
+    <div class="step-num" data-i18n="docs.mkt.s1.num">Schritt 1 — Pseudonymisieren im Browser</div>
+    <p data-i18n-html="docs.mkt.s1.p">Wenn du deine Strava/Spotify/Health-Daten hochlädst, läuft der Pseudonymizer
+    <strong>direkt in deinem Browser</strong>. Vor dem Upload werden Namen, exakte
+    GPS-Koordinaten und IDs entfernt oder gehasht. Der Server sieht nie deine Klartextdaten.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num" data-i18n="docs.mkt.s2.num">Schritt 2 — In den Pool eintragen</div>
+    <p data-i18n-html="docs.mkt.s2.p">Beim Klick auf "Wallet verbinden &amp; eintragen" passieren zwei Dinge:</p>
+    <ul>
+      <li data-i18n-html="docs.mkt.s2.li1">Deine pseudonymisierten Daten werden AES-verschlüsselt und auf Storj abgelegt
+        (verschlüsselt mit einem Key, den nur ein <em>vertrauenswürdiges Compute-Modul</em>
+        kennt — nicht mal der Vault-Server)</li>
+      <li data-i18n-html="docs.mkt.s2.li2">On-chain wird eine <code>commitment</code>-Hash deiner Daten registriert,
+        plus deine Adresse und die Größe deines Beitrags (in Bytes)</li>
+    </ul>
+    <p data-i18n-html="docs.mkt.s2.p2">Du bist jetzt Pool-Mitglied. Deine on-chain Adresse ist die Quittung — niemand muss
+    wissen wer du bist, nur dass du beigetragen hast.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num" data-i18n="docs.mkt.s3.num">Schritt 3 — Buyer kauft Zugang</div>
+    <p data-i18n-html="docs.mkt.s3.p">Käufer (Researcher, Marken, andere Apps) zahlen in USDC oder DWIN
+    für eine <strong>Query auf den gesamten Pool</strong>, nicht auf einzelne Personen.
+    Das Compute-Modul entschlüsselt die Pool-Daten in einer Sandbox, rechnet die
+    aggregierte Antwort aus, und liefert NUR die Antwort zurück (k-Anonymity ≥ 5).
+    Keine Rohdaten verlassen den Pool.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num" data-i18n="docs.mkt.s4.num">Schritt 4 — Du verdienst</div>
+    <p data-i18n="docs.mkt.s4.p">Bei jedem Kauf werden die Einnahmen automatisch on-chain verteilt:</p>
+    <ul>
+      <li data-i18n-html="docs.mkt.s4.li1"><strong>70 %</strong> an aktive Contributors — proportional zur Beitragsgröße (Bytes)</li>
+      <li data-i18n-html="docs.mkt.s4.li2"><strong>20 %</strong> in die Pool-Treasury (Reinvest, Worker-Hosting)</li>
+      <li data-i18n-html="docs.mkt.s4.li3"><strong>10 %</strong> an die Dwinity-Plattform</li>
+    </ul>
+    <p data-i18n-html="docs.mkt.s4.p2">In deiner Inbox siehst du alle Pool-Events. Mit einem Klick auf "Claim" holst du
+    deinen Anteil per On-Chain-Tx in dein Wallet.</p>
+  </div>
+
+  <h2 data-i18n="docs.mkt.h2anytime">Was du jederzeit machen kannst</h2>
+  <ul>
+    <li data-i18n-html="docs.mkt.any.li1"><strong>Withdraw:</strong> Deine Contribution aus dem Pool nehmen — die verschlüsselten
+      Daten werden gelöscht (DSGVO-konform), bereits verdiente Rewards bleiben</li>
+    <li data-i18n-html="docs.mkt.any.li2"><strong>Wallet-Wechsel:</strong> Recovery via Seed-Phrase, du kannst jederzeit das
+      Wallet wechseln — Dwinity hat keinen Zugriff</li>
+    <li data-i18n-html="docs.mkt.any.li3"><strong>Pro-Mode:</strong> Toggle oben rechts blendet alle technischen Details
+      (Tx-Hashes, Contract-Adressen, Commitment-Hashes) ein — für Techniker und für
+      Skeptiker, die alles selbst verifizieren wollen</li>
+  </ul>
+
+  <h2 data-i18n-html="docs.mkt.h2status">Phase &amp; Status</h2>
+  <p data-i18n-html="docs.mkt.status.p1">
+    Aktuell läuft der Marketplace auf <strong class="accent">Avalanche Fuji Testnet</strong>
+    mit Mock-USDC und Mock-DWIN — keine echten Werte werden bewegt. Sobald die Smart Contracts
+    extern auditiert sind, geht's live auf Avalanche C-Chain.
+  </p>
+  <p data-i18n-html="docs.mkt.status.p2">
+    Das <em>Compute-Modul</em> ist Phase 3c — bis es fertig ist, sind die Pool-Stats
+    handverdrahtet (das siehst du in der Wrapped-Story als Percentile-Hinweise).
+    Sobald der Worker live ist, kommen echte Aggregate aus deinem Pool, und Buyer können
+    echte Queries fahren.
+  </p>
+
+  <h2 data-i18n="docs.mkt.h2why">Du fragst dich: Warum macht ihr das?</h2>
+  <p data-i18n-html="docs.mkt.why.p">
+    Datenökonomie ist heute kaputt. Plattformen sammeln deine Daten, verkaufen Modelle daraus,
+    du siehst nichts davon. Wir flippen das um: <span class="accent">Self-Custody als Default,
+    Daten-Pools als Genossenschaft</span>. Du behältst deine Daten, der Pool wird zur
+    Verhandlungsmacht, jeder Contributor verdient mit. Keine Plattform-Mittler die kassieren.
+  </p>
+
+  <div class="mt-12 pt-8 border-t border-white/10">
+    <a href="/vault" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="docs.mkt.backCta">
+      ← Zurück zum Vault
+    </a>
+  </div>
+
+</main>
+
+<script src="/i18n.js"></script>
+</body>
+</html>
