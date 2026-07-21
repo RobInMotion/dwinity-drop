@@ -1,0 +1,304 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dead Drop — sealed</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --void:      #05060A;
+    --void-lift: #0A0B10;
+    --neon:      #00FF9D;
+    --neon-soft: #4DFFB8;
+    --cyan:      #00E5FF;
+    --violet:    #A78BFA;
+    --alert:     #FF2E6C;
+    --ink:       #EAF2EE;
+    --mute:      rgba(234, 242, 238, 0.42);
+    --hair:      rgba(234, 242, 238, 0.10);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--void);
+    color: var(--ink);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* The sphere lives behind everything, full-bleed. */
+  #globe {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 0;
+  }
+
+  /* Vignette keeps the type legible over the densest part of the mesh. */
+  .veil {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      /* Softens the mesh where the key line crosses the horizon. */
+      radial-gradient(80% 42% at 50% 78%, rgba(5, 6, 10, 0.55), transparent 70%),
+      linear-gradient(180deg, rgba(5, 6, 10, 0.55) 0%, transparent 22%, transparent 78%, rgba(5, 6, 10, 0.55) 100%);
+  }
+
+  .shell {
+    position: relative;
+    z-index: 2;
+    min-height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: clamp(18px, 3.2vw, 34px);
+    gap: 24px;
+  }
+
+  /* ---------- masthead ---------- */
+  .mast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 10px;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  .mark { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+
+  .pulse {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--neon);
+    box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7);
+    animation: beat 2.4s ease-out infinite;
+  }
+  @keyframes beat {
+    0%   { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.55); }
+    70%  { box-shadow: 0 0 0 9px rgba(0, 255, 157, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); }
+  }
+
+  .status { display: flex; align-items: center; gap: 8px; }
+  .status b { color: var(--neon); font-weight: 500; letter-spacing: 0.34em; }
+
+  /* ---------- centre stage ---------- */
+  .stage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: clamp(14px, 2vw, 22px);
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--neon);
+    opacity: 0.85;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 600;
+    /* Tight tracking at large size is the whole type idea — the display face
+       compresses, the mono around it stays wide and small. */
+    letter-spacing: -0.045em;
+    line-height: 0.94;
+    font-size: clamp(2.6rem, 11vw, 7.4rem);
+    text-wrap: balance;
+  }
+  h1 .dim { color: rgba(234, 242, 238, 0.34); }
+
+  .lede {
+    max-width: 46ch;
+    margin: 0;
+    font-size: clamp(12px, 1.5vw, 14px);
+    line-height: 1.75;
+    /* Brighter than --mute and shadowed: this paragraph is the one piece of
+       body copy that lands on the densest part of the mesh. */
+    color: rgba(234, 242, 238, 0.58);
+    text-shadow: 0 1px 14px rgba(5, 6, 10, 0.95), 0 0 3px rgba(5, 6, 10, 0.9);
+  }
+
+  /* ---------- key line ---------- */
+  .keyline {
+    width: min(560px, 100%);
+    margin-top: clamp(8px, 2vw, 18px);
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(10, 11, 16, 0.72);
+    border: 1px solid var(--hair);
+    border-radius: 2px;
+    transition: border-color 220ms ease, box-shadow 220ms ease;
+  }
+  .field:focus-within {
+    border-color: rgba(0, 255, 157, 0.55);
+    box-shadow: 0 0 0 1px rgba(0, 255, 157, 0.18), 0 0 34px rgba(0, 255, 157, 0.10);
+  }
+  .field.bad {
+    border-color: rgba(255, 46, 108, 0.75);
+    box-shadow: 0 0 0 1px rgba(255, 46, 108, 0.22), 0 0 34px rgba(255, 46, 108, 0.14);
+    animation: shake 380ms cubic-bezier(.36,.07,.19,.97);
+  }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-5px); }
+    40%, 60% { transform: translateX(5px); }
+  }
+
+  .prompt {
+    flex: none;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--neon);
+    user-select: none;
+  }
+
+  #key {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--ink);
+    caret-color: var(--neon);
+    font: inherit;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+  }
+  #key::placeholder { color: rgba(234, 242, 238, 0.22); letter-spacing: 0.18em; }
+
+  .enter {
+    flex: none;
+    background: transparent;
+    border: 1px solid var(--hair);
+    border-radius: 2px;
+    color: var(--mute);
+    font: inherit;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+  .enter:hover, .enter:focus-visible {
+    color: var(--void);
+    background: var(--neon);
+    border-color: var(--neon);
+  }
+
+  .note {
+    margin: 10px 2px 0;
+    min-height: 1.2em;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--mute);
+    text-align: left;
+  }
+  .note.bad { color: var(--alert); }
+
+  /* ---------- footer ---------- */
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(234, 242, 238, 0.28);
+  }
+  .foot a { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; }
+  .foot a:hover, .foot a:focus-visible { color: var(--ink); border-bottom-color: var(--hair); }
+
+  :focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; }
+
+  @media (max-width: 620px) {
+    .mast .status span { display: none; }
+    .field { padding: 12px 13px; gap: 9px; }
+    .enter { padding: 6px 9px; }
+    .foot { justify-content: center; text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse { animation: none; }
+    .field.bad { animation: none; }
+  }
+</style>
+
+<canvas id="globe" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<main class="shell">
+
+  <header class="mast">
+    <div class="mark">
+      <span class="pulse" aria-hidden="true"></span>
+      <span>Dead&nbsp;Drop</span>
+    </div>
+    <div class="status">
+      <span>Network</span>
+      <b>Sealed</b>
+    </div>
+  </header>
+
+  <section class="stage">
+    <p class="eyebrow">Closed testing</p>
+
+    <h1>This drop is<br /><span class="dim">sealed.</span></h1>
+
+    <p class="lede">
+      Dead Drop is closed while we rebuild the way it charges and the way it
+      hands you a plan. It opens again when that part is honest. If you were
+      given a key, this is where it goes.
+    </p>
+
+    <form class="keyline" id="gate" autocomplete="off">
+      <div class="field" id="field">
+        <label class="prompt" for="key">key&nbsp;›</label>
+        <input id="key" name="key" type="password" placeholder="enter key"
+               autocomplete="off" spellcheck="false" autocapitalize="off"
+               aria-describedby="note" />
+        <button class="enter" type="submit">Unseal</button>
+      </div>
+      <p class="note" id="note" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <footer class="foot">
+    <span>Self-custody · AES-256-GCM · The server never sees your key</span>
+    <span>
+      <a href="/impressum.html">Imprint</a>
+      &nbsp;·&nbsp;
+      <a href="/datenschutz.html">Privacy</a>
+    </span>
+  </footer>
+
+</main>
+
+<script src="/coming-soon.js"></script>
