@@ -614,6 +614,15 @@
       </p>
     </div>
 
+    <!-- LAUNCH50 hero — promoted from footnote to the headline of the pricing block -->
+    <div class="max-w-3xl mx-auto mb-8 md:mb-10 rounded-2xl border border-neon-500/40 bg-gradient-to-r from-neon-500/15 via-neon-500/5 to-transparent p-4 md:p-5 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-center sm:text-left">
+      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-500 text-void-950 text-xs font-extrabold uppercase tracking-widest whitespace-nowrap shadow-lg shadow-neon-500/30">🚀 LAUNCH50</span>
+      <div>
+        <div class="text-white font-600 text-sm md:text-base" data-i18n="pricing.launchHero.title">50 % Founding-Member-Rabatt auf alle Tarife</div>
+        <div class="text-white/60 text-xs md:text-sm mt-0.5" data-i18n="pricing.launchHero.sub">Nur 200 Launch-Plätze · Code LAUNCH50 beim Upgrade einlösen</div>
+      </div>
+    </div>
+
     <!-- Three tiers — Free | Pro (FEATURED) | Pro+, ascending price, featured center lifted -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto items-stretch" id="pricing-tiers">
 
@@ -641,11 +650,13 @@
       <div data-tier="pro" class="relative rounded-2xl bg-gradient-to-b from-neon-500/15 via-void-900 to-void-900 border-2 border-neon-500/70 p-7 md:p-8 flex flex-col md:-translate-y-3 lg:-translate-y-4" style="box-shadow: 0 0 60px rgba(0,255,157,0.25);">
         <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-neon-500 text-void-950 text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-neon-500/40 whitespace-nowrap" data-i18n="pricing.pro.ribbon">★ Most Popular</div>
         <div class="text-neon-500 text-sm font-mono uppercase tracking-widest mb-1" data-i18n="pricing.pro.kicker">Pro</div>
-        <div class="flex items-baseline gap-1 mb-1">
-          <span class="text-5xl font-700 text-white">9</span>
-          <span class="text-white/50 text-base ml-1">USDC<span class="text-xs">/mo</span></span>
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-2xl font-600 text-white/40 line-through">9</span>
+          <span class="text-5xl font-700 text-white" data-i18n="pricing.pro.launchPrice">4,50</span>
+          <span class="text-white/50 text-base">USDC<span class="text-xs">/mo</span></span>
         </div>
-        <div class="text-white/50 text-sm mb-6" data-i18n="pricing.pro.yearly">90 USDC/yr · 40 DWIN/mo</div>
+        <div class="inline-flex items-center gap-1.5 mb-2 px-2 py-0.5 rounded-full bg-neon-500/15 text-neon-500 text-[11px] font-mono self-start" data-i18n="pricing.launchTag">mit Code LAUNCH50</div>
+        <div class="text-white/50 text-sm mb-6" data-i18n="pricing.pro.yearly">45 USDC/Jahr · spare 2 Monate</div>
         <ul class="space-y-3 text-sm text-white/90 flex-1 mb-6">
           <li class="flex gap-2.5"><span class="text-neon-500 shrink-0 mt-0.5">✓</span> <span data-i18n-html="pricing.pro.01"><strong class="text-white">2 GB</strong> pro Datei</span></li>
           <li class="flex gap-2.5"><span class="text-neon-500 shrink-0 mt-0.5">✓</span> <span data-i18n-html="pricing.pro.03"><strong class="text-white">20 GB</strong> Storage</span></li>
@@ -661,11 +672,13 @@
       <!-- Pro+ — neutral side card, cyan accent -->
       <div data-tier="proplus" class="relative rounded-2xl bg-void-900/80 border border-cyan-400/30 p-7 md:p-8 flex flex-col">
         <div class="text-cyan-400 text-sm font-mono uppercase tracking-widest mb-1" data-i18n="pricing.proplus.kicker">Pro+</div>
-        <div class="flex items-baseline gap-1 mb-1">
-          <span class="text-5xl font-700 text-white">25</span>
-          <span class="text-white/50 text-base ml-1">USDC<span class="text-xs">/mo</span></span>
+        <div class="flex items-baseline gap-2 mb-1">
+          <span class="text-2xl font-600 text-white/40 line-through">25</span>
+          <span class="text-5xl font-700 text-white" data-i18n="pricing.proplus.launchPrice">12,50</span>
+          <span class="text-white/50 text-base">USDC<span class="text-xs">/mo</span></span>
         </div>
-        <div class="text-white/50 text-sm mb-6" data-i18n="pricing.proplus.yearly">250 USDC/yr · 110 DWIN/mo</div>
+        <div class="inline-flex items-center gap-1.5 mb-2 px-2 py-0.5 rounded-full bg-cyan-400/15 text-cyan-400 text-[11px] font-mono self-start" data-i18n="pricing.launchTag">mit Code LAUNCH50</div>
+        <div class="text-white/50 text-sm mb-6" data-i18n="pricing.proplus.yearly">125 USDC/Jahr · spare 2 Monate</div>
         <ul class="space-y-3 text-sm text-white/80 flex-1 mb-6">
           <li class="flex gap-2.5"><span class="text-cyan-400 shrink-0 mt-0.5">✓</span> <span data-i18n-html="pricing.proplus.01"><strong class="text-white">5 GB</strong> pro Datei</span></li>
           <li class="flex gap-2.5"><span class="text-cyan-400 shrink-0 mt-0.5">✓</span> <span data-i18n-html="pricing.proplus.03"><strong class="text-white">100 GB</strong> Storage</span></li>
@@ -712,13 +725,6 @@
           </ul>
         </div>
       </div>
-    </div>
-
-    <!-- Launch50 reminder -->
-    <div class="mt-6 md:mt-8 max-w-3xl mx-auto p-3 md:p-4 rounded-xl border border-dashed border-neon-500/40 bg-neon-500/5 text-center">
-      <span class="font-mono text-[11px] md:text-xs text-neon-500">LAUNCH50</span>
-      <span class="text-white/70 text-xs md:text-sm mx-2">—</span>
-      <span class="text-white/80 text-xs md:text-sm" data-i18n="pricing.launch50">50 % Rabatt auf alle Tarife, Code beim Upgrade einlösen</span>
     </div>
 
     <!-- Pay-per-use top-up hint -->
