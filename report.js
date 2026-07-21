@@ -31,7 +31,7 @@ function vt(key, fallback, vars) {
     const id = location.pathname.split('/').pop();
     const r = (reason.value || '').trim();
     if (r.length < 10) {
-      err.textContent = 'Mindestens 10 Zeichen angeben.';
+      err.textContent = vt('rp.minChars', 'Mindestens 10 Zeichen angeben.');
       err.classList.remove('hidden');
       return;
     }
@@ -53,4 +53,5 @@ function vt(key, fallback, vars) {
 })();
 (window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
   "rp.errPrefix": "Error: ",
+  "rp.minChars": "Please enter at least 10 characters.",
 } });

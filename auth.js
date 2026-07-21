@@ -60,7 +60,7 @@
 
   function fmtDate(ts) {
     return new Date(ts * 1000).toLocaleDateString(
-      (window.DDI18n && window.DDI18n.lang === "en") ? "en-US" : "de-DE"
+      (window.DDI18n && window.DDI18n.getLang && window.DDI18n.getLang() === "en") ? "en-US" : "de-DE"
     );
   }
 

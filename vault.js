@@ -1031,7 +1031,53 @@ function showOauthFeedback() {
   }
 }
 
+// Re-render every JS-generated surface when the language switches.
+// Without this only the static data-i18n markup updates and the whole vault UI
+// stays in the previously selected language until a manual reload.
+let _langRerenderBusy = false;
+async function rerenderForLang() {
+  if (_langRerenderBusy) return;
+  _langRerenderBusy = true;
+  try {
+    // Source cards (descriptions come from vt('vjs.src.<id>', …)).
+    try { await loadSources(); } catch (e) { console.warn('[vault i18n] sources', e); }
+
+    // Upload panel texts — re-apply in place, without scrolling or resetting state.
+    if (CURRENT_SOURCE) {
+      const panel = document.getElementById('upload-panel');
+      if (panel && !panel.classList.contains('hidden')) {
+        const hint = document.getElementById('upload-hint');
+        if (hint) hint.innerHTML = vt('vjs.uploadHint', 'Lade dein <strong>{name}</strong>-Export hoch ({ext}).', { name: CURRENT_SOURCE.name, ext: CURRENT_SOURCE.extensions.join(' / ') });
+        const instr = document.getElementById('upload-instructions');
+        if (instr) {
+          if (CURRENT_SOURCE.instructions_url) {
+            instr.innerHTML = vt('vjs.uploadInstructions', 'Brauchst du das Export-File noch? <a href="{url}" target="_blank" class="text-neon-500 hover:underline">Anleitung →</a>', { url: CURRENT_SOURCE.instructions_url });
+          } else {
+            instr.textContent = '';
+          }
+        }
+      }
+    }
+
+    // Import list (labels + summary lines).
+    const list = document.getElementById('imports-list');
+    if (list && list.children.length) {
+      try { await loadImports(); } catch (e) { console.warn('[vault i18n] imports', e); }
+    }
+
+    // OAuth provider grid — only if it is already on screen (logged-in state).
+    const oauthSection = document.getElementById('oauth-section');
+    if (oauthSection && !oauthSection.classList.contains('hidden')) {
+      try { await loadAndRenderOauth(); } catch (e) { console.warn('[vault i18n] oauth', e); }
+    }
+  } finally {
+    _langRerenderBusy = false;
+  }
+}
+
 async function init() {
+  // Registered before the first await so a language switch during initial load is not missed.
+  window.addEventListener('dd:lang-changed', rerenderForLang);
   setupDropzone();
   await loadSources();
   // OAuth section + modal wiring (independent of login state — gracefully no-ops)

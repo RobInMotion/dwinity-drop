@@ -40,8 +40,8 @@
     </a>
     <div class="flex items-center gap-1 md:gap-2 shrink-0">
       <a href="/dashboard" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/80 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition">Drop</a>
-      <button id="pro-mode-toggle" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/60 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition" title="Pro-Mode an/aus">
-        🔧 <span class="hidden md:inline">Pro-Mode:</span> AUS
+      <button id="pro-mode-toggle" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/60 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition" title="Pro-Mode an/aus" data-i18n-title="pm.off">
+        🔧 <span class="hidden md:inline" data-i18n="pm.label">Pro-Mode:</span> <span data-i18n="pm.stateOff">AUS</span>
       </button>
 
       <!-- Wallet-Balance ribbon (klein, ausblendbar) -->
@@ -171,8 +171,8 @@
       </div>
       <p id="upload-hint" class="text-white/60 text-sm mb-4"></p>
       <p id="upload-instructions" class="text-white/60 text-xs mb-4"></p>
-      <div id="dropzone" class="dropzone cursor-pointer" role="button" tabindex="0" aria-label="Datei zum Hochladen auswählen oder per Drag-and-Drop ablegen" aria-describedby="upload-hint dropzone-formats">
-        <input id="file-input" type="file" class="hidden" aria-label="Datei auswählen" />
+      <div id="dropzone" class="dropzone cursor-pointer" role="button" tabindex="0" aria-label="Datei zum Hochladen auswählen oder per Drag-and-Drop ablegen" data-i18n-aria-label="vault.dropzoneAria" aria-describedby="upload-hint dropzone-formats">
+        <input id="file-input" type="file" class="hidden" aria-label="Datei auswählen" data-i18n-aria-label="vault.fileInputAria" />
         <div id="dropzone-idle">
           <div class="text-2xl mb-2">📦</div>
           <div class="font-600 mb-1" data-i18n="vault.dropzoneIdle">Datei hier ablegen oder klicken</div>

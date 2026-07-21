@@ -122,22 +122,22 @@
     </div>
 
     <div>
-      <h2 class="font-sans text-2xl font-600 mb-3 text-white">5b. Live-Sync via OAuth (Strava, Spotify, …)</h2>
-      <p>
+      <h2 class="font-sans text-2xl font-600 mb-3 text-white" data-i18n="datenschutz.05b.title">5b. Live-Sync via OAuth (Strava, Spotify, …)</h2>
+      <p data-i18n-html="datenschutz.05b.body">
         Im Vault kannst du <em>optional</em> ausgewählte Drittanbieter (z. B. Strava, Spotify)
         per OAuth verbinden. Damit verlässt du das Self-Custody-Modell für diesen Anbieter:
         wir speichern verschlüsselt ein OAuth-Refresh-Token (Fernet, AES-128-CBC + HMAC-SHA256)
         in unserer DB, mit dem wir deine Activities/Streams in deinem Namen abrufen.
       </p>
-      <p class="mt-3">
+      <p class="mt-3" data-i18n-html="datenschutz.05b.storeTitle">
         <strong class="text-white">Was wir speichern:</strong>
       </p>
       <ul class="list-disc pl-6 space-y-1 mt-2 text-sm">
-        <li>Provider-Name, OAuth-Tokens (verschlüsselt), Provider-User-ID, gewährter Scope</li>
-        <li>Verbindungs-Zeitpunkt + letzter Sync-Zeitpunkt</li>
-        <li>Importierte Daten landen in derselben Activities-Tabelle wie File-Imports (siehe §5)</li>
+        <li data-i18n="datenschutz.05b.li.01">Provider-Name, OAuth-Tokens (verschlüsselt), Provider-User-ID, gewährter Scope</li>
+        <li data-i18n="datenschutz.05b.li.02">Verbindungs-Zeitpunkt + letzter Sync-Zeitpunkt</li>
+        <li data-i18n="datenschutz.05b.li.03">Importierte Daten landen in derselben Activities-Tabelle wie File-Imports (siehe §5)</li>
       </ul>
-      <p class="mt-3">
+      <p class="mt-3" data-i18n="datenschutz.05b.legal">
         Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung). Du wirst vor der OAuth-Weiterleitung
         explizit auf den Self-Custody-Bruch hingewiesen. Trennung jederzeit über die Live-Sync-Sektion
         im Vault — Token wird sofort aus unserer DB gelöscht. Speicherdauer: bis zur Trennung

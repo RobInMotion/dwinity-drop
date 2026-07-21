@@ -31,9 +31,11 @@ function vt(key, fallback, vars) {
     const btn = document.getElementById("pro-mode-toggle");
     if (!btn) return;
     const on = get();
-    btn.innerHTML = on
-      ? `🔧 <span class="hidden md:inline">Pro-Mode:</span> AN`
-      : `🔧 <span class="hidden md:inline">Pro-Mode:</span> AUS`;
+    const state = on
+      ? vt("pm.stateOn", "AN")
+      : vt("pm.stateOff", "AUS");
+    const label = vt("pm.label", "Pro-Mode:");
+    btn.innerHTML = `🔧 <span class="hidden md:inline">${label}</span> ${state}`;
     btn.title = on
       ? vt("pm.on", "Technische Details werden angezeigt — Klick zum Verstecken")
       : vt("pm.off", "Klick um technische Details (Tx-Hashes, Contract-Adressen, Commitments) sichtbar zu machen");
@@ -45,14 +47,18 @@ function vt(key, fallback, vars) {
     if (btn && !btn.dataset.wired) {
       btn.dataset.wired = "1";
       btn.addEventListener("click", () => set(!get()));
-      refreshToggleLabel();
     }
+    refreshToggleLabel();
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", wire);
   } else {
     wire();
   }
+
+  // pro-mode.js is loaded before i18n.js on some pages, and the label text is
+  // translated — re-render it whenever the active language changes.
+  window.addEventListener("dd:lang-changed", refreshToggleLabel);
 
   global.DwinityProMode = { get, set, init };
   init();
