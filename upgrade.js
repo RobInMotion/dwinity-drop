@@ -134,6 +134,13 @@
     document.body.style.overflow = "hidden";
     const q = await fetchQuote();
     if (q) renderPrices(q);
+    // Pre-fill the live launch promo so the advertised launch price applies
+    // without the visitor having to know or type the code. Silent: if they are
+    // not logged in yet it just sits in the field and applies on Check/connect.
+    if (promoInput && !promoInput.value.trim()) {
+      promoInput.value = "LAUNCH50";
+      checkPromo({ silent: true });
+    }
   }
 
   function closeModal() {
@@ -178,13 +185,14 @@
     return `ethereum:${inv.contract}@${inv.chain_id}/transfer?address=${inv.receiver}&uint256=${inv.amount_atomic}`;
   }
 
-  async function checkPromo() {
+  async function checkPromo(opts) {
+    const silent = opts === true || (opts && opts.silent === true);
     promoFeedback.classList.add("hidden");
     validatedPromo = null;
     const code = (promoInput.value || "").trim().toUpperCase();
     if (!code) return;
     const me = await getMe();
-    if (!me || !me.address) { show(notLogged); return; }
+    if (!me || !me.address) { if (!silent) show(notLogged); return; }
     const plan = Array.from(planRadios).find(r => r.checked).value;
     const asset = Array.from(assetRadios).find(r => r.checked).value;
     promoCheckBtn.disabled = true;
@@ -417,14 +425,21 @@
   }
 
   // Re-render prices when user flips asset
+  // A plan/asset switch invalidates the validated promo — re-apply the code
+  // silently so the discount stays attached to whatever plan they land on.
+  function reapplyPromoIfAny() {
+    if (promoInput && promoInput.value.trim()) checkPromo({ silent: true });
+  }
   assetRadios.forEach((r) => r.addEventListener("change", () => {
     renderPrices(currentQuote);
     validatedPromo = null;
     if (promoFeedback) promoFeedback.classList.add("hidden");
+    reapplyPromoIfAny();
   }));
   planRadios.forEach((r) => r.addEventListener("change", () => {
     validatedPromo = null;
     if (promoFeedback) promoFeedback.classList.add("hidden");
+    reapplyPromoIfAny();
   }));
 
   document.addEventListener("keydown", (e) => {
