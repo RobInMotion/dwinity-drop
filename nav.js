@@ -41,6 +41,7 @@
     { href: "/vault",       label: "Vault · Info",       key: "nav.vaultInfo" },
     { href: "/vault.html",  label: "Vault öffnen (App)",  key: "nav.vaultApp" },
     { href: "/marketplace", label: "Markt",              key: "nav.market" },
+    { href: "/surveys",     label: "Umfragen",           key: "nav.surveys" },
     { href: "/rewards",     label: "Rewards",            key: "nav.rewards" },
     { href: "/rank",        label: "Rang",               key: "nav.rank" }
   ];
