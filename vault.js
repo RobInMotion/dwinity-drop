@@ -604,7 +604,12 @@ async function submitContribution(mp, pool, importId, source, pseudoActivities, 
 function showContributeReceipt(mp, prep) {
   const txUrl = snowtraceUrl(prep.chain_id, prep.contract_call.to);
   const args = prep.contract_call.args;
-  const hasWallet = !!(window.ethereum && (window.ethereum.selectedAddress || (window.ethereum.request)));
+  // A wallet is usable if an injected provider exists OR WalletConnect is available
+  // (mobile / no extension) — so the in-app "execute" button also shows for WC users.
+  const hasWallet = !!(
+    (window.ethereum && (window.ethereum.selectedAddress || window.ethereum.request)) ||
+    (window.dwinityWC && window.dwinityWC.ensureConnected)
+  );
   showModal(`
     <div class="text-[10px] font-mono text-neon-500 uppercase tracking-widest mb-2">${vt('vjs.receiptKicker', '✓ Verschlüsselt + nach Storj geladen')}</div>
     <div class="text-xl font-600 mb-1">${vt('vjs.receiptTitle', 'Letzter Schritt: on-chain contribute()')}</div>
@@ -710,18 +715,34 @@ function encodeContributeCalldata(commitmentHex, storjKey, sizeBytes) {
   return CONTRIBUTE_SELECTOR + commitment + offset + sizeHex + tail;
 }
 
+// Resolve a wallet provider: injected window.ethereum, else the WalletConnect provider
+// (mobile / no browser extension). WC is exposed as window.ethereum once connected.
+async function resolveWalletProvider() {
+  if (window.ethereum && window.ethereum.request) return window.ethereum;
+  if (window.dwinityWC && window.dwinityWC.ensureConnected) {
+    try { return (await window.dwinityWC.ensureConnected()) || window.ethereum || null; }
+    catch (e) { return null; }
+  }
+  return null;
+}
+
 async function sendContributeTx(prep) {
   const status = document.querySelector('[data-tx-status]');
   const sendBtn = document.querySelector('[data-send-tx]');
-  if (!window.ethereum) {
-    status.textContent = 'Kein Wallet (window.ethereum) gefunden.';
-    status.className = 'mb-3 text-xs font-mono text-red-400';
-    return;
-  }
   status.classList.remove('hidden');
   status.className = 'mb-3 text-xs font-mono text-white/60';
   status.textContent = vt('vjs.openingWallet', '🦊 öffne Wallet …');
   if (sendBtn) sendBtn.disabled = true;
+
+  // Injected wallet OR WalletConnect (mobile). Only fall back to manual Snowtrace
+  // when truly no provider can be activated.
+  const provider = await resolveWalletProvider();
+  if (!provider || !provider.request) {
+    status.textContent = vt('vjs.noWalletResolve', 'Keine aktive Wallet. Verbinde deine Wallet (Button oben) und versuch es erneut.');
+    status.className = 'mb-3 text-xs font-mono text-red-400';
+    if (sendBtn) sendBtn.disabled = false;
+    return;
+  }
 
   // Surface "MetaMask hängt" within 8s — typical fail mode when a previous
   // popup is still queued and eth_requestAccounts never resolves.
@@ -733,7 +754,7 @@ async function sendContributeTx(prep) {
   }, 8000);
 
   try {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
     if (!accounts || !accounts.length) throw new Error(vt('vjs.noWalletAddr', 'keine Wallet-Adresse autorisiert'));
     const from = accounts[0];
     clearTimeout(hangTimer);
@@ -741,14 +762,14 @@ async function sendContributeTx(prep) {
     // Auto-switch to the configured chain (Fuji = 0xa869, mainnet = 0xa86a).
     const chainHex = '0x' + prep.chain_id.toString(16);
     try {
-      await window.ethereum.request({
+      await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: chainHex }],
       });
     } catch (e) {
       // 4902 = chain not added — only auto-add Fuji to keep mainnet user-driven.
       if (e && e.code === 4902 && prep.chain_id === 43113) {
-        await window.ethereum.request({
+        await provider.request({
           method: 'wallet_addEthereumChain',
           params: [{
             chainId:           chainHex,
@@ -766,7 +787,7 @@ async function sendContributeTx(prep) {
     const args = prep.contract_call.args;
     const data = encodeContributeCalldata(args[0], args[1], args[2]);
 
-    const txHash = await window.ethereum.request({
+    const txHash = await provider.request({
       method: 'eth_sendTransaction',
       params: [{ from, to: prep.contract_call.to, data }],
     });
@@ -1115,6 +1136,7 @@ async function init() {
 
 init();
 (window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
+  "vjs.noWalletResolve": "No active wallet. Connect your wallet (button above) and try again.",
   "vjs.activities": "Activities",
   "vjs.distance": "Distance",
   "vjs.hours": "Hours",

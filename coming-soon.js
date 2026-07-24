@@ -304,3 +304,86 @@
 
   input.focus();
 })();
+
+/* ===== Waitlist + live counter + facts (merged from inline; CSP-safe, gate-exempt) ===== */
+/* Waitlist (email collection), live real-time counter, and rotating facts.
+   Self-contained — does not touch the globe/key logic in coming-soon.js. */
+(function () {
+  var countEl = document.getElementById("wlcount");
+  var factEl  = document.getElementById("wlfact");
+  var form    = document.getElementById("wlform");
+  var field   = document.getElementById("wlfield");
+  var note    = document.getElementById("wlnote");
+
+  function badFlash() {
+    if (!field) return;
+    field.classList.add("bad");
+    setTimeout(function () { field.classList.remove("bad"); }, 400);
+  }
+  function showCount(n) {
+    if (typeof n !== "number" || !countEl) return;
+    countEl.innerHTML = '<b>' + n.toLocaleString() + '</b> already waiting';
+  }
+
+  // Live real-time counter (real number from the waitlist — never fabricated).
+  fetch("/api/waitlist/count?product=drop")
+    .then(function (r) { return r.json(); })
+    .then(function (j) { showCount(j.count); })
+    .catch(function () {});
+
+  if (form) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = document.getElementById("wlemail");
+      var btn = form.querySelector("button[type=submit]");
+      var email = (input && input.value || "").trim();
+      if (!email || email.indexOf("@") < 1) { badFlash(); return; }
+      var orig = btn.textContent;
+      btn.disabled = true; btn.textContent = "…";
+      note.classList.remove("bad"); note.textContent = "";
+      fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, product: "drop" })
+      })
+        .then(function (r) {
+          if (r.status === 429) throw new Error("too many — try again later");
+          if (!r.ok) throw new Error("error " + r.status);
+          return r.json();
+        })
+        .then(function (j) {
+          form.reset();
+          note.textContent = "// you're on the list.";
+          showCount(j.count);
+        })
+        .catch(function (err) {
+          badFlash();
+          note.classList.add("bad");
+          note.textContent = "// " + (err.message || err);
+        })
+        .finally(function () { btn.disabled = false; btn.textContent = orig; });
+    });
+  }
+
+  // Rotating facts — real, on-brand.
+  var FACTS = [
+    "The average person's data is sold to 100+ companies — none of which pay them.",
+    "AES-256 has 2^256 possible keys — more than there are atoms in the observable universe.",
+    "Self-custody means the server never holds your key. Dead Drop encrypts in your browser, before anything leaves.",
+    "Your Spotify, Strava and Health exports are yours by law (GDPR Art. 20) — the Vault just puts them to work.",
+    "Storj splits every file into 80 encrypted pieces worldwide; any 29 rebuild it. No single server holds the whole.",
+    "k-anonymity: your data only leaves a pool once at least 5 people share the trait. Alone, you stay invisible."
+  ];
+  var fi = 0;
+  function rotate() {
+    if (!factEl) return;
+    factEl.style.opacity = "0";
+    setTimeout(function () {
+      factEl.textContent = FACTS[fi % FACTS.length];
+      factEl.style.opacity = "1";
+      fi++;
+    }, 480);
+  }
+  rotate();
+  setInterval(rotate, 6500);
+})();

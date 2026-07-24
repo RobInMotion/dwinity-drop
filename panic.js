@@ -188,7 +188,7 @@
     ov.querySelector("div:nth-child(2)").textContent = vt("pn.wipingIdentity", "Lösche Identität …");
     await tryPost("/api/identity/panic");
     set(100);
-    ov.querySelector("div:nth-child(2)").textContent = "Wipe abgeschlossen.";
+    ov.querySelector("div:nth-child(2)").textContent = vt("pn.wipeDone", "Wipe abgeschlossen.");
 
     try {
       localStorage.clear();

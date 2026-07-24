@@ -427,8 +427,8 @@
             ${isPro ? '<span class="px-1.5 py-0.5 rounded bg-neon-500/20 text-neon-500 text-[9px] font-mono uppercase tracking-widest">Pro</span>' : '<span class="px-1.5 py-0.5 rounded bg-white/5 text-white/50 text-[9px] font-mono uppercase tracking-widest">Free</span>'}
             ${w.ref_code ? `<span class="px-1.5 py-0.5 rounded bg-void-800 text-neon-500 text-[9px] font-mono">${escapeHtml(w.ref_code)}</span>` : ''}
             <div class="ml-auto flex items-center gap-3 text-[11px] font-mono text-white/50">
-              ${w.total_paid_usdc ? `<span>${(w.total_paid_usdc / 1e6).toFixed(2)} USDC</span>` : ''}
-              ${w.total_paid_dwin ? `<span>${(w.total_paid_dwin / 1e18).toFixed(2)} DWIN</span>` : ''}
+              ${Number(w.total_paid_usdc) > 0 ? `<span>${(w.total_paid_usdc / 1e6).toFixed(2)} USDC</span>` : ''}
+              ${Number(w.total_paid_dwin) > 0 ? `<span>${(w.total_paid_dwin / 1e18).toFixed(2)} DWIN</span>` : ''}
               <span>seit ${fmtAgo(w.created_at)}</span>
               ${isAdmin ? `<button data-demote="${escapeHtml(w.address)}" class="px-2 py-1 rounded-md text-[10px] font-mono text-red-400 hover:bg-red-500/10 transition">− Admin</button>` : ''}
             </div>

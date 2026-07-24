@@ -94,11 +94,12 @@
   function renderXpBreakdown(counts, xp) {
     const el = $("xp-breakdown");
     const rows = [
-      ["📦", vt("rk.dropsCreated", "Drops erstellt"),   counts.drops_created,       xp.drops_created],
-      ["⬇",  "Drop-Downloads",   counts.drops_downloaded,    xp.drops_downloaded],
-      ["💬", "Chat-Messages",    counts.chat_messages,       xp.chat_messages],
-      ["🏠", "Chat-Rooms",       counts.chat_rooms_created,  xp.chat_rooms_created],
-      ["⭐", "Pro-Aktivierungen", counts.pro_activations,     xp.pro_activations],
+      ["📦", vt("rk.dropsCreated", "Drops erstellt"),        counts.drops_created,       xp.drops_created],
+      ["⬇",  vt("rk.dropDownloads", "Drop-Downloads"),       counts.drops_downloaded,    xp.drops_downloaded],
+      ["💬", vt("rk.chatMessages", "Chat-Messages"),         counts.chat_messages,       xp.chat_messages],
+      ["🏠", vt("rk.chatRooms", "Chat-Rooms"),               counts.chat_rooms_created,  xp.chat_rooms_created],
+      ["⭐", vt("rk.proActivations", "Pro-Aktivierungen"),    counts.pro_activations,     xp.pro_activations],
+      ["🧬", vt("rk.dataContrib", "Daten-Beiträge"),          counts.vault_contributions, xp.vault_contributions],
     ];
     el.innerHTML = rows.map(([icon, label, count, xpv]) => `
       <div class="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-b-0">
@@ -196,13 +197,16 @@
 
     refCode = data.ref_code;
     $("current-rank").textContent = data.rank.current.name;
-    $("current-perk").textContent = data.rank.current.perk || "Starter-Rang · keine Perks";
+    $("current-perk").textContent = data.rank.current.perk || vt("rk.starterRank", "Starter-Rang · keine Perks");
+    // Show WHICH wallet this rank belongs to — prevents "why is my XP 0?" wallet mix-ups.
+    const wEl = $("rank-wallet");
+    if (wEl) wEl.textContent = "🔑 " + shortAddr(currentAddress);
     $("total-xp").textContent = fmtNum(data.total_xp);
     $("progress-bar").style.width = data.rank.progress_pct + "%";
     $("ref-code").textContent = refCode;
 
     if (data.rank.next && data.rank.next.name) {
-      $("next-rank").textContent = `${data.rank.next.name} ab ${fmtNum(data.rank.next.min_xp)} XP`;
+      $("next-rank").textContent = `${data.rank.next.name} ${vt("rk.nextAt", "ab")} ${fmtNum(data.rank.next.min_xp)} XP`;
     } else {
       $("next-rank").textContent = vt("rk.maxRank", "🏆 höchster Rang erreicht");
     }
@@ -212,9 +216,14 @@
     renderReferralsPanel(data);
     renderLeaderboard();
 
-    $("copy-ref").addEventListener("click", copyRefLink);
-    const exportBtn = $("data-export-btn");
-    if (exportBtn) exportBtn.addEventListener("click", doDataExport);
+    // Wire the static buttons once — boot() re-runs on refresh and would otherwise
+    // stack duplicate listeners. (copy-ref / data-export-btn are never re-rendered.)
+    if (!boot._wired) {
+      boot._wired = true;
+      $("copy-ref").addEventListener("click", copyRefLink);
+      const exportBtn = $("data-export-btn");
+      if (exportBtn) exportBtn.addEventListener("click", doDataExport);
+    }
   }
 
   async function doDataExport() {
@@ -234,12 +243,12 @@
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
-      btn.textContent = "✓ heruntergeladen";
-      setTimeout(() => { btn.textContent = "JSON herunterladen"; btn.disabled = false; }, 2000);
+      btn.textContent = vt("rk.downloaded", "✓ heruntergeladen");
+      setTimeout(() => { btn.textContent = vt("rk.downloadJson", "JSON herunterladen"); btn.disabled = false; }, 2000);
     } catch (e) {
       alert(vt("rk.errPrefix", "Fehler: ") + e.message);
       btn.disabled = false;
-      btn.textContent = "JSON herunterladen";
+      btn.textContent = vt("rk.downloadJson", "JSON herunterladen");
     }
   }
 
@@ -328,17 +337,19 @@
   window.addEventListener("dwinity:wallet-changed", boot);
   window.addEventListener("dwinity:pro-updated", boot);
 
+  // Live-ish refresh: XP + leaderboard are computed live server-side, so re-pull them
+  // whenever the user returns to this tab (e.g. after sending chat messages) and gently
+  // while it stays open — newly earned XP then shows up without a manual reload.
+  let refreshing = false;
+  async function refreshIfVisible() {
+    if (document.visibilityState !== "visible" || refreshing) return;
+    refreshing = true;
+    try { await boot(); } finally { refreshing = false; }
+  }
+  document.addEventListener("visibilitychange", refreshIfVisible);
+  window.addEventListener("focus", refreshIfVisible);
+  setInterval(refreshIfVisible, 30000);
+
   boot();
 })();
-(window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
-  "rk.errPrefix": "Error: ",
-  "rk.activate": "🐉 Activate Dragon Rank",
-  "rk.linkCopied": "✓ Link copied",
-  "rk.dropsCreated": "Drops created",
-  "rk.noEntries": "no entries yet — be the first!",
-  "rk.lbUnavailable": "Leaderboard unavailable",
-  "rk.maxRank": "🏆 highest rank reached",
-  "rk.loading": "// loading …",
-  "rk.invitedBy": "you were invited by:",
-  "rk.noReferrals": "no referrals yet — share your link above",
-} });
+// rk.* translations (DE+EN) live in the external /rank-i18n.js (CSP-safe, complete).

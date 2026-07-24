@@ -95,7 +95,7 @@
             '<span class="' + cfg.text + ' text-base font-extrabold">' + cfg.icon + '</span>' +
             '<span class="' + cfg.text + ' font-semibold text-sm">' + tierLabel + '</span>' +
           '</div>' +
-          '<a href="#" data-action="open-upgrade" class="text-neon-500 hover:underline text-[11px] font-mono">' + upgradeText + ' →</a>' +
+          '<a href="/#preise" data-action="open-upgrade" class="text-neon-500 hover:underline text-[11px] font-mono">' + upgradeText + ' →</a>' +
         '</div>'
       );
     }
@@ -143,14 +143,15 @@
     if (!rank) return "";
     const earned = rankData.earned_credits_gb || 0;
     return (
-      '<div class="mb-3 p-3 rounded-lg bg-gradient-to-br from-neon-500/10 to-cyan-400/5 border border-neon-500/20">' +
+      '<a href="/rank" class="block mb-3 p-3 rounded-lg bg-gradient-to-br from-neon-500/10 to-cyan-400/5 border border-neon-500/20 hover:border-neon-500/50 transition">' +
         '<div class="flex items-center justify-between gap-2">' +
           '<span class="text-sm">' + rank.name + '</span>' +
           '<span class="text-[10px] font-mono text-white/50">' + (rankData.total_xp || 0) + ' XP</span>' +
         '</div>' +
         '<div class="text-[10px] font-mono text-white/60 mt-1">' + rank.perk + '</div>' +
         (earned > 0 ? '<div class="text-[10px] font-mono text-cyan-400 mt-1">+' + earned + ' GB ' + t("nav.rank.earned", "earned") + '</div>' : '') +
-      '</div>'
+        '<div class="text-[10px] font-mono text-neon-500 mt-1.5">🐉 ' + t("nav.rank.viewLink", "Dragon Rank") + ' →</div>' +
+      '</a>'
     );
   }
 
@@ -214,23 +215,37 @@
     } catch {}
   }
 
-  async function refreshMe() {
+  async function fetchMeOnce() {
+    // { ok:true, me } on a clean response; { ok:false } on a transient failure
+    // (network error / 5xx) where the login state is unknown.
     try {
       const r = await fetch(API + "/me", { credentials: "include" });
-      if (!r.ok) { renderLoggedOut(); return null; }
-      const me = await r.json();
-      if (me.address) renderLoggedIn(me);
-      else renderLoggedOut();
-      return me;
+      if (!r.ok) return { ok: false };
+      return { ok: true, me: await r.json() };
     } catch {
-      renderLoggedOut();
-      return null;
+      return { ok: false };
     }
+  }
+
+  async function refreshMe() {
+    // /me returns 200 {address:null} when logged out, so a non-OK/throw is a
+    // server/network blip — NOT a logout. Retry once; if it still fails, keep
+    // the current button state instead of falsely flashing "connect wallet".
+    let res = await fetchMeOnce();
+    if (!res.ok) {
+      await new Promise((r) => setTimeout(r, 1200));
+      res = await fetchMeOnce();
+    }
+    if (!res.ok) return null;            // transient failure — leave state as-is
+    const me = res.me;
+    if (me && me.address) renderLoggedIn(me);
+    else renderLoggedOut();
+    return me;
   }
 
   async function requestChallenge() {
     const r = await fetch(API + "/siwe/challenge", { credentials: "include" });
-    if (!r.ok) throw new Error("Konnte Challenge nicht holen (HTTP " + r.status + ")");
+    if (!r.ok) throw new Error(t("wallet.challengeFailed", "Konnte Challenge nicht holen") + " (HTTP " + r.status + ")");
     return r.json();
   }
 
@@ -273,7 +288,7 @@
       } catch (e) {
         const msg = (e && e.message) || String(e);
         if (!/reject|cancel|user closed|modal closed/i.test(msg)) {
-          alert("Wallet-Verbindung fehlgeschlagen: " + msg);
+          alert(t("wallet.connectFailed", "Wallet-Verbindung fehlgeschlagen: ") + msg);
         }
         renderLoggedOut();
         if (hasHeader) btn.disabled = false;
@@ -286,7 +301,7 @@
     try {
       const accounts = await provider.request({ method: "eth_requestAccounts" });
       const raw = (accounts && accounts[0]) || "";
-      if (!raw) throw new Error("Kein Wallet-Account");
+      if (!raw) throw new Error(t("wallet.noAccount", "Kein Wallet-Account"));
       const address = toChecksumAddress(raw);
 
       const { nonce } = await requestChallenge();
@@ -324,7 +339,7 @@
       if (err && (err.code === 4001 || /reject|cancel/i.test(msg))) {
         renderLoggedOut();
       } else {
-        alert("Wallet-Login: " + msg);
+        alert(t("wallet.loginFailed", "Wallet-Login: ") + msg);
         renderLoggedOut();
       }
     } finally {
@@ -411,6 +426,29 @@
   window.addEventListener("dd:lang-changed", () => {
     if (hasHeader && btn.dataset.state === "out") renderLoggedOut();
   });
+
+  // Return-to-room: a user who opened a chat-room link while logged out can be bounced
+  // to the homepage after a mobile WalletConnect round-trip (the wallet returns to the
+  // dApp origin, not the room path). Once the session is live, send them back in.
+  async function maybeReturnToRoom() {
+    let pending = null;
+    try { pending = JSON.parse(localStorage.getItem("dd_return_room") || "null"); } catch {}
+    if (!pending || !pending.url) return;
+    if (!pending.at || Date.now() - pending.at > 300000) {   // expire after 5 min
+      try { localStorage.removeItem("dd_return_room"); } catch {}
+      return;
+    }
+    if (location.pathname === String(pending.url).split("#")[0]) return; // already there
+    try {
+      const r = await fetch(API + "/me", { credentials: "include" });
+      if (!r.ok) return;
+      const me = await r.json();
+      if (!me.address) return;                               // only once logged in
+    } catch { return; }
+    try { localStorage.removeItem("dd_return_room"); } catch {}
+    location.replace(pending.url);
+  }
+  maybeReturnToRoom();
 
   // boot — only refresh/render the header if it exists
   if (hasHeader) refreshMe();

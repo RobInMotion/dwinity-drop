@@ -150,22 +150,26 @@
     if (!currentInvoice) return;
     const err = $("pay-error");
     err.classList.add("hidden");
-    if (!window.ethereum) {
-      err.textContent = t("proplus.err.noWallet", "Keine Wallet erkannt. Sende den Betrag manuell an die Empfänger-Adresse.");
-      err.classList.remove("hidden");
-      return;
-    }
     const btn = $("pay-wallet-btn");
     btn.disabled = true; btn.textContent = t("proplus.waitingWallet", "// warte auf Wallet-Bestätigung …");
+    // Injected wallet OR WalletConnect (mobile / no extension).
+    const provider = (window.dwinityWC && window.dwinityWC.resolveProvider)
+      ? await window.dwinityWC.resolveProvider() : (window.ethereum || null);
+    if (!provider || !provider.request) {
+      err.textContent = t("proplus.err.noWallet", "Keine Wallet erkannt. Sende den Betrag manuell an die Empfänger-Adresse.");
+      err.classList.remove("hidden");
+      btn.disabled = false; btn.textContent = t("proplus.pay.cta", "Mit Wallet bezahlen →");
+      return;
+    }
     try {
       try {
-        await window.ethereum.request({
+        await provider.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: AVAX_CHAIN_HEX }],
         });
       } catch (switchErr) {
         if (switchErr && switchErr.code === 4902) {
-          await window.ethereum.request({
+          await provider.request({
             method: "wallet_addEthereumChain",
             params: [{
               chainId: AVAX_CHAIN_HEX,
@@ -179,13 +183,13 @@
           throw switchErr;
         }
       }
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
       const from = accounts[0];
       const recvHex = currentInvoice.receiver.toLowerCase().replace(/^0x/, "").padStart(64, "0");
       const amountHex = BigInt(currentInvoice.amount_atomic).toString(16).padStart(64, "0");
       const data = ERC20_TRANSFER_SIG + recvHex + amountHex;
 
-      const txHash = await window.ethereum.request({
+      const txHash = await provider.request({
         method: "eth_sendTransaction",
         params: [{
           from,
@@ -200,8 +204,8 @@
         txHash.slice(0, 10) + '…</a>';
     } catch (e) {
       const msg = (e && e.message) || String(e);
-      if (e && e.code === 4001) err.textContent = "Abgebrochen im Wallet.";
-      else err.textContent = "Wallet-Payment: " + msg.slice(0, 200);
+      if (e && e.code === 4001) err.textContent = t("wallet.cancelled", "Abgebrochen im Wallet.");
+      else err.textContent = t("wallet.payErr", "Wallet-Zahlung: ") + msg.slice(0, 200);
       err.classList.remove("hidden");
     } finally {
       btn.disabled = false; btn.textContent = t("proplus.pay.cta", "Mit Wallet bezahlen →");

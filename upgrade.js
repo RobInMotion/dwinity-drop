@@ -128,10 +128,16 @@
     }
   }
 
-  async function openModal() {
+  async function openModal(preselectPlan) {
     setErr("");
     show(modal);
     document.body.style.overflow = "hidden";
+    // Optionally preselect a plan (e.g. Pro+ when opened from a Pro+ button), so both
+    // Pro and Pro+ use this one modal instead of a separate /proplus page.
+    if (preselectPlan) {
+      const r = Array.from(planRadios).find(x => x.value === preselectPlan);
+      if (r) r.checked = true;
+    }
     const q = await fetchQuote();
     if (q) renderPrices(q);
     // Pre-fill the live launch promo so the advertised launch price applies
@@ -336,23 +342,28 @@
 
   async function payViaWallet() {
     if (!currentInvoice) return;
-    if (!window.ethereum) {
-      setErr(vt("up.noWallet", "Keine Wallet erkannt — Adresse + Betrag extern bezahlen."));
-      return;
-    }
     payBtn.disabled = true;
     payBtn.textContent = vt("up.waitingWallet", "// warte auf Wallet-Bestätigung …");
     setErr("");
+    // Injected wallet OR WalletConnect (mobile / no extension).
+    const provider = (window.dwinityWC && window.dwinityWC.resolveProvider)
+      ? await window.dwinityWC.resolveProvider() : (window.ethereum || null);
+    if (!provider || !provider.request) {
+      setErr(vt("up.noWallet", "Keine Wallet erkannt — Adresse + Betrag extern bezahlen."));
+      payBtn.disabled = false;
+      payBtn.textContent = vt("upgrade.pay.cta", "Mit diesem Wallet bezahlen →");
+      return;
+    }
     try {
       // 1) switch chain if needed
       try {
-        await window.ethereum.request({
+        await provider.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: AVAX_CHAIN_HEX }],
         });
       } catch (switchErr) {
         if (switchErr && switchErr.code === 4902) {
-          await window.ethereum.request({
+          await provider.request({
             method: "wallet_addEthereumChain",
             params: [{
               chainId: AVAX_CHAIN_HEX,
@@ -368,13 +379,13 @@
       }
 
       // 2) encode transfer(receiver, amount)
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
       const from = accounts[0];
       const recvHex = currentInvoice.receiver.toLowerCase().replace(/^0x/, "").padStart(64, "0");
       const amountHex = BigInt(currentInvoice.amount_atomic).toString(16).padStart(64, "0");
       const data = ERC20_TRANSFER_SIG + recvHex + amountHex;
 
-      const txHash = await window.ethereum.request({
+      const txHash = await provider.request({
         method: "eth_sendTransaction",
         params: [{
           from,
@@ -389,11 +400,11 @@
         txHash.slice(0, 10) + '…</a>';
     } catch (e) {
       const msg = (e && e.message) || String(e);
-      if (e && e.code === 4001) setErr("Abgebrochen im Wallet.");
-      else setErr("Wallet-Payment: " + msg);
+      if (e && e.code === 4001) setErr(vt("wallet.cancelled", "Abgebrochen im Wallet."));
+      else setErr(vt("wallet.payErr", "Wallet-Zahlung: ") + msg);
     } finally {
       payBtn.disabled = false;
-      payBtn.textContent = "Mit diesem Wallet bezahlen →";
+      payBtn.textContent = vt("upgrade.pay.cta", "Mit diesem Wallet bezahlen →");
     }
   }
 
@@ -403,7 +414,7 @@
     const trigger = e.target.closest("[data-action='open-upgrade']");
     if (trigger) {
       e.preventDefault();
-      openModal();
+      openModal(trigger.getAttribute("data-upgrade-plan") || undefined);
     }
   });
 
@@ -447,6 +458,12 @@
   });
 
   window.openUpgrade = openModal;
+
+  // Deep-link: /#upgrade opens the modal, /#upgrade-plus opens it with Pro+ preselected.
+  // Lets CTAs on other pages (e.g. the dashboard) route through this one modal.
+  if (location.hash === "#upgrade" || location.hash === "#upgrade-plus") {
+    openModal(location.hash === "#upgrade-plus" ? "monthly_plus" : undefined);
+  }
 })();
 (window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
   "up.usesLeft": " · {n} uses left",

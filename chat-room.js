@@ -22,6 +22,7 @@
   const roomExpiryEl = $("room-expiry");
   const shareBtn = $("share-btn");
   const shareToast = $("share-toast");
+  const deleteBtn = $("delete-btn");
 
   let roomId = null;
   let roomKey = null;
@@ -30,6 +31,30 @@
   let sse = null;
   let roomMeta = null;
   let expiryTimer = null;
+  let roomEnded = false;
+
+  // Mobile keyboard fix: the on-screen keyboard overlays the viewport but 100dvh does
+  // NOT shrink for it, so the sticky composer ends up hidden behind the keyboard. Track
+  // the visual viewport (the space actually visible above the keyboard) and size the app
+  // to exactly that, compensating for iOS shifting the layout viewport up (offsetTop).
+  (function keyboardFix() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    let raf = 0;
+    function apply() {
+      raf = 0;
+      document.body.style.height = vv.height + "px";
+      document.body.style.transform = vv.offsetTop
+        ? "translateY(" + vv.offsetTop + "px)"
+        : "";
+    }
+    function schedule() {
+      if (!raf) raf = requestAnimationFrame(apply);
+    }
+    vv.addEventListener("resize", schedule);
+    vv.addEventListener("scroll", schedule);
+    apply();
+  })();
 
   // ---------- URL / storage helpers ----------
 
@@ -126,6 +151,14 @@
     return u8ToB64(envelope);
   }
 
+  // Encrypt an arbitrary structured object (used by the Tracker Sweep mini-game),
+  // same envelope format as text messages so it rides the E2E pipe unchanged.
+  async function encodeObject(cryptoKey, obj) {
+    const plainBytes = new TextEncoder().encode(JSON.stringify(obj));
+    const envelope = await encryptPlaintext(cryptoKey, plainBytes);
+    return u8ToB64(envelope);
+  }
+
   async function decodeMessage(cryptoKey, b64) {
     try {
       const envelope = b64UrlToU8(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
@@ -170,7 +203,7 @@
             '<div class="text-sm text-white/90 truncate">' + escapeHtml(filename) + '</div>' +
           '</div>' +
           '<div class="shrink-0 text-xs font-mono text-neon-500 group-hover:translate-x-0.5 transition">' +
-            'Öffnen →' +
+            t("room.open", "Öffnen →") +
           '</div>' +
         '</div>' +
       '</a>'
@@ -185,6 +218,14 @@
     const nameColor = isMe ? "text-neon-500" : "text-white/70";
     const bg = isMe ? "bg-neon-500/10 border-neon-500/30" : "bg-void-800/70 border-white/5";
     const kind = decoded?.kind;
+    if (kind === "sweep") {
+      // Tracker Sweep game events: invites render as a special bubble, moves silently
+      // drive the game panel. Never a normal chat bubble.
+      const node = window.TrackerSweep
+        ? window.TrackerSweep.onEvent(decoded, msg, isMe)
+        : null;
+      return node || document.createComment("sweep");
+    }
     let contentHtml;
     if (kind === "error") {
       contentHtml = '<span class="italic text-red-400">' + escapeHtml(decoded.text) + '</span>';
@@ -291,6 +332,72 @@
     return r.json();
   }
 
+  // Tracker Sweep sends its moves as encrypted kind:"sweep" messages on the same pipe.
+  async function sendGameEvent(obj) {
+    const ctB64 = await encodeObject(roomKey, Object.assign({ kind: "sweep" }, obj));
+    const r = await fetch(API + "/rooms/" + encodeURIComponent(roomId) + "/messages", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ciphertext_b64: ctB64 }),
+    });
+    if (!r.ok) throw new Error("sweep send " + r.status);
+    return r.json();
+  }
+
+  // ---------- Room end / delete ----------
+
+  // Terminal state: room is gone (creator deleted it, it expired, or we were
+  // removed). Stop all live activity, lock the composer, tell the user why.
+  function endRoom(msg) {
+    if (roomEnded) return;
+    roomEnded = true;
+    if (sse) { try { sse.close(); } catch {} sse = null; }
+    if (expiryTimer) { clearInterval(expiryTimer); expiryTimer = null; }
+    if (input) input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+    if (deleteBtn) deleteBtn.classList.add("hidden");
+    showStatus(msg, "text-red-400 bg-red-500/10 border-red-500/20");
+  }
+
+  // Authoritative liveness check via the room endpoint. Returns the HTTP status
+  // (0 on a network error, so we can tell "server unreachable" from "gone").
+  async function probeRoom() {
+    try {
+      const r = await fetch(API + "/rooms/" + encodeURIComponent(roomId), { credentials: "include" });
+      return r.status;
+    } catch { return 0; }
+  }
+
+  // Creator-only: wipe the room server-side (messages/members/room) for everyone.
+  async function onDeleteRoom() {
+    const ok = window.confirm(t("room.delete.confirm",
+      "Diesen Chat für ALLE endgültig löschen? Das kann nicht rückgängig gemacht werden."));
+    if (!ok) return;
+    deleteBtn.disabled = true;
+    try {
+      const r = await fetch(API + "/rooms/" + encodeURIComponent(roomId), {
+        method: "DELETE", credentials: "include",
+      });
+      // 404 = already gone → treat as success.
+      if (!r.ok && r.status !== 404) throw new Error("HTTP " + r.status);
+      try {
+        const store = getStore(currentAddress);
+        delete store[roomId];
+        setStore(currentAddress, store);
+      } catch {}
+      roomEnded = true;
+      if (sse) { try { sse.close(); } catch {} sse = null; }
+      if (expiryTimer) { clearInterval(expiryTimer); expiryTimer = null; }
+      location.href = "/chat";
+    } catch (e) {
+      deleteBtn.disabled = false;
+      showStatus("// " + (e.message || t("room.delete.failed", "Löschen fehlgeschlagen")),
+        "text-red-400 bg-red-500/10 border-red-500/20");
+      setTimeout(hideStatus, 4000);
+    }
+  }
+
   // ---------- SSE ----------
 
   function connectSSE() {
@@ -305,11 +412,20 @@
       } catch {}
     });
     sse.onerror = () => {
+      if (roomEnded) return;
       showStatus(t("room.status.reconnect", "// Verbindung verloren — versuche in 5s erneut …"));
       try { sse.close(); } catch {}
       sse = null;
       setTimeout(async () => {
-        // Catch up via history in case we missed messages
+        if (roomEnded) return;
+        // Before reconnecting, check whether the room is actually gone — the
+        // creator may have deleted it (404), it expired (410), or we were
+        // removed (403). Only a live room (or a transient blip) reconnects.
+        const st = await probeRoom();
+        if (st === 404) { endRoom(t("room.status.ended", "// Dieser Chat wurde vom Ersteller beendet.")); return; }
+        if (st === 410) { endRoom(t("room.status.expired", "// Room ist abgelaufen — keine neuen Nachrichten möglich")); return; }
+        if (st === 403) { endRoom(t("room.status.removed", "// Du bist kein Mitglied dieses Chats mehr.")); return; }
+        // Catch up via history in case we missed messages, then reconnect.
         const hist = await fetchHistory(lastSeq);
         for (const m of hist.messages) await appendMessage(m);
         connectSSE();
@@ -345,7 +461,41 @@
     // (We persist right after importKey — callers set from fragment.)
   }
 
+  // Paste-invite-link recovery on the "key missing" screen (iOS home-screen / PWA case).
+  function setupKeyRecovery() {
+    const box = $("err-recover");
+    if (!box) return;
+    box.classList.remove("hidden");
+    const input = $("err-recover-input");
+    const btn = $("err-recover-btn");
+    const err = $("err-recover-err");
+    if (!btn || btn._wired) return;
+    btn._wired = true;
+    const go = () => {
+      const raw = (input.value || "").trim();
+      if (!raw) return;
+      const m = raw.match(/\/chat\/r\/([A-Za-z0-9_-]+)/);
+      const hi = raw.indexOf("#");
+      const hash = hi >= 0 ? raw.slice(hi + 1) : "";
+      let k = null;
+      try { k = new URLSearchParams(hash).get("k"); } catch {}
+      if (!k && /^[A-Za-z0-9_-]{40,}$/.test(raw)) k = raw; // pasted just the key
+      if (!k) {
+        if (err) { err.textContent = t("room.recover.bad", "Kein Schlüssel im Link gefunden."); err.classList.remove("hidden"); }
+        return;
+      }
+      // Navigate to the (correct) room WITH the key in the fragment → boot() picks it up.
+      location.href = (m ? "/chat/r/" + m[1] : location.pathname) + "#k=" + encodeURIComponent(k);
+    };
+    btn.addEventListener("click", go);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  }
+
   async function boot() {
+    // Reset terminal state — boot() re-runs after a wallet-change.
+    roomEnded = false;
+    if (input) input.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
     roomId = parseRoomId();
     if (!roomId) {
       errText.textContent = t("room.err.noId", "Kein Room-ID in URL");
@@ -355,6 +505,14 @@
 
     const me = await fetchMe();
     if (!me || !me.address) {
+      // Remember where we wanted to go: after a mobile WalletConnect round-trip the
+      // wallet returns to the dApp origin (homepage), not this room. auth.js reads this
+      // and bounces the user back into the room once the session is live.
+      try {
+        localStorage.setItem("dd_return_room", JSON.stringify({
+          url: location.pathname + location.hash, at: Date.now(),
+        }));
+      } catch {}
       gate.classList.remove("hidden");
       return;
     }
@@ -370,6 +528,10 @@
     if (!keyB64) {
       errText.textContent = t("room.err.noKey", "Dieser Room-Link enthält keinen Schlüssel. Ohne das #k=… Fragment kannst du die Messages nicht entschlüsseln.");
       errScreen.classList.remove("hidden");
+      // Recovery for the iOS home-screen case: adding a room to the home screen drops
+      // the #k= fragment AND the PWA has separate storage — let the user paste the
+      // full invite link to restore access in-app.
+      setupKeyRecovery();
       return;
     }
 
@@ -400,14 +562,34 @@
       setStore(currentAddress, store);
     }
 
+    // Made it into the room — clear any pending return target.
+    try { localStorage.removeItem("dd_return_room"); } catch {}
+
     chatPanel.classList.remove("hidden");
     roomNameEl.textContent = roomMeta.name || t("room.defaultName", "Room");
     roomMembersEl.textContent = roomMeta.member_count + " " + (roomMeta.member_count === 1 ? t("room.memberOne", "Member") : t("room.memberMany", "Members"));
     updateExpiry();
     expiryTimer = setInterval(updateExpiry, 30_000);
 
+    // Creator-only delete control
+    if (deleteBtn) {
+      if (roomMeta.is_creator) {
+        deleteBtn.classList.remove("hidden");
+        if (!deleteBtn._wired) { deleteBtn._wired = true; deleteBtn.addEventListener("click", onDeleteRoom); }
+      } else {
+        deleteBtn.classList.add("hidden");
+      }
+    }
+
     // History
     loadingEl.remove();
+
+    // Wire the Tracker Sweep mini-game (easter egg: /sweep) before history replays,
+    // so it can render any invite bubbles that arrive.
+    if (window.TrackerSweep) {
+      window.TrackerSweep.init({ send: sendGameEvent, me: () => currentAddress });
+    }
+
     const hist = await fetchHistory(0);
     for (const m of hist.messages) await appendMessage(m);
     scrollToBottom();
@@ -424,6 +606,13 @@
     async function doSend() {
       const text = (input.value || "").trim();
       if (!text) return;
+      // Easter egg: /sweep starts a co-op Tracker Sweep round instead of sending text.
+      if (text.toLowerCase() === "/sweep") {
+        input.value = "";
+        input.style.height = "auto";
+        if (window.TrackerSweep) window.TrackerSweep.invite();
+        return;
+      }
       sendBtn.disabled = true;
       try {
         await sendMessage(text);

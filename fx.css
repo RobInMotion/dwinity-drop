@@ -510,3 +510,19 @@ summary:focus-visible,
   outline-offset: 2px;
   border-radius: 0.25rem;
 }
+
+/* ---- purple-300 accent utilities (audit 2026-07-23) ----
+   The prebuilt tailwind.min.css only compiled `text-purple-300`; every
+   bg-/border-purple-300 opacity variant used on the Vault landing + Marketplace
+   was a no-op, dropping the brand's purple accent. Backfilled here (purple-300 =
+   #d8b4fe). CSP allows this stylesheet (same-origin). */
+.bg-purple-300\/\[0\.06\]{background-color:rgba(216,180,254,.06)}
+.bg-purple-300\/\[0\.04\]{background-color:rgba(216,180,254,.04)}
+.bg-purple-300\/10{background-color:rgba(216,180,254,.10)}
+.bg-purple-300\/60{background-color:rgba(216,180,254,.60)}
+.border-purple-300\/20{border-color:rgba(216,180,254,.20)}
+.border-purple-300\/30{border-color:rgba(216,180,254,.30)}
+.border-purple-300\/40{border-color:rgba(216,180,254,.40)}
+.border-purple-300\/50{border-color:rgba(216,180,254,.50)}
+.text-purple-200{color:#e9d5ff}
+.text-purple-300\/70{color:rgba(216,180,254,.70)}

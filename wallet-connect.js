@@ -188,7 +188,15 @@
     return !!(window.ethereum && !window.ethereum.__dwinityWC);
   }
 
-  window.dwinityWC = { ensureConnected, disconnect, hasInjectedWallet };
+  // Shared provider resolver for ALL on-chain flows (claim, pay, contribute, top-up):
+  // use an injected wallet if present, else activate WalletConnect (mobile / no
+  // extension). Returns a provider with .request(), or null if none can be established.
+  async function resolveProvider() {
+    if (window.ethereum && window.ethereum.request) return window.ethereum;
+    try { return await ensureConnected(); } catch (e) { return null; }
+  }
+
+  window.dwinityWC = { ensureConnected, disconnect, hasInjectedWallet, resolveProvider };
 })();
 (window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
   "wc.bufferFail": "Buffer polyfill could not be loaded",

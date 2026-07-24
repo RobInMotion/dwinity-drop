@@ -502,8 +502,25 @@ function vt(key, fallback, vars) {
   // claim() takes no args, just the function selector.
   const CLAIM_SELECTOR = "0x4e71d92d";
 
+  // Poll for the tx receipt so we only celebrate a claim that actually mined.
+  async function waitReceipt(txHash, provider, tries) {
+    tries = tries || 40; // ~80s @ 2s (Fuji ~2s blocks)
+    var p = provider || window.ethereum;
+    for (var i = 0; i < tries; i++) {
+      try {
+        var r = await p.request({ method: "eth_getTransactionReceipt", params: [txHash] });
+        if (r) return r;
+      } catch (e) {}
+      await new Promise(function (res) { setTimeout(res, 2000); });
+    }
+    return null;
+  }
+
   async function handleClaim(itemId, btn) {
-    if (!window.ethereum) {
+    // Injected wallet OR WalletConnect (mobile / no extension).
+    const provider = (window.dwinityWC && window.dwinityWC.resolveProvider)
+      ? await window.dwinityWC.resolveProvider() : (window.ethereum || null);
+    if (!provider || !provider.request) {
       alert(vt('vd.noWalletSnowtrace', 'Wallet nicht erkannt. Pro-Mode aktivieren um direkt Snowtrace zu nutzen.'));
       return;
     }
@@ -519,12 +536,21 @@ function vt(key, fallback, vars) {
     if (!item) { btn.textContent = vt('vjs.errWord', 'Fehler'); setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 2000); return; }
 
     try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      const txHash = await window.ethereum.request({
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
+      const txHash = await provider.request({
         method: "eth_sendTransaction",
         params: [{ from: accounts[0], to: item.pool_address, data: CLAIM_SELECTOR }],
       });
-      btn.textContent = vt('vd.sent', '✓ gesendet');
+      btn.textContent = vt('vd.confirming', '⏳ bestätige…');
+      // Only celebrate + dismiss once the tx actually mines successfully —
+      // a reverted/dropped claim must NOT look like success (balance stays).
+      const receipt = await waitReceipt(txHash, provider);
+      if (!receipt || receipt.status !== "0x1") {
+        btn.disabled = false; btn.textContent = orig;
+        alert(vt('vd.claimReverted', 'Claim nicht bestätigt — dein Guthaben ist unverändert. Bitte erneut versuchen.'));
+        return;
+      }
+      btn.textContent = vt('vd.confirmed', '✓ bestätigt');
       // 🎉 — small celebration when user actually pulls money out.
       if (window.DwinityFx) {
         try { window.DwinityFx.confetti({ count: 100, duration: 3000 }); } catch {}
@@ -621,19 +647,29 @@ function vt(key, fallback, vars) {
 
   // Send a raw claim() call to a pool — no inbox row, just the contract.
   async function handleClaimPool(poolAddress, btn) {
-    if (!window.ethereum) {
+    // Injected wallet OR WalletConnect (mobile / no extension).
+    const provider = (window.dwinityWC && window.dwinityWC.resolveProvider)
+      ? await window.dwinityWC.resolveProvider() : (window.ethereum || null);
+    if (!provider || !provider.request) {
       alert(vt('vd.noWallet', 'Wallet nicht erkannt.'));
       return;
     }
     const orig = btn.textContent;
     btn.disabled = true; btn.textContent = "…";
     try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      const txHash = await window.ethereum.request({
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
+      const txHash = await provider.request({
         method: "eth_sendTransaction",
         params: [{ from: accounts[0], to: poolAddress, data: CLAIM_SELECTOR }],
       });
-      btn.textContent = vt('vd.sent', '✓ gesendet');
+      btn.textContent = vt('vd.confirming', '⏳ bestätige…');
+      const receipt = await waitReceipt(txHash, provider);
+      if (!receipt || receipt.status !== "0x1") {
+        btn.disabled = false; btn.textContent = orig;
+        alert(vt('vd.claimReverted', 'Claim nicht bestätigt — dein Guthaben ist unverändert. Bitte erneut versuchen.'));
+        return;
+      }
+      btn.textContent = vt('vd.confirmed', '✓ bestätigt');
       if (window.DwinityFx) { try { window.DwinityFx.confetti({ count: 100, duration: 3000 }); } catch {} }
       const url = "https://testnet.snowtrace.io/tx/" + txHash;
       const tmp = document.createElement("div");

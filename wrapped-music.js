@@ -218,7 +218,6 @@
         </div>
         <div style="margin-top:1.5rem">
           <a href="${twitterUrl}" target="_blank" rel="noopener"
-             onclick="event.stopPropagation();"
              style="display:inline-flex;align-items:center;gap:0.5rem;color:rgba(255,255,255,0.55);font-size:0.85rem;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,0.3);padding-bottom:1px">
             🐦 ${vt('wm.shareArchetype', 'Teile deinen Archetyp')}
           </a>

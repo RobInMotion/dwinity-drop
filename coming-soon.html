@@ -248,7 +248,33 @@
   @media (prefers-reduced-motion: reduce) {
     .pulse { animation: none; }
     .field.bad { animation: none; }
+    .wl-fact { transition: none; }
   }
+
+  /* ---------- waitlist / info / facts ---------- */
+  .waitlist { width: min(560px, 100%); margin-top: clamp(22px, 4.5vw, 44px); }
+  .wl-sep {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--mute);
+  }
+  .wl-sep::before, .wl-sep::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+  .wl-info {
+    margin: 0 0 16px; font-size: 12.5px; line-height: 1.7; text-align: center;
+    color: rgba(234, 242, 238, 0.6); text-shadow: 0 1px 14px rgba(5, 6, 10, 0.9);
+  }
+  .wl-info b { color: var(--neon-soft); font-weight: 500; }
+  .wl-count {
+    margin: 12px 2px 0; min-height: 1.2em; font-size: 11px; letter-spacing: 0.14em;
+    color: var(--mute); text-align: center;
+  }
+  .wl-count b { color: var(--neon); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .wl-fact {
+    margin: 20px auto 0; max-width: 54ch; min-height: 2.8em;
+    font-size: 11px; line-height: 1.75; letter-spacing: 0.03em;
+    color: rgba(234, 242, 238, 0.4); text-align: center;
+    transition: opacity 480ms ease;
+  }
+  .wl-fact::before { content: "// "; color: var(--cyan); opacity: 0.7; }
 </style>
 
 <canvas id="globe" aria-hidden="true"></canvas>
@@ -287,6 +313,26 @@
       </div>
       <p class="note" id="note" role="status" aria-live="polite"></p>
     </form>
+
+    <div class="waitlist" id="waitlist">
+      <div class="wl-sep"><span>no key? get on the list</span></div>
+      <p class="wl-info">
+        Dead Drop is only the first door. <b>Chat</b> that opens only with your wallet —
+        and a <b>Vault</b> that turns your own data into DWIN. One key for all of it.
+      </p>
+      <form class="keyline wl-form" id="wlform" autocomplete="off" novalidate>
+        <div class="field" id="wlfield">
+          <label class="prompt" for="wlemail">mail&nbsp;›</label>
+          <input id="wlemail" name="email" type="email" placeholder="you@domain.com"
+                 autocomplete="email" spellcheck="false" autocapitalize="off"
+                 aria-describedby="wlnote" />
+          <button class="enter" type="submit">Join</button>
+        </div>
+        <p class="note" id="wlnote" role="status" aria-live="polite"></p>
+      </form>
+      <p class="wl-count" id="wlcount" aria-live="polite"></p>
+      <p class="wl-fact" id="wlfact" aria-live="polite"></p>
+    </div>
   </section>
 
   <footer class="foot">

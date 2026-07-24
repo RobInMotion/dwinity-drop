@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#05060A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dead Drop" />
 <title data-i18n="vault.pageTitle">Dwinity Vault — Dein digitales Leben, in einer Lade</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
 <link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
@@ -31,47 +36,8 @@
 <body class="text-white/90 font-sans">
 <a href="#main" class="skip-link" data-i18n="a11y.skip">Zum Inhalt springen</a>
 
-<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">
-  <div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 md:gap-2">
-    <a href="/" class="flex items-center gap-1.5 md:gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">
-      <img src="/img/deaddrop-logo.svg" alt="Dead Drop" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />
-      <span class="truncate">Dwinity <span class="text-neon-500">Vault</span></span>
-      <span class="ml-1.5 text-[10px] text-white/40 font-mono uppercase tracking-widest hidden md:inline">Beta</span>
-    </a>
-    <div class="flex items-center gap-1 md:gap-2 shrink-0">
-      <a href="/dashboard" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/80 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition">Drop</a>
-      <button id="pro-mode-toggle" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/60 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition" title="Pro-Mode an/aus" data-i18n-title="pm.off">
-        🔧 <span class="hidden md:inline" data-i18n="pm.label">Pro-Mode:</span> <span data-i18n="pm.stateOff">AUS</span>
-      </button>
-
-      <!-- Wallet-Balance ribbon (klein, ausblendbar) -->
-      <div id="wallet-balance" class="hidden items-center gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full bg-void-900/60 border border-white/10 text-[10px] md:text-[11px] font-mono text-white/60">
-        <span data-bal="avax" class="hidden sm:inline">— AVAX</span>
-        <span class="hidden sm:inline opacity-30">·</span>
-        <span data-bal="usdc">$—</span>
-        <span class="opacity-30">·</span>
-        <span data-bal="dwin" class="text-purple-300">— DWIN</span>
-        <button id="wallet-balance-hide" title="Balance ausblenden" class="ml-1 opacity-40 hover:opacity-100 transition">×</button>
-      </div>
-      <button id="wallet-balance-show" class="hidden items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-900/60 border border-white/10 text-[10px] md:text-[11px] font-mono text-white/40 hover:text-white" title="Balance einblenden">
-        💰
-      </button>
-
-      <div class="relative">
-        <button id="wallet-btn" data-state="out" aria-haspopup="menu" aria-controls="wallet-menu" aria-expanded="false" class="fx-halo inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-full border border-white/15 bg-void-900/85 text-[11px] md:text-sm font-mono text-white/80 hover:text-white hover:border-neon-500/40 transition">
-          <span id="wallet-btn-dot" class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
-          <span id="wallet-btn-label" class="truncate">Wallet</span>
-        </button>
-        <div id="wallet-menu" role="menu" aria-labelledby="wallet-btn" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-void-900 border border-white/10 shadow-xl p-4 text-sm z-50">
-          <div class="font-mono text-[10px] uppercase tracking-widest text-white/50 mb-1">Wallet</div>
-          <div id="wallet-menu-addr" class="font-mono text-xs break-all text-white/80 mb-3">—</div>
-          <div id="wallet-menu-pro" class="text-xs mb-4">—</div>
-          <a href="#" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2">// trennen</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
+<div id="site-nav" data-brand="vault"><button id="pro-mode-toggle" class="inline-flex items-center px-2 md:px-3 py-1.5 md:py-2 rounded-full bg-void-800 border border-white/15 text-white/60 hover:text-white hover:border-neon-500/40 text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition" title="Pro-Mode an/aus" data-i18n-title="pm.off">🔧 <span class="hidden md:inline" data-i18n="pm.label">Pro-Mode:</span> <span data-i18n="pm.stateOff">AUS</span></button></div>
+<script src="/nav.js"></script>
 
 <main id="main" class="pt-20 md:pt-28 pb-16 max-w-6xl mx-auto px-4 md:px-6">
 

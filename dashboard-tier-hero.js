@@ -37,7 +37,7 @@
       headline: t("tierhero.pro.title", "Pro · aktiv"),
       sub: t("tierhero.pro.sub", "2 GB pro Datei · 20 GB Storage · 200 GB Egress / Monat · 30 Tage Retention"),
       ctaText: t("tierhero.pro.cta", "Auf Pro+ upgraden →"),
-      ctaHref: "/proplus",
+      ctaHref: "/#upgrade-plus",
       ctaClass: "bg-cyan-400 text-void-950 hover:bg-cyan-300",
     },
     proplus: {

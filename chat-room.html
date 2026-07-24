@@ -2,7 +2,12 @@
 <html lang="de">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#05060A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dead Drop" />
 <title>Chat Room — Dead Drop</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/img/deaddrop-favicon-32.png" />
 <meta name="robots" content="noindex" />
@@ -13,7 +18,9 @@
 <link rel="stylesheet" href="/fx.css" />
 <style>
   html, body { height: 100%; }
-  body { background: #05060A; display: flex; flex-direction: column; }
+  /* App-shell: page is exactly one (dynamic) viewport tall and never scrolls itself —
+     only #chat-messages scrolls. Fixes "must scroll down to reach the composer". */
+  body { background: #05060A; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
   .msg-bubble { word-break: break-word; }
   @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
   .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
@@ -36,6 +43,11 @@
     <button id="share-btn" data-i18n-aria-label="room.shareAria" data-i18n-title="room.shareAria" aria-label="Share-Link kopieren" title="Share-Link kopieren" class="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg hover:bg-void-800 text-white/70 hover:text-neon-500">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+    </button>
+    <button id="delete-btn" data-i18n-aria-label="room.delete.aria" data-i18n-title="room.delete.aria" aria-label="Chat löschen" title="Chat löschen" class="hidden shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg hover:bg-red-500/10 text-white/70 hover:text-red-400">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
       </svg>
     </button>
   </div>
@@ -63,12 +75,20 @@
     <div class="text-5xl mb-4">⚠</div>
     <h2 class="font-sans text-2xl font-600 mb-3" data-i18n="room.err.title">Room nicht verfügbar</h2>
     <p id="err-text" class="text-white/60 mb-6 max-w-sm">—</p>
+    <div id="err-recover" class="hidden w-full max-w-sm mx-auto mb-6 text-left">
+      <p class="text-white/50 text-sm mb-3" data-i18n="room.recover.hint">Du hast den Einladungs-Link? Füg ihn hier ein, um den Raum zu entsperren:</p>
+      <input id="err-recover-input" type="text" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off"
+        placeholder="https://deaddrop.digital/chat/r/…#k=…"
+        class="w-full px-3 py-2.5 rounded-lg bg-void-800 border border-white/10 focus:outline-none focus:border-neon-500/40 text-sm font-mono mb-2" />
+      <button id="err-recover-btn" class="w-full px-4 py-2.5 rounded-lg bg-neon-500 text-void-950 font-bold text-sm hover:bg-neon-600 transition" data-i18n="room.recover.btn">Raum entsperren</button>
+      <p id="err-recover-err" class="hidden mt-2 text-xs text-red-400 font-mono"></p>
+    </div>
     <a href="/chat" class="px-5 py-2.5 rounded-full border border-white/20 hover:border-neon-500/50 text-sm font-mono transition" data-i18n="room.err.back">zurück zur Room-Liste</a>
   </div>
 </div>
 
 <!-- Main chat area -->
-<main id="chat-panel" class="hidden flex-1 flex flex-col overflow-hidden" style="min-height: 100dvh;">
+<main id="chat-panel" class="hidden flex-1 flex flex-col overflow-hidden min-h-0">
   <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-6 space-y-2 max-w-3xl mx-auto w-full" style="scroll-padding-bottom: 120px;" role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions">
     <div id="chat-loading" class="text-center text-white/40 font-mono text-sm" data-i18n="room.loadHistory">// lade Verlauf …</div>
   </div>
@@ -101,6 +121,7 @@
 <script src="/wallet-connect.js"></script>
 <script src="/auth.js"></script>
 <script src="/panic.js" defer></script>
+<script src="/tracker-sweep.js"></script>
 <script src="/chat-room.js"></script>
 <script src="/i18n.js"></script>
 </body>
