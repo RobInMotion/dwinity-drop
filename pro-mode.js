@@ -27,27 +27,34 @@ function vt(key, fallback, vars) {
     refreshToggleLabel();
   }
 
+  // There can be more than one toggle in the DOM (desktop nav + mobile menu),
+  // so target them all by data-hook rather than a single id.
+  function eachToggle(fn) {
+    document.querySelectorAll("[data-pro-mode-toggle]").forEach(fn);
+  }
+
   function refreshToggleLabel() {
-    const btn = document.getElementById("pro-mode-toggle");
-    if (!btn) return;
     const on = get();
     const state = on
       ? vt("pm.stateOn", "AN")
       : vt("pm.stateOff", "AUS");
     const label = vt("pm.label", "Pro-Mode:");
-    btn.innerHTML = `🔧 <span class="hidden md:inline">${label}</span> ${state}`;
-    btn.title = on
-      ? vt("pm.on", "Technische Details werden angezeigt — Klick zum Verstecken")
-      : vt("pm.off", "Klick um technische Details (Tx-Hashes, Contract-Adressen, Commitments) sichtbar zu machen");
+    eachToggle((btn) => {
+      btn.innerHTML = `🔧 <span class="hidden md:inline">${label}</span> ${state}`;
+      btn.title = on
+        ? vt("pm.on", "Technische Details werden angezeigt — Klick zum Verstecken")
+        : vt("pm.off", "Klick um technische Details (Tx-Hashes, Contract-Adressen, Commitments) sichtbar zu machen");
+    });
   }
 
-  // Wire the toggle on DOMContentLoaded (or immediately if already loaded).
+  // Wire every toggle on DOMContentLoaded (or immediately if already loaded).
   function wire() {
-    const btn = document.getElementById("pro-mode-toggle");
-    if (btn && !btn.dataset.wired) {
-      btn.dataset.wired = "1";
-      btn.addEventListener("click", () => set(!get()));
-    }
+    eachToggle((btn) => {
+      if (!btn.dataset.wired) {
+        btn.dataset.wired = "1";
+        btn.addEventListener("click", () => set(!get()));
+      }
+    });
     refreshToggleLabel();
   }
   if (document.readyState === "loading") {

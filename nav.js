@@ -82,6 +82,14 @@
       '<div class="px-4 py-1 text-[10px] font-mono uppercase tracking-widest text-white/35" data-i18n="nav.datenEco">Daten-Ökonomie</div>' +
       DATEN.map(function (i) { return mlink(i.href, i.label, i.key); }).join("") +
     "</div>" +
+    // Page-specific controls (e.g. vault Pro-Mode) — desktop shows these inline;
+    // on mobile they'd otherwise be unreachable, so surface them in the menu too.
+    (extrasHtml
+      ? '<div class="mt-1 pt-2 border-t border-white/5 px-4 py-2 flex items-center gap-2">' +
+          '<span class="text-[10px] font-mono uppercase tracking-widest text-white/35" data-i18n="nav.view">Ansicht</span>' +
+          extrasHtml +
+        "</div>"
+      : "") +
     '<div class="mt-1 pt-2 border-t border-white/5">' + mlink("/dashboard", "Dashboard", "nav.dashboard") + "</div>";
 
   var html =
