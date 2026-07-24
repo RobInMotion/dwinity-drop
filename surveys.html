@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#05060A" />
+<title>Umfragen · Dwinity Vault</title>
+<link rel="icon" type="image/svg+xml" href="/img/deaddrop-favicon.svg" />
+<meta name="description" content="Bezahlte Umfragen im Dwinity Vault: beantworte bewusst strukturierte Fragen, sieh genau was du teilst, kassiere DWIN. Deine Antworten gehen pseudonym — nie dein Wallet, nie dein Name." />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/lib/tailwind.min.css" />
+<link rel="stylesheet" href="/fx.css" />
+<style>
+  .chip { display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .7rem; font-size:.75rem; font-weight:600; border-radius:999px; }
+  .ic { fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+<body class="font-sans text-white antialiased min-h-screen">
+<svg width="0" height="0" class="absolute" aria-hidden="true"><defs>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5h4a2 2 0 1 1 0 4H10l4 3.2M12 7v1.5M12 15.5V17"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6a3 3 0 0 1 0 6M16.5 14c2.5.5 4 2.6 4 5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.4-3 7.7-7 9-4-1.3-7-4.6-7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM8.5 11h7M8.5 15h5"/></symbol>
+</defs></svg>
+
+<!-- NAV -->
+<div id="site-nav" data-brand="vault"></div>
+<script src="/nav.js"></script>
+<div class="h-14 md:h-16" aria-hidden="true"></div>
+
+<main class="relative z-10">
+  <!-- HERO -->
+  <section class="max-w-5xl mx-auto px-6 pt-8 pb-6">
+    <span class="chip fx-chip-holo font-mono uppercase tracking-widest text-neon-500">
+      <svg class="ic w-3.5 h-3.5"><use href="#i-clip"/></svg> Umfragen · Beta
+    </span>
+    <h1 class="mt-6 font-semibold tracking-tight text-4xl md:text-6xl leading-[1.1]">
+      Beantworte bewusst. <span class="fx-glow-text">Kassiere DWIN.</span>
+    </h1>
+    <p class="mt-5 text-white/70 text-lg max-w-2xl">
+      Bezahlte Umfragen mit klaren Fragen. Du siehst <span class="text-white">vorher genau</span>, was du teilst und wofür — deine Antworten gehen <span class="text-white">pseudonym</span> an den Auftraggeber, nie dein Wallet oder Name.
+    </p>
+    <p class="mt-4 font-mono text-xs text-white/45 flex items-center gap-2">
+      <svg class="ic w-4 h-4 text-neon-500"><use href="#i-shield"/></svg>
+      Ausdrückliche Einwilligung je Umfrage · nur strukturierte Fragen · Frühe Phase · Testnetz (mDWIN).
+    </p>
+
+    <!-- Awareness counter (shown when logged in + has answered) -->
+    <div id="survey-activity" class="hidden mt-6 inline-flex items-center gap-4 px-4 py-2.5 rounded-xl bg-void-900/70 border border-white/10 font-mono text-xs">
+      <span class="text-white/45 uppercase tracking-widest">Von dir geteilt</span>
+      <span><span id="act-today" class="text-neon-500 font-bold">0</span> <span class="text-white/50">heute</span></span>
+      <span class="text-white/20">·</span>
+      <span><span id="act-week" class="text-cyan-400 font-bold">0</span> <span class="text-white/50">diese Woche</span></span>
+      <span class="text-white/40">Datenpunkte</span>
+    </div>
+  </section>
+
+  <!-- SURVEY LIST -->
+  <section class="max-w-5xl mx-auto px-6 pb-24">
+    <div id="survey-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="col-span-full text-center text-white/40 font-mono text-sm py-16">Umfragen werden geladen …</div>
+    </div>
+  </section>
+</main>
+
+<!-- Detail / consent / form overlay -->
+<div id="survey-overlay" class="hidden fixed inset-0 z-50 bg-void-950/90 backdrop-blur-sm items-center justify-center p-4">
+  <div id="survey-panel" class="max-w-lg w-full max-h-[90dvh] overflow-y-auto bg-void-900 border border-white/10 rounded-2xl p-6 shadow-2xl">
+    <!-- JS renders here -->
+  </div>
+</div>
+
+<footer class="border-t border-white/5 py-10 relative z-10">
+  <div class="max-w-5xl mx-auto px-6 text-sm text-white/45 font-mono">
+    Dwinity Vault · Umfragen — bewusstes Datenteilen. <a href="/vault" class="text-neon-500 hover:underline">← zum Vault</a>
+  </div>
+</footer>
+
+<script src="/surveys.js"></script>
+<script src="/lib/sha3.min.js"></script>
+<script src="/i18n.js"></script>
+<script src="/wallet-connect.js"></script>
+<script src="/auth.js"></script>
+</body>
+</html>
