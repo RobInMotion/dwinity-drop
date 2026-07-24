@@ -16,6 +16,7 @@
   const menuLogout = document.getElementById("wallet-menu-logout");
 
   const hasHeader = !!btn;
+  let lastAddr = null;
 
   function short(addr) {
     if (!addr) return "";
@@ -155,9 +156,15 @@
     );
   }
 
+  // Prefer a display name over the raw address wherever the user is shown.
+  function displayName(me) {
+    return (me && me.username) ? me.username : short(me && me.address);
+  }
+
   async function renderLoggedIn(me) {
     if (!hasHeader) return;
-    label.textContent = short(me.address);
+    lastAddr = me.address;
+    label.textContent = displayName(me);
     btn.dataset.state = "in";
 
     // Tier-coloured header dot
@@ -167,6 +174,7 @@
 
     // Build menu sections
     if (menuAddr) menuAddr.textContent = me.address;
+    renderUsernameEditor(me);
     const tierBlock = renderTierBlock(me);
     const egressBlock = renderEgressBlock(me);
     if (menuPro) menuPro.innerHTML = tierBlock + egressBlock +
@@ -192,6 +200,71 @@
     } else {
       rankSlot.innerHTML = '<a href="/rank" class="block mt-2 text-[11px] font-mono text-white/40 hover:text-neon-500 transition">🐉 ' + t("nav.rank.viewLink", "Dragon Rank") + ' →</a>';
     }
+  }
+
+  function unameMsgCls(kind) {
+    return "text-[10px] font-mono mt-1 min-h-[12px] " +
+      (kind === "err" ? "text-red-400" : kind === "ok" ? "text-neon-500" : "text-white/40");
+  }
+
+  // Inline "display name" editor in the wallet dropdown. Injected once, right
+  // under the address; value refreshed on each render (unless the field is focused).
+  function renderUsernameEditor(me) {
+    if (!menuAddr) return;
+    let box = document.getElementById("wallet-menu-username");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "wallet-menu-username";
+      box.className = "mb-3";
+      box.innerHTML =
+        '<div class="flex items-center gap-1.5">' +
+          '<input id="uname-input" type="text" maxlength="20" spellcheck="false" autocomplete="off" ' +
+            'class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-void-800 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-neon-500/40" />' +
+          '<button id="uname-save" type="button" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-neon-500/15 text-neon-500 text-[11px] font-mono hover:bg-neon-500/25 transition"></button>' +
+        '</div>' +
+        '<div id="uname-msg" class="' + unameMsgCls() + '"></div>';
+      menuAddr.insertAdjacentElement("afterend", box);
+      wireUsername();
+    }
+    const input = document.getElementById("uname-input");
+    const saveBtn = document.getElementById("uname-save");
+    const msg = document.getElementById("uname-msg");
+    if (input && document.activeElement !== input) input.value = me.username || "";
+    if (input) input.placeholder = t("nav.username.placeholder", "Anzeigename (optional)");
+    if (saveBtn) saveBtn.textContent = t("nav.username.save", "Speichern");
+    if (msg) { msg.textContent = ""; msg.className = unameMsgCls(); }
+  }
+
+  function wireUsername() {
+    const input = document.getElementById("uname-input");
+    const saveBtn = document.getElementById("uname-save");
+    const msg = document.getElementById("uname-msg");
+    if (!input || !saveBtn) return;
+    async function save() {
+      const val = input.value.trim();
+      saveBtn.disabled = true;
+      if (msg) { msg.textContent = t("nav.username.saving", "…"); msg.className = unameMsgCls(); }
+      try {
+        const r = await fetch(API + "/username", {
+          method: "POST", credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: val }),
+        });
+        if (r.status === 409) { if (msg) { msg.textContent = t("nav.username.taken", "Name schon vergeben"); msg.className = unameMsgCls("err"); } return; }
+        if (r.status === 400) { if (msg) { msg.textContent = t("nav.username.invalid", "3–20 Zeichen: Buchstaben, Zahlen, _"); msg.className = unameMsgCls("err"); } return; }
+        if (!r.ok) { if (msg) { msg.textContent = t("nav.username.failed", "Speichern fehlgeschlagen"); msg.className = unameMsgCls("err"); } return; }
+        const data = await r.json();
+        if (label) label.textContent = data.username || (lastAddr ? short(lastAddr) : label.textContent);
+        input.value = data.username || "";
+        if (msg) { msg.textContent = data.username ? t("nav.username.saved", "✓ gespeichert") : t("nav.username.cleared", "✓ entfernt"); msg.className = unameMsgCls("ok"); }
+      } catch {
+        if (msg) { msg.textContent = t("nav.username.failed", "Speichern fehlgeschlagen"); msg.className = unameMsgCls("err"); }
+      } finally {
+        saveBtn.disabled = false;
+      }
+    }
+    saveBtn.addEventListener("click", save);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); save(); } });
   }
 
   async function probeAdmin() {
@@ -455,4 +528,12 @@
 })();
 (window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
   "nav.noWalletNoWC": "No wallet detected and WalletConnect not loaded.\n\nInstall MetaMask (Chrome/Edge/Firefox) or reload the page.",
+  "nav.username.placeholder": "Display name (optional)",
+  "nav.username.save": "Save",
+  "nav.username.saving": "…",
+  "nav.username.saved": "✓ saved",
+  "nav.username.cleared": "✓ removed",
+  "nav.username.taken": "Name already taken",
+  "nav.username.invalid": "3–20 chars: letters, numbers, _",
+  "nav.username.failed": "Save failed",
 } });

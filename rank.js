@@ -155,7 +155,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="font-sans text-sm font-600 truncate">${escapeHtml(e.rank_name)}</div>
-              <div class="font-mono text-[10px] text-white/40 truncate">${shortAddr(e.wallet)}${isMe ? ' · <span class="text-neon-500">du</span>' : ''}</div>
+              <div class="font-mono text-[10px] text-white/40 truncate">${e.username ? escapeHtml(e.username) : shortAddr(e.wallet)}${isMe ? ' · <span class="text-neon-500">du</span>' : ''}</div>
             </div>
             <div class="shrink-0 text-right">
               <div class="font-mono text-sm text-neon-500">${fmtNum(e.total_xp)}</div>

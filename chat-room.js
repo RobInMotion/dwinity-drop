@@ -100,6 +100,38 @@
     return a.slice(0, 6) + "…" + a.slice(-4);
   }
 
+  // Optional display names: resolve sender addresses → usernames (identity API,
+  // same origin). Cache holds a username string, or null once resolved-but-none
+  // so we never refetch. nameFor() falls back to the short address.
+  const usernameCache = {};
+  function nameFor(a) {
+    if (!a) return "???";
+    const u = usernameCache[a.toLowerCase()];
+    return u ? u : shortAddr(a);
+  }
+  async function resolveNames(addrs) {
+    const unknown = [];
+    const seen = {};
+    for (const a of addrs) {
+      if (!a) continue;
+      const k = a.toLowerCase();
+      if (k in usernameCache || seen[k]) continue;
+      seen[k] = 1; unknown.push(a);
+    }
+    if (!unknown.length) return;
+    for (const a of unknown) usernameCache[a.toLowerCase()] = null; // avoid refetch storms
+    try {
+      const r = await fetch("/api/identity/usernames", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ addresses: unknown }),
+      });
+      if (!r.ok) return;
+      const map = (await r.json()).usernames || {};
+      for (const k in map) usernameCache[k.toLowerCase()] = map[k];
+    } catch {}
+  }
+
   function fmtTime(ts) {
     const d = new Date(ts * 1000);
     const locale = (window.DDI18n && window.DDI18n.getLang && window.DDI18n.getLang() === "en") ? "en-GB" : "de-DE";
@@ -251,7 +283,7 @@
     row.innerHTML = `
       <div class="max-w-[80%] msg-bubble">
         <div class="text-[10px] font-mono ${nameColor} mb-1 ${isMe ? 'text-right' : ''}">
-          ${shortAddr(msg.sender)} · ${fmtTime(msg.created_at)}
+          ${escapeHtml(nameFor(msg.sender))} · ${fmtTime(msg.created_at)}
         </div>
         <div class="px-3.5 py-2 rounded-2xl border ${bg} text-sm leading-relaxed">
           ${contentHtml}
@@ -272,6 +304,7 @@
   async function appendMessage(msg) {
     if (msg.seq <= lastSeq) return;
     const wasAtBottom = isScrolledToBottom();
+    await resolveNames([msg.sender]);           // ensure a display name is cached first
     const decoded = await decodeMessage(roomKey, msg.ciphertext_b64);
     const row = renderMessage(msg, decoded);
     messagesEl.appendChild(row);
@@ -591,6 +624,8 @@
     }
 
     const hist = await fetchHistory(0);
+    // Resolve all display names up front in one request (incl. my own).
+    await resolveNames([currentAddress].concat(hist.messages.map((m) => m.sender)));
     for (const m of hist.messages) await appendMessage(m);
     scrollToBottom();
 
