@@ -518,7 +518,13 @@
         return;
       }
       // Navigate to the (correct) room WITH the key in the fragment → boot() picks it up.
-      location.href = (m ? "/chat/r/" + m[1] : location.pathname) + "#k=" + encodeURIComponent(k);
+      // A fragment-only change on the SAME path does NOT reload the page (and there's
+      // no hashchange listener), so boot() would never re-run and the pasted key would
+      // be ignored — the "sometimes it doesn't work". Force a reload in that case.
+      const path = m ? "/chat/r/" + m[1] : location.pathname;
+      const samePath = path === location.pathname;
+      location.href = path + "#k=" + encodeURIComponent(k);
+      if (samePath) location.reload();
     };
     btn.addEventListener("click", go);
     input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
