@@ -459,14 +459,14 @@ async function openAnonPanel(importId, source) {
         ⬇ ${vt('vjs.downloadJson', 'Pseudonymisierte JSON runterladen')}
       </button>
       <button data-contribute="${importId}" class="px-4 py-2 rounded-full border border-neon-500/40 text-neon-500 hover:bg-neon-500/10 transition text-sm font-mono">
-        📤 In DAO contribute
+        📤 In Pool contribute
       </button>
       <a href="/docs/marketplace" class="px-4 py-2 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-neon-500/40 transition text-sm font-mono">
         Was ist das? →
       </a>
     </div>
     <div class="mt-3 text-[11px] text-white/40 font-mono leading-relaxed">
-      ${vt('vjs.pseudoNote', 'Browser-Pseudonymisierung — diese Daten verlassen deinen Computer nicht (außer du klickst Download oder Contribute). Beim Contribute wird die pseudonymisierte JSON server-side AES-verschlüsselt und in den DAO-Bucket geladen.')}
+      ${vt('vjs.pseudoNote', 'Browser-Pseudonymisierung — diese Daten verlassen deinen Computer nicht (außer du klickst Download oder Contribute). Beim Contribute wird die pseudonymisierte JSON server-side AES-verschlüsselt und in den Pool-Bucket geladen.')}
     </div>
   `;
 
@@ -541,7 +541,7 @@ function showPoolPicker(mp, importId, source, pseudoActivities, profile) {
   `).join('');
 
   showModal(`
-    <div class="text-[10px] font-mono text-neon-500 uppercase tracking-widest mb-2">📤 DAO Contribute · ${vt('vjs.step1of2', 'Schritt 1 / 2')}</div>
+    <div class="text-[10px] font-mono text-neon-500 uppercase tracking-widest mb-2">📤 Pool Contribute · ${vt('vjs.step1of2', 'Schritt 1 / 2')}</div>
     <div class="text-xl font-600 mb-1">${vt('vjs.choosePool', 'Pool wählen')}</div>
     <div class="text-xs text-white/50 font-mono mb-4">
       Chain: ${mp.chain_id === 43114 ? 'Avalanche C-Chain' : 'Avalanche Fuji'} · ${pseudoActivities.length} Activities
@@ -563,7 +563,7 @@ function showPoolPicker(mp, importId, source, pseudoActivities, profile) {
 
 async function submitContribution(mp, pool, importId, source, pseudoActivities, profile) {
   showModal(`
-    <div class="text-[10px] font-mono text-neon-500 uppercase tracking-widest mb-2">📤 DAO Contribute · ${vt('vjs.step2of2', 'Schritt 2 / 2')}</div>
+    <div class="text-[10px] font-mono text-neon-500 uppercase tracking-widest mb-2">📤 Pool Contribute · ${vt('vjs.step2of2', 'Schritt 2 / 2')}</div>
     <div class="text-xl font-600 mb-3">${vt('vjs.encryptUpload', 'Verschlüssele und lade hoch …')}</div>
     <div class="text-xs text-white/50 font-mono">Pool: ${escapeHtml(pool.name)} · ${pseudoActivities.length} Activities</div>
     <div class="mt-4 h-1 rounded bg-white/10 overflow-hidden">
