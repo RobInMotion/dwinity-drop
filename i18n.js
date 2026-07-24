@@ -671,6 +671,7 @@
 
       // --- Rank ---
       "rank.chip": "Optional · Opt-in",
+      "rank.loading": "Dragon Rank wird geladen …",
       "rank.title": "Dragon Rank",
       "rank.lead": "Ein spielerisches Extra für aktive Nutzer. Jeder Drop, jede Chat-Nachricht und jeder Ref-Invite bringt XP. Mit steigendem Rang unlockst du Perks im Dwinity-Ecosystem.",
       "rank.optInHint": "Vollständig opt-in — ohne Aktivierung wird nichts getrackt oder gezählt.",
@@ -1740,6 +1741,7 @@
 
       // --- Rank ---
       "rank.chip": "Optional · opt-in",
+      "rank.loading": "Loading Dragon Rank …",
       "rank.title": "Dragon Rank",
       "rank.lead": "A playful extra for active users. Every drop, every chat message and every ref invite earns XP. Higher ranks unlock perks across the Dwinity ecosystem.",
       "rank.optInHint": "Fully opt-in — nothing is tracked or counted unless you activate.",

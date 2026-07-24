@@ -1,6 +1,11 @@
 /* Dead Drop — futuristic FX layer.
    Everything is pure CSS (no deps). Import after Tailwind CDN. */
 
+/* Decorative full-bleed blur blobs (w-[500px]/w-[400px]) overhang narrow
+   viewports and cause horizontal body scroll on phones. Clip it site-wide.
+   The nav is position:fixed (not sticky), so this can't break nav stickiness. */
+html, body { overflow-x: hidden; }
+
 /* ---------- language switcher ---------- */
 .lang-btn.is-active {
   color: #00FF9D;

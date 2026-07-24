@@ -60,6 +60,14 @@
     </p>
   </section>
 
+  <!-- Loading state (shown immediately so the page isn't blank while rank data loads) -->
+  <section id="rank-loading" class="relative text-center py-16">
+    <div class="inline-flex items-center gap-3 text-white/50 font-mono text-sm">
+      <span class="w-2 h-2 rounded-full bg-neon-500 pulse-dot"></span>
+      <span data-i18n="rank.loading">Dragon Rank wird geladen …</span>
+    </div>
+  </section>
+
   <!-- GATE: not logged in -->
   <section id="gate-nologin" class="hidden relative text-center py-12 rounded-2xl border border-white/10 bg-void-900/50">
     <div class="text-4xl mb-3">🔒</div>

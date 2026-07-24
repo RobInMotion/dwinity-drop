@@ -13,6 +13,7 @@
   const gateNoLogin = $("gate-nologin");
   const gateOptIn   = $("gate-optin");
   const panel       = $("rank-panel");
+  const loadingEl   = $("rank-loading");
 
   let currentAddress = null;
   let refCode = null;
@@ -170,29 +171,26 @@
   }
 
   async function boot() {
-    const me = await fetchMe();
-    if (!me || !me.address) {
-      hide(gateOptIn); hide(panel);
+    show(loadingEl);
+    // Both are independent, session-cookie GETs — fetch them together instead of
+    // serially so the (slow, XP-computing) /rank/me call doesn't stack on /me.
+    const [me, result] = await Promise.all([fetchMe(), fetchRankMe()]);
+    if (!me || !me.address || !result.loggedIn) {
+      hide(loadingEl); hide(gateOptIn); hide(panel);
       show(gateNoLogin);
       return;
     }
     currentAddress = me.address;
 
-    const result = await fetchRankMe();
-    if (!result.loggedIn) {
-      show(gateNoLogin); hide(gateOptIn); hide(panel);
-      return;
-    }
-
     const data = result.data;
     if (!data.opted_in) {
-      hide(gateNoLogin); hide(panel);
+      hide(loadingEl); hide(gateNoLogin); hide(panel);
       show(gateOptIn);
       return;
     }
 
     // Panel
-    hide(gateNoLogin); hide(gateOptIn);
+    hide(loadingEl); hide(gateNoLogin); hide(gateOptIn);
     show(panel);
 
     refCode = data.ref_code;
@@ -309,7 +307,7 @@
           <div class="font-sans text-2xl font-700 text-neon-500 mt-1">+${fmtNum(earnedGb)} GB</div>
         </div>
       ` : ''}
-      <div class="grid grid-cols-3 gap-3 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         <div class="p-3 rounded-lg bg-void-800/60 border border-white/5">
           <div class="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-1">${T("rank.refs.signups", "Signups")}</div>
           <div class="font-sans text-xl font-600 text-white/90">${fmtNum(signupCount)}</div>

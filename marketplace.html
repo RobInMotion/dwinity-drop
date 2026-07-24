@@ -47,10 +47,12 @@
 <!-- NAV (shared deaddrop chrome) -->
 <div id="site-nav"></div>
 <script src="/nav.js"></script>
+<!-- Spacer to clear the fixed nav (pt-28/pt-36 aren't in the prebuilt tailwind.min.css, so the hero was tucked under the nav). -->
+<div class="h-14 md:h-16" aria-hidden="true"></div>
 
 <main class="relative z-10">
   <!-- HERO -->
-  <section class="max-w-6xl mx-auto px-6 pt-28 md:pt-36 pb-8">
+  <section class="max-w-6xl mx-auto px-6 pt-8 pb-8">
     <span class="chip fx-chip-holo font-mono uppercase tracking-widest text-neon-500">
       <svg class="ic w-3.5 h-3.5"><use href="#i-pool"/></svg> <span data-i18n="mp.badge">Daten-Marktplatz</span>
     </span>
