@@ -1097,7 +1097,7 @@
       "rw.way1.title": "Daten beitragen — Sofort-Bonus",
       "rw.way1.body": "Jeder Pool-Beitrag zahlt sofort: Basis 10 DWIN plus Größen-Anteil mit Wurzel-Gewichtung (10× so viele Daten ≈ 3× so viel Bonus — Qualität schlägt Masse), mal dem aktuellen Early-Bird-Multiplikator. Deckel: 250 DWIN pro Upload.",
       "rw.way2.title": "Anker-Käufe — Dwinity kauft zuerst",
-      "rw.way2.body": "Jede Woche kauft Dwinity Pool-Insights über exakt denselben On-Chain-Weg wie ein echter Kunde: 40 DWIN je aktivem Contributor und Pool (Deckel 1.500/Pool/Woche, ab 3 Contributors). Der Contract verteilt jeden Kauf automatisch: 70 % an Contributors, 20 % Pool-Treasury, 10 % Plattform. Dein Anteil wächst mit deiner Beitragsgröße.",
+      "rw.way2.body": "Jede Woche kauft Dwinity Pool-Insights über exakt denselben On-Chain-Weg wie ein echter Kunde. Der Contract verteilt jeden Kauf automatisch: 70 % an Contributors, 20 % Pool-Treasury, 10 % Plattform. Dein Anteil wächst mit deiner Beitragsgröße.",
       "rw.way3.title": "Aktiv bleiben — Streaks & Vielfalt",
       "rw.way3.body": "+25 DWIN für jede Woche, in der dein Live-Sync verbunden ist und synchronisiert (bis zu 8 Wochen). +100 DWIN einmalig für jeden weiteren Pool, zu dem du beiträgst — vom zweiten bis zum fünften.",
       "rw.way4.title": "Freunde bringen — Referrals",
