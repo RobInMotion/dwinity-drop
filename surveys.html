@@ -34,28 +34,28 @@
   <!-- HERO -->
   <section class="max-w-5xl mx-auto px-6 pt-8 pb-6">
     <span class="chip fx-chip-holo font-mono uppercase tracking-widest text-neon-500">
-      <svg class="ic w-3.5 h-3.5"><use href="#i-clip"/></svg> Umfragen · Beta
+      <svg class="ic w-3.5 h-3.5"><use href="#i-clip"/></svg> <span data-i18n="sv.pageChip">Umfragen · Beta</span>
     </span>
-    <h1 class="mt-6 font-semibold tracking-tight text-4xl md:text-6xl leading-[1.1]">
+    <h1 class="mt-6 font-semibold tracking-tight text-4xl md:text-6xl leading-[1.1]" data-i18n-html="sv.pageH1">
       Beantworte bewusst. <span class="fx-glow-text">Kassiere DWIN.</span>
     </h1>
-    <p class="mt-5 text-white/70 text-lg max-w-2xl">
+    <p class="mt-5 text-white/70 text-lg max-w-2xl" data-i18n-html="sv.pageLead">
       Bezahlte Umfragen mit klaren Fragen. Du siehst <span class="text-white">vorher genau</span>, was du teilst und wofür — deine Antworten gehen <span class="text-white">pseudonym</span> an den Auftraggeber, nie dein Wallet oder Name.
     </p>
     <p class="mt-4 font-mono text-xs text-white/45 flex items-center gap-2">
       <svg class="ic w-4 h-4 text-neon-500"><use href="#i-shield"/></svg>
-      Ausdrückliche Einwilligung je Umfrage · nur strukturierte Fragen · Frühe Phase · Testnetz (mDWIN).
+      <span data-i18n="sv.pageNote">Ausdrückliche Einwilligung je Umfrage · nur strukturierte Fragen · Frühe Phase · Testnetz (mDWIN).</span>
     </p>
 
     <div class="mt-6 flex flex-wrap items-center gap-3">
-      <button id="survey-create-btn" class="px-5 py-2.5 rounded-full border border-neon-500/40 text-neon-500 font-semibold hover:bg-neon-500/10 transition text-sm">+ Umfrage erstellen</button>
+      <button id="survey-create-btn" data-i18n="sv.createBtn" class="px-5 py-2.5 rounded-full border border-neon-500/40 text-neon-500 font-semibold hover:bg-neon-500/10 transition text-sm">+ Umfrage erstellen</button>
       <!-- Awareness counter (shown when logged in + has answered) -->
       <div id="survey-activity" class="hidden inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-void-900/70 border border-white/10 font-mono text-xs">
-        <span class="text-white/45 uppercase tracking-widest">Geteilt</span>
-        <span><span id="act-today" class="text-neon-500 font-bold">0</span> <span class="text-white/50">heute</span></span>
+        <span class="text-white/45 uppercase tracking-widest" data-i18n="sv.shared">Geteilt</span>
+        <span><span id="act-today" class="text-neon-500 font-bold">0</span> <span class="text-white/50" data-i18n="sv.today">heute</span></span>
         <span class="text-white/20">·</span>
-        <span><span id="act-week" class="text-cyan-400 font-bold">0</span> <span class="text-white/50">Woche</span></span>
-        <span class="text-white/40">Datenpunkte</span>
+        <span><span id="act-week" class="text-cyan-400 font-bold">0</span> <span class="text-white/50" data-i18n="sv.week">Woche</span></span>
+        <span class="text-white/40" data-i18n="sv.datapoints">Datenpunkte</span>
       </div>
     </div>
   </section>
@@ -69,7 +69,7 @@
   <!-- SURVEY LIST -->
   <section class="max-w-5xl mx-auto px-6 pb-24">
     <div id="survey-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="col-span-full text-center text-white/40 font-mono text-sm py-16">Umfragen werden geladen …</div>
+      <div class="col-span-full text-center text-white/40 font-mono text-sm py-16" data-i18n="sv.loadingList">Umfragen werden geladen …</div>
     </div>
   </section>
 </main>
@@ -83,7 +83,7 @@
 
 <footer class="border-t border-white/5 py-10 relative z-10">
   <div class="max-w-5xl mx-auto px-6 text-sm text-white/45 font-mono">
-    Dwinity Vault · Umfragen — bewusstes Datenteilen. <a href="/vault" class="text-neon-500 hover:underline">← zum Vault</a>
+    <span data-i18n="sv.footer">Dwinity Vault · Umfragen — bewusstes Datenteilen.</span> <a href="/vault" class="text-neon-500 hover:underline">← Vault</a>
   </div>
 </footer>
 
