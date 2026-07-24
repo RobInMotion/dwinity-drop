@@ -47,14 +47,23 @@
       Ausdrückliche Einwilligung je Umfrage · nur strukturierte Fragen · Frühe Phase · Testnetz (mDWIN).
     </p>
 
-    <!-- Awareness counter (shown when logged in + has answered) -->
-    <div id="survey-activity" class="hidden mt-6 inline-flex items-center gap-4 px-4 py-2.5 rounded-xl bg-void-900/70 border border-white/10 font-mono text-xs">
-      <span class="text-white/45 uppercase tracking-widest">Von dir geteilt</span>
-      <span><span id="act-today" class="text-neon-500 font-bold">0</span> <span class="text-white/50">heute</span></span>
-      <span class="text-white/20">·</span>
-      <span><span id="act-week" class="text-cyan-400 font-bold">0</span> <span class="text-white/50">diese Woche</span></span>
-      <span class="text-white/40">Datenpunkte</span>
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button id="survey-create-btn" class="px-5 py-2.5 rounded-full border border-neon-500/40 text-neon-500 font-semibold hover:bg-neon-500/10 transition text-sm">+ Umfrage erstellen</button>
+      <!-- Awareness counter (shown when logged in + has answered) -->
+      <div id="survey-activity" class="hidden inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-void-900/70 border border-white/10 font-mono text-xs">
+        <span class="text-white/45 uppercase tracking-widest">Geteilt</span>
+        <span><span id="act-today" class="text-neon-500 font-bold">0</span> <span class="text-white/50">heute</span></span>
+        <span class="text-white/20">·</span>
+        <span><span id="act-week" class="text-cyan-400 font-bold">0</span> <span class="text-white/50">Woche</span></span>
+        <span class="text-white/40">Datenpunkte</span>
+      </div>
     </div>
+  </section>
+
+  <!-- Admin approvals + my surveys (JS-toggled) -->
+  <section class="max-w-5xl mx-auto px-6 space-y-6">
+    <div id="admin-pending" class="hidden"></div>
+    <div id="my-surveys" class="hidden"></div>
   </section>
 
   <!-- SURVEY LIST -->
