@@ -503,10 +503,23 @@
   // Return-to-room: a user who opened a chat-room link while logged out can be bounced
   // to the homepage after a mobile WalletConnect round-trip (the wallet returns to the
   // dApp origin, not the room path). Once the session is live, send them back in.
+  // Only ever redirect to a site-relative path on our own origin — never an
+  // absolute/protocol-relative URL. Guards against the stored target being an
+  // open-redirect vector if anything other than chat-room.js ever writes it.
+  function isSafeLocalPath(u) {
+    if (typeof u !== "string" || !u) return false;
+    if (u[0] !== "/" || u[1] === "/") return false;          // must be "/path", not "//host" or a scheme
+    try { return new URL(u, location.origin).origin === location.origin; }
+    catch { return false; }
+  }
+
   async function maybeReturnToRoom() {
     let pending = null;
     try { pending = JSON.parse(localStorage.getItem("dd_return_room") || "null"); } catch {}
-    if (!pending || !pending.url) return;
+    if (!pending || !isSafeLocalPath(pending.url)) {
+      try { localStorage.removeItem("dd_return_room"); } catch {}
+      return;
+    }
     if (!pending.at || Date.now() - pending.at > 300000) {   // expire after 5 min
       try { localStorage.removeItem("dd_return_room"); } catch {}
       return;
