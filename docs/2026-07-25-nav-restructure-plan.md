@@ -31,9 +31,9 @@ statisches CSS, eigenes i18n (`window.DDI18n`).
   `nav.js` vorkommen.
 - **Kein Testrahmen im Frontend.** Verifikation = `node --check` für Syntax plus
   Sichtprüfung im Browser.
-- **Die Seite steht hinter einem Passwort-Gate** (nginx-Cookie-map). Der
-  Schlüssel liegt in `/etc/nginx/conf.d/deaddrop-gate.conf` und wird für jede
-  Browser-Prüfung gebraucht.
+- **Die Seite steht während des geschlossenen Tests hinter einem Passwort-Gate.**
+  Für jede Browser-Prüfung wird der Vorschau-Schlüssel gebraucht; er liegt in
+  der nginx-Konfiguration auf dem Server.
 - **Alle sichtbaren Texte brauchen DE und EN.** Deutsch steht als Rückfalltext
   im Markup, Englisch kommt aus `i18n.js`.
 - **Markenname ist überall „Dead Drop".** Kein „Dwinity Vault" im Logo.
@@ -453,8 +453,8 @@ Erwartet: `data-brand: 0 Dateien`, `data-nav-extra: 0 Dateien`,
 
 - [ ] **Step 7: Im Browser gegenprüfen (ausgeloggt)**
 
-Mit dem Gate-Schlüssel aus `/etc/nginx/conf.d/deaddrop-gate.conf` und **ohne
-verbundenes Wallet** `/`, `/chat`, `/vault` und `/marketplace` öffnen.
+Mit dem Vorschau-Schlüssel und **ohne verbundenes Wallet** `/`, `/chat`,
+`/vault` und `/marketplace` öffnen.
 
 Erwartet auf jeder Seite:
 - Leiste zeigt `Drop · Chat · Vault · Preise`
