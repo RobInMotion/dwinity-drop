@@ -57,6 +57,23 @@
 <script src="/nav.js"></script>
 
 <!-- Needs-login state -->
+<!-- Server nicht erreichbar. Frueher landete dieser Fall auf dem
+     Wallet-Login-Schirm, was dem eingeloggten Nutzer faelschlich sagte, er
+     sei abgemeldet. -->
+<section id="offline-screen" class="hidden pt-32 pb-16 min-h-screen">
+  <div class="max-w-xl mx-auto px-6 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+      <span data-i18n="dash.offline.chip">Verbindung</span>
+    </div>
+    <h1 class="font-sans text-4xl font-600 tracking-tight mb-4" data-i18n="dash.offline.title">Wir erreichen den Server gerade nicht.</h1>
+    <p class="text-white/60 mb-8" data-i18n="dash.offline.sub">Deine Drops sind unberührt — nur die Übersicht lässt sich im Moment nicht laden. Deine Anmeldung bleibt bestehen.</p>
+    <button id="offline-retry" class="px-6 py-3 rounded-full bg-neon-500 text-void-950 font-bold hover:bg-neon-600 transition" data-i18n="dash.offline.retry">
+      Erneut versuchen
+    </button>
+  </div>
+</section>
+
 <section id="nologin-screen" class="hidden pt-32 pb-16 min-h-screen">
   <div class="max-w-xl mx-auto px-6 text-center">
     <div class="inline-flex items-center gap-2 px-3 py-1 text-xs font-mono rounded-full bg-neon-500/10 text-neon-500 border border-neon-500/30 mb-6">

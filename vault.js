@@ -46,7 +46,9 @@ async function api(path, opts = {}) {
     const text = await r.text();
     let msg = text;
     try { msg = JSON.parse(text).detail || msg; } catch {}
-    throw new Error(`${r.status} ${msg}`);
+    const err = new Error(`${r.status} ${msg}`);
+    err.status = r.status;      // damit Aufrufer "abgemeldet" von "kaputt" trennen koennen
+    throw err;
   }
   return r.json();
 }
@@ -1134,7 +1136,34 @@ async function init() {
   });
 }
 
-init();
+// init() ist asynchron; ohne diesen Fang endete ein Server-Aussetzer als
+// unbehandelte Zusage in der Konsole — der Besucher sah eine Seite, die
+// einfach nicht fertig wurde, ohne jeden Hinweis warum.
+init().catch((e) => {
+  // 401 heisst "nicht angemeldet" — dafuer gibt es den Gate-Schirm. Das ist
+  // normaler Betrieb und weder ein Fehler fuer die Konsole noch ein Grund zu
+  // behaupten, der Server sei nicht erreichbar.
+  if (e && e.status === 401) return;
+  console.error(e);
+  if (document.getElementById('vault-offline-note')) return;
+  const t = (k, f) => {
+    const v = window.DDI18n && window.DDI18n.t && window.DDI18n.t(k);
+    return v && v !== k ? v : f;
+  };
+  const box = document.createElement('div');
+  box.id = 'vault-offline-note';
+  box.className =
+    'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] ' +
+    'px-4 py-3 bg-void-900 border border-amber-400/40 text-sm text-white/80 ' +
+    'flex items-center gap-3';
+  box.innerHTML =
+    '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>' +
+    '<span>' + t('vjs.offline', 'Wir erreichen den Server gerade nicht. Deine Daten sind unberührt.') + '</span>' +
+    '<button type="button" class="shrink-0 px-2.5 py-1 border border-white/20 font-mono text-xs hover:border-neon-500/50 transition">' +
+      t('vjs.offlineRetry', 'Neu laden') + '</button>';
+  box.querySelector('button').addEventListener('click', () => location.reload());
+  document.body.appendChild(box);
+});
 (window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
   "vjs.noWalletResolve": "No active wallet. Connect your wallet (button above) and try again.",
   "vjs.activities": "Activities",
@@ -1144,6 +1173,8 @@ init();
   "vjs.importOk": "Import successful",
   "vjs.csvSummary": "{n} rows · date column: {c}",
   "vjs.entries": "{n} entries",
+  "vjs.offline": "We can't reach the server right now. Your data is untouched.",
+  "vjs.offlineRetry": "Reload",
   "vjs.pseudoPreview": "Pseudonymization — preview",
   "vjs.timeGranularity": "time granularity",
 } });

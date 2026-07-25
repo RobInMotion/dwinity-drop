@@ -13,6 +13,7 @@
 
   const noLogin = document.getElementById("nologin-screen");
   const dash = document.getElementById("dashboard-screen");
+  const offline = document.getElementById("offline-screen");
   const connectBtn = document.getElementById("nologin-connect");
 
   const proBadge = document.getElementById("pro-badge");
@@ -147,20 +148,23 @@
   }
 
   // ——— data ———
+  // Liefert bewusst DREI unterscheidbare Ausgaenge. Frueher war alles ausser
+  // Erfolg schlicht null, und der Aufrufer zeigte daraufhin den
+  // Wallet-Login-Schirm — ein Server-Aussetzer sah fuer den eingeloggten
+  // Nutzer also aus wie "du bist abgemeldet".
   async function loadMine() {
+    let r;
     try {
-      const r = await fetch(API + "/drops/mine", { credentials: "include" });
-      if (r.status === 401) {
-        show(noLogin);
-        hide(dash);
-        return null;
-      }
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      const data = await r.json();
-      return data;
+      r = await fetch(API + "/drops/mine", { credentials: "include" });
     } catch (e) {
-      console.error(e);
-      return null;
+      return { ok: false, reason: "offline" };      // Netz weg
+    }
+    if (r.status === 401) return { ok: false, reason: "auth" };
+    if (!r.ok) return { ok: false, reason: "offline" };   // 5xx, 404, Gateway
+    try {
+      return { ok: true, data: await r.json() };
+    } catch (e) {
+      return { ok: false, reason: "offline" };      // kaputte Antwort
     }
   }
 
@@ -335,8 +339,7 @@
       delete meta[id];
       sessionStorage.setItem(lsKey(currentAddress), JSON.stringify(meta));
       if (selectedDropId === id) selectedDropId = null;
-      const data = await loadMine();
-      if (data) render(data);
+      applyResult(await loadMine());
     } catch (e) {
       alert(vt("dd.deleteFailed", "Konnte Drop nicht löschen: ") + (e.message || e));
     }
@@ -607,15 +610,31 @@
 
   // auth.js raises this after successful SIWE or pro update
   window.addEventListener("dwinity:pro-updated", async () => {
-    const data = await loadMine();
-    if (data) render(data);
+    applyResult(await loadMine());
+  });
+
+  // Entscheidet anhand des Ausgangs von loadMine(), welcher Schirm sichtbar ist.
+  function applyResult(res) {
+    if (res.ok) {
+      hide(noLogin); hide(offline); show(dash);
+      render(res.data);
+      return;
+    }
+    hide(dash);
+    if (res.reason === "auth") { hide(offline); show(noLogin); }
+    else { hide(noLogin); show(offline); }
+  }
+
+  const retryBtn = document.getElementById("offline-retry");
+  if (retryBtn) retryBtn.addEventListener("click", async () => {
+    retryBtn.disabled = true;
+    applyResult(await loadMine());
+    retryBtn.disabled = false;
   });
 
   // boot
   (async () => {
-    const data = await loadMine();
-    if (data) render(data);
-    else { show(noLogin); hide(dash); }
+    applyResult(await loadMine());
   })();
 })();
 (window.DDI18n ? (x) => window.DDI18n.register(x) : (x) => (window.__DDI18N_PENDING = window.__DDI18N_PENDING || []).push(x))({ en: {
