@@ -13,8 +13,6 @@
 <link rel="stylesheet" href="/lib/tailwind.min.css" />
 <link rel="stylesheet" href="/fx.css" />
 <style>
-  body { background: #05060A; }
-  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} } .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
   .tier-card { transition: border-color 180ms, background 180ms, transform 180ms; }
   .tier-card.active {
     border-color: rgba(0,255,157,0.6);
@@ -28,8 +26,7 @@
     background-size: 200% 100%;
     animation: fx-glow-shift 3s ease-in-out infinite;
     transition: width 800ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-</style>
+  }</style>
 </head>
 <body class="font-sans text-white antialiased min-h-screen" data-dragons="1">
 <a href="#main" class="skip-link" data-i18n="a11y.skip">Zum Inhalt springen</a>

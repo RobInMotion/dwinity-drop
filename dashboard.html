@@ -20,12 +20,6 @@
 <link rel="stylesheet" href="/lib/tailwind.min.css" />
 <link rel="stylesheet" href="/fx.css" />
 <style>
-  body { background: #05060A; }
-  .grid-bg { background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 40px 40px; }
-  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} } .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
 
   /* Quota ring SVG */
   .ring-bg { stroke: rgba(255,255,255,0.06); }
@@ -45,8 +39,7 @@
   .node-dot.active { background:#00FF9D; box-shadow:0 0 8px rgba(0,255,157,0.8), 0 0 16px rgba(0,255,157,0.4); animation: pulse-dot 1.6s ease-in-out infinite; }
 
   details > summary { list-style: none; cursor: pointer; }
-  details > summary::-webkit-details-marker { display: none; }
-</style>
+  details > summary::-webkit-details-marker { display: none; }</style>
 </head>
 <body class="font-sans text-white antialiased min-h-screen">
 <a href="#dashboard-screen" class="skip-link" data-i18n="a11y.skip">Zum Inhalt springen</a>

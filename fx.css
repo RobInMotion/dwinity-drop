@@ -6,6 +6,34 @@
    The nav is position:fixed (not sticky), so this can't break nav stickiness. */
 html, body { overflow-x: hidden; }
 
+/* ---------- Seiten-Grundlagen ----------
+   Diese fünf Regeln standen wortgleich in bis zu zwölf Seiten-<style>-Blöcken.
+   Jede Kopie war eine Stelle, an der die Gestaltung auseinanderlaufen konnte —
+   genau das war der Grund, warum sich die Rundungen nicht an einer Stelle
+   abstellen ließen. Ab hier gilt: gemeinsame Regeln stehen HIER, nur echt
+   seiten-eigene bleiben in der Seite. */
+body { background: #05060A; }
+
+/* Feines Raster im Hintergrund (Startseite, Dashboard, Chat u.a.) */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Pulsierender Statuspunkt */
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+/* Kleine Marker-Kapsel. Ohne border-radius — siehe Kantensprache weiter unten. */
+.chip {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.3rem 0.7rem; font-size: 0.75rem; font-weight: 600;
+}
+
+.text-glow { text-shadow: 0 0 24px rgba(0,255,157,0.35); }
+
 /* ---------- language switcher ---------- */
 .lang-btn.is-active {
   color: #00FF9D;
@@ -298,10 +326,6 @@ summary:focus-visible,
 /* ---------- 1. Rundungen raus ---------- */
 .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl,
 .rounded-full { border-radius: 0; }
-
-/* Die Seiten definieren .chip jeweils selbst und laden nach fx.css —
-   deshalb hier mit mehr Gewicht. */
-body .chip { border-radius: 0; }
 
 /* Ausnahme: Statuspunkte bleiben Punkte. Sie lesen als Leuchtdiode,
    als Quadrat wären sie Schmutz auf dem Bildschirm. */

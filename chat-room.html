@@ -21,10 +21,7 @@
   /* App-shell: page is exactly one (dynamic) viewport tall and never scrolls itself —
      only #chat-messages scrolls. Fixes "must scroll down to reach the composer". */
   body { background: #05060A; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
-  .msg-bubble { word-break: break-word; }
-  @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
-</style>
+  .msg-bubble { word-break: break-word; }</style>
 </head>
 <body class="font-sans text-white antialiased">
 <a href="#chat-panel" class="skip-link" data-i18n="a11y.skip">Zum Inhalt springen</a>

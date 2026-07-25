@@ -82,25 +82,13 @@
 <link rel="stylesheet" href="/fx.css" />
 <style>
   html { scroll-behavior: smooth; }
-  body { background: #05060A; }
-  .grid-bg {
-    background-image:
-      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
   .glow {
     box-shadow: 0 0 40px rgba(0,255,157,0.15), 0 0 80px rgba(0,255,157,0.08);
   }
-  .text-glow { text-shadow: 0 0 24px rgba(0,255,157,0.35); }
-  .chip { display:inline-flex; align-items:center; gap:0.4rem; padding: 0.3rem 0.7rem; font-size: 0.75rem; font-weight: 600; border-radius: 999px; }
   .dropzone { transition: all 0.3s cubic-bezier(.4,0,.2,1); }
   .dropzone:hover { border-color: rgba(0,255,157,0.5); background: rgba(0,255,157,0.03); }
-  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
   @keyframes skeleton-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.7; } }
-  .stat-skeleton { animation: skeleton-pulse 1.4s ease-in-out infinite; letter-spacing: 0.25em; }
-</style>
+  .stat-skeleton { animation: skeleton-pulse 1.4s ease-in-out infinite; letter-spacing: 0.25em; }</style>
 </head>
 <body class="font-sans text-white antialiased min-h-screen">
 <canvas id="netstream-bg"></canvas>
