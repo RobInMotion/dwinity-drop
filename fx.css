@@ -212,8 +212,8 @@ summary:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid #00FF9D;
   outline-offset: 2px;
-  /* Kein border-radius mehr: der Fokusrahmen folgt der Kantensprache
-     (2026-07-25) statt die Ecken als einziges Element wieder zu runden. */
+  /* Der Fokusrahmen folgt derselben Kante wie das Element, das er umschliesst. */
+  border-radius: var(--dd-kante);
 }
 
 /* ---- purple-300 accent utilities (audit 2026-07-23) ----
@@ -317,18 +317,24 @@ summary:focus-visible,
    Grauabstufungen waren ohnehin mehr, als eine Gestaltung tragen kann. */
 .text-white\/30, .text-white\/35, .text-white\/40 { color: rgba(255,255,255,0.46); }
 
-/* ---------- Kanten statt Rundungen ----------
-   Weiche runde Kästen sind der Standard-Look, den man überall sieht. Ein
-   Produkt, das wie ein Terminal auftritt, hat scharfe Ecken. Dazu eine
-   Rückmeldung, die man nicht übersehen kann: leuchten beim Zeigen,
-   eindrücken beim Klicken. */
+/* ---------- Kanten und Rückmeldung ----------
+   Weich gerundete Kästen sind der Standard-Look, den man überall sieht. Zu
+   einem Produkt, das wie ein Terminal auftritt, passt eine harte Kante — aber
+   eine entgratete, keine schneidende. Dazu eine Rückmeldung, die man nicht
+   übersehen kann: leuchten beim Zeigen, eindrücken beim Klicken. */
 
-/* ---------- 1. Rundungen raus ---------- */
+/* ---------- 1. Kanten ----------
+   Nicht scharf und nicht weich: eine entgratete Kante. Unter 2px sieht man
+   auf grossen Flaechen nichts, ab 6px kippt es zurueck ins freundliche
+   Standard-Design. Der Wert steht bewusst nur an DIESER einen Stelle —
+   wer ihn aendern will, aendert eine Zahl. */
+:root { --dd-kante: 3px; }
+
 .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl,
-.rounded-full { border-radius: 0; }
+.rounded-full { border-radius: var(--dd-kante); }
 
 /* Ausnahme: Statuspunkte bleiben Punkte. Sie lesen als Leuchtdiode,
-   als Quadrat wären sie Schmutz auf dem Bildschirm. */
+   als Quadrat oder abgerundetes Quadrat waeren sie Schmutz auf dem Bildschirm. */
 .w-1\.5.h-1\.5.rounded-full,
 .w-2.h-2.rounded-full { border-radius: 9999px; }
 
