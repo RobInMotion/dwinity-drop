@@ -531,3 +531,78 @@ summary:focus-visible,
 .border-purple-300\/50{border-color:rgba(216,180,254,.50)}
 .text-purple-200{color:#e9d5ff}
 .text-purple-300\/70{color:rgba(216,180,254,.70)}
+
+/* ---------- Navigation: Pfad-Schreibweise (Desktop-Leiste) ----------
+   Die Seite spricht ohnehin in Pfaden ("// trennen", "/topup →"). Die
+   Hauptnavigation übernimmt das: jeder Zielpunkt trägt seinen Schrägstrich,
+   die aktuelle Seite einen blinkenden Cursor.
+
+   Die Unterscheidung ist inhaltlich, nicht dekorativ:
+     /wort   — ein Ort, an den man geht
+     #wort   — ein Abschnitt auf der Startseite (Preise)
+     wort ▾  — ein Menü, das aufklappt (Verdienen) — kein Präfix
+   Gilt nur für #nav-primary, also die Desktop-Leiste. Das Handy-Menü bleibt
+   bei normaler Schreibweise, dort wäre Monospace zu eng. */
+
+#nav-primary > a,
+#nav-primary [data-earn-btn] {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.58);
+  text-transform: lowercase;      /* echte Pfade sind klein geschrieben */
+}
+#nav-primary > a:hover,
+#nav-primary [data-earn-btn]:hover { color: rgba(255, 255, 255, 0.95); }
+
+#nav-primary > a::before {
+  content: "/";
+  color: rgba(0, 255, 157, 0.45);
+  margin-right: 1px;
+}
+/* Anker auf der Startseite ist ein Abschnitt, kein eigener Ort */
+#nav-primary > a[href*="#"]::before { content: "#"; }
+
+/* Aktuelle Seite: heller Text, Präfix voll in Neon, blinkender Block */
+#nav-primary > a[class*="text-neon-500"] { color: #fff; }
+#nav-primary > a[class*="text-neon-500"]::before { color: #00FF9D; }
+#nav-primary > a[class*="text-neon-500"]::after {
+  content: "\258A";
+  color: #00FF9D;
+  margin-left: 2px;
+  animation: dd-caret 1.1s steps(1) infinite;
+}
+/* Steht man auf einer Verdienen-Seite, blinkt der Cursor am Menü */
+#nav-primary [data-earn-btn][class*="text-purple-300"] { color: #fff; }
+#nav-primary [data-earn-btn][class*="text-purple-300"] > span::after {
+  content: "\258A";
+  color: #00FF9D;
+  margin-left: 2px;
+  animation: dd-caret 1.1s steps(1) infinite;
+}
+@keyframes dd-caret { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  #nav-primary > a[class*="text-neon-500"]::after,
+  #nav-primary [data-earn-btn][class*="text-purple-300"] > span::after {
+    animation: none;
+  }
+}
+
+/* Das aufgeklappte Verdienen-Menü führt die Pfad-Logik fort */
+#nav-primary [data-earn-menu] a {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12.5px;
+  text-transform: lowercase;
+}
+#nav-primary [data-earn-menu] a::before {
+  content: "/";
+  color: rgba(0, 255, 157, 0.45);
+  margin-right: 1px;
+}
+
+/* Leiste: Neon-Haarlinie oben statt grauem Rahmen unten */
+#site-nav header {
+  background: #05060A;
+  box-shadow: inset 0 1px 0 0 rgba(0, 255, 157, 0.18);
+}
