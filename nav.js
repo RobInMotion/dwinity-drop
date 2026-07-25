@@ -2,14 +2,23 @@
  * Unified site navigation — single source of truth for every page.
  *
  * Usage:
- *   <div id="site-nav" data-brand="vault"
- *        data-nav-extra='[{"href":"#how","label":"So funktioniert&#39;s"}]'>
- *     …optional page-specific right-side controls (kept, desktop only)…
+ *   <div id="site-nav">
+ *     …optional page-specific controls (e.g. the vault Pro-Mode toggle)…
  *   </div>
  *   <script src="/nav.js"></script>     (near top of <body>, before wallet scripts)
  *
- * Desktop (md+): logo · Drop · Chat · [extras] · Daten ▾ · · · lang · wallet · Dash
- * Mobile  (<md): logo · · · wallet · ☰  → tap ☰ for a full menu (no cramped pills).
+ * Desktop (md+): logo · Drop · Chat · Vault · Verdienen ▾ · · · lang · balance · wallet
+ * Mobile  (<md): logo · · · wallet · ☰  → tap ☰ for a grouped menu.
+ *
+ * TWO ZONES — see docs/2026-07-25-nav-restructure-spec.md §3.2.
+ *   Zone A (shell) is built ONCE and never rebuilt: logo, the whole right-hand
+ *     cluster (#wallet-btn, #wallet-menu, #wallet-balance, lang), and the mobile
+ *     "Ansicht" / Dashboard / language rows. auth.js and pro-mode.js bind click
+ *     handlers DIRECTLY to elements in here — rebuilding them would silently kill
+ *     the wallet button, "trennen" and the Pro-Mode toggle.
+ *   Zone B is #nav-primary + #nav-mobile-links, refilled whenever the wallet
+ *     state changes. It holds only <a> elements and the Verdienen dropdown
+ *     button, all of which are handled by delegation on document.
  *
  * Renders synchronously so wallet scripts (auth.js, wallet-balance.js) loaded
  * later find #wallet-btn / #wallet-balance. Highlights the current page.
@@ -31,81 +40,98 @@
 
   var path = location.pathname.replace(/\/+$/, "") || "/";
   var extrasHtml = mount.innerHTML.trim();               // page-specific controls (e.g. Pro-Mode)
-  var brand = mount.getAttribute("data-brand") === "vault"
-    ? 'Dwinity <span class="text-neon-500">Vault</span>'
-    : 'Dead <span class="text-neon-500">Drop</span>';
-  var navExtra = [];
-  try { navExtra = JSON.parse(mount.getAttribute("data-nav-extra") || "[]"); } catch (e) {}
 
-  var DATEN = [
-    { href: "/vault",       label: "Vault · Info",       key: "nav.vaultInfo" },
-    { href: "/vault.html",  label: "Vault öffnen (App)",  key: "nav.vaultApp" },
-    { href: "/marketplace", label: "Markt",              key: "nav.market" },
-    { href: "/surveys",     label: "Umfragen",           key: "nav.surveys" },
-    { href: "/rewards",     label: "Rewards",            key: "nav.rewards" },
-    { href: "/rank",        label: "Rang",               key: "nav.rank" }
+  var PRODUCTS = [
+    { href: "/",      label: "Drop",  key: "nav.drop" },
+    { href: "/chat",  label: "Chat",  key: "nav.chat" },
+    { href: "/vault", label: "Vault", key: "nav.vault", vault: true }
   ];
-  var inDaten = DATEN.some(function (i) { return i.href === path; });
+  var EARN = [
+    { href: "/marketplace", label: "Markt",    key: "nav.market" },
+    { href: "/surveys",     label: "Umfragen", key: "nav.surveys" },
+    { href: "/rewards",     label: "Rewards",  key: "nav.rewards" },
+    { href: "/rank",        label: "Rang",     key: "nav.rank" }
+  ];
+
+  var inEarn = EARN.some(function (i) { return i.href === path; });
   function on(href) { return path === href; }
+  // Vault is ONE entry pointing at two pages: the info page when logged out,
+  // the app when logged in. Either page highlights the entry.
+  function hrefOf(item, loggedIn) {
+    return item.vault ? (loggedIn ? "/vault.html" : "/vault") : item.href;
+  }
+  function isActive(item) {
+    return item.vault ? (path === "/vault" || path === "/vault.html") : on(item.href);
+  }
   // data-i18n attr only when a key is given (so the lang switch re-translates it)
   function i18n(key) { return key ? ' data-i18n="' + key + '"' : ""; }
 
-  // ---------- desktop nav ----------
-  function dtop(href, label, key) {
+  // ---------- Zone B: desktop links ----------
+  function dtop(href, label, key, isOn) {
     return '<a href="' + href + '"' + i18n(key) + ' class="hover:text-white transition ' +
-      (on(href) ? "text-neon-500" : "") + '">' + label + "</a>";
+      (isOn ? "text-neon-500" : "") + '">' + label + "</a>";
   }
-  var extraTop = navExtra.map(function (i) { return dtop(i.href, i.label, i.key); }).join("");
-  var datenTop =
-    '<div class="relative" data-daten>' +
-      '<button type="button" data-daten-btn class="inline-flex items-center gap-1 hover:text-white transition ' +
-        (inDaten ? "text-purple-300" : "") + '"><span data-i18n="nav.daten">Daten</span>' +
+  function earnDropdown() {
+    return '<div class="relative" data-earn>' +
+      '<button type="button" data-earn-btn class="inline-flex items-center gap-1 hover:text-white transition ' +
+        (inEarn ? "text-purple-300" : "") + '"><span data-i18n="nav.earn">Verdienen</span>' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-70"><path d="M6 9l6 6 6-6"/></svg>' +
       "</button>" +
-      '<div data-daten-menu class="hidden absolute left-0 mt-2 w-52 rounded-xl bg-void-900 border border-white/10 shadow-xl p-1.5 z-50">' +
-        '<div class="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-white/35" data-i18n="nav.datenEco">Daten-Ökonomie</div>' +
-        DATEN.map(function (i) {
+      '<div data-earn-menu class="hidden absolute left-0 mt-2 w-52 rounded-xl bg-void-900 border border-white/10 shadow-xl p-1.5 z-50">' +
+        EARN.map(function (i) {
           return '<a href="' + i.href + '"' + i18n(i.key) + ' class="block px-3 py-2 rounded-lg hover:bg-white/5 transition text-sm ' +
             (on(i.href) ? "text-neon-500" : "text-white/80") + '">' + i.label + "</a>";
         }).join("") +
       "</div>" +
     "</div>";
-
-  // ---------- mobile menu items ----------
-  function mlink(href, label, key) {
-    return '<a href="' + href + '"' + i18n(key) + ' class="block px-4 py-3 rounded-lg text-sm transition ' +
-      (on(href) ? "text-neon-500 bg-white/5" : "text-white/85 hover:bg-white/5") + '">' + label + "</a>";
   }
-  var mobileItems =
-    mlink("/", "Drop", "nav.drop") + mlink("/chat", "Chat", "nav.chat") +
-    navExtra.map(function (i) { return mlink(i.href, i.label, i.key); }).join("") +
-    '<div class="mt-1 pt-2 border-t border-white/5">' +
-      '<div class="px-4 py-1 text-[10px] font-mono uppercase tracking-widest text-white/35" data-i18n="nav.datenEco">Daten-Ökonomie</div>' +
-      DATEN.map(function (i) { return mlink(i.href, i.label, i.key); }).join("") +
-    "</div>" +
-    // Page-specific controls (e.g. vault Pro-Mode) — desktop shows these inline;
-    // on mobile they'd otherwise be unreachable, so surface them in the menu too.
-    (extrasHtml
-      ? '<div class="mt-1 pt-2 border-t border-white/5 px-4 py-2 flex items-center gap-2">' +
-          '<span class="text-[10px] font-mono uppercase tracking-widest text-white/35" data-i18n="nav.view">Ansicht</span>' +
-          extrasHtml +
-        "</div>"
-      : "") +
-    '<div class="mt-1 pt-2 border-t border-white/5">' + mlink("/dashboard", "Dashboard", "nav.dashboard") + "</div>";
+  function primaryHtml(loggedIn) {
+    var out = PRODUCTS.map(function (i) {
+      return dtop(hrefOf(i, loggedIn), i.label, i.key, isActive(i));
+    }).join("");
+    // Logged out the earn pages are useless, so the slot carries the pricing
+    // link instead — the one marketing anchor worth keeping in the bar.
+    return out + (loggedIn ? earnDropdown() : dtop("/#preise", "Preise", "nav.pricing", false));
+  }
 
-  var html =
+  // ---------- Zone B: mobile links ----------
+  function mlink(href, label, key, isOn) {
+    return '<a href="' + href + '"' + i18n(key) + ' class="block px-4 py-3 rounded-lg text-sm transition ' +
+      (isOn ? "text-neon-500 bg-white/5" : "text-white/85 hover:bg-white/5") + '">' + label + "</a>";
+  }
+  // `first` drops the separator line — otherwise the topmost group would draw a
+  // stray border right under the header edge.
+  function mgroup(key, label, inner, first) {
+    return '<div class="' + (first ? "" : "mt-1 pt-2 border-t border-white/5") + '">' +
+      '<div class="px-4 py-1 text-[10px] font-mono uppercase tracking-widest text-white/35"' + i18n(key) + ">" + label + "</div>" +
+      inner + "</div>";
+  }
+  function mobileLinksHtml(loggedIn) {
+    var prods = PRODUCTS.map(function (i) {
+      return mlink(hrefOf(i, loggedIn), i.label, i.key, isActive(i));
+    }).join("");
+    if (!loggedIn) prods += mlink("/#preise", "Preise", "nav.pricing", false);
+    var out = mgroup("nav.groupProducts", "Produkte", prods, true);
+    if (loggedIn) {
+      out += mgroup("nav.earn", "Verdienen", EARN.map(function (i) {
+        return mlink(i.href, i.label, i.key, on(i.href));
+      }).join(""), false);
+    }
+    return out;
+  }
+
+  // ---------- Zone A: the shell, built once ----------
+  var shell =
   '<header class="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-void-950/80 border-b border-white/5">' +
     '<div class="max-w-6xl mx-auto px-3 md:px-6 h-14 md:h-16 flex items-center justify-between gap-2">' +
-      // logo
+      // logo — one brand name on every page
       '<a href="/" class="flex items-center gap-2 font-semibold text-base md:text-lg tracking-tight shrink-0 min-w-0">' +
         '<img src="/img/deaddrop-logo.svg" alt="" class="w-9 h-9 md:w-10 md:h-10 object-contain fx-logo-glow shrink-0" />' +
-        '<span class="truncate">' + brand + "</span>" +
+        '<span class="truncate">Dead <span class="text-neon-500">Drop</span></span>' +
       "</a>" +
-      // desktop primary nav
-      '<nav class="hidden md:flex items-center gap-5 lg:gap-6 text-sm text-white/70">' +
-        dtop("/", "Drop", "nav.drop") + dtop("/chat", "Chat", "nav.chat") + extraTop + datenTop +
-      "</nav>" +
-      // right cluster
+      // Zone B — desktop links
+      '<nav id="nav-primary" class="hidden md:flex items-center gap-5 lg:gap-6 text-sm text-white/70"></nav>' +
+      // right cluster — Zone A, never rebuilt
       '<div class="flex items-center gap-1.5 md:gap-2 shrink-0">' +
         (extrasHtml ? '<div class="hidden md:flex items-center gap-2">' + extrasHtml + "</div>" : "") +
         // lang (desktop only)
@@ -136,9 +162,6 @@
             '<a href="/#preise" id="wallet-menu-logout" class="text-xs font-mono text-white/60 hover:text-red-400 underline underline-offset-2">// trennen</a>' +
           "</div>" +
         "</div>" +
-        // dashboard (desktop only)
-        '<a href="/dashboard" data-i18n="nav.dashboard" class="hidden md:inline-flex shrink-0 items-center px-2.5 py-1.5 rounded-full bg-void-800 border border-white/15 text-white/70 hover:text-white hover:border-white/30 text-[11px] font-mono uppercase tracking-widest transition' +
-          (on("/dashboard") ? " text-neon-500 border-neon-500/40" : "") + '">Dash</a>' +
         // hamburger (mobile only)
         '<button type="button" data-burger aria-label="Menü" class="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg border border-white/15 text-white/80 hover:text-white hover:border-white/30 transition shrink-0">' +
           '<svg data-burger-open width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>' +
@@ -148,11 +171,31 @@
     "</div>" +
     // mobile dropdown panel
     '<div id="mobile-menu" class="md:hidden hidden border-t border-white/5 bg-void-950/95 backdrop-blur-xl">' +
-      '<nav class="max-w-6xl mx-auto px-3 py-3 flex flex-col gap-0.5">' + mobileItems +
-        '<div class="mt-2 pt-3 border-t border-white/5 flex items-center gap-2 px-4">' +
-          '<span class="text-[10px] font-mono uppercase tracking-widest text-white/35 mr-1" data-i18n="nav.language">Sprache</span>' +
-          '<button type="button" data-lang-switch="de" class="lang-btn text-xs px-2.5 py-1 rounded border border-white/10 text-white/60 hover:text-white transition">DE</button>' +
-          '<button type="button" data-lang-switch="en" class="lang-btn text-xs px-2.5 py-1 rounded border border-white/10 text-white/60 hover:text-white transition">EN</button>' +
+      '<nav class="max-w-6xl mx-auto px-3 py-3 flex flex-col gap-0.5">' +
+        // Zone B — link groups
+        '<div id="nav-mobile-links"></div>' +
+        // Zone A below: anything a foreign script binds to, or that only toggles.
+        // Page-specific controls (e.g. vault Pro-Mode) — desktop shows these inline;
+        // on mobile they'd otherwise be unreachable, so surface them here too.
+        (extrasHtml
+          ? '<div class="mt-1 pt-2 border-t border-white/5 px-4 py-2 flex items-center gap-2">' +
+              '<span class="text-[10px] font-mono uppercase tracking-widest text-white/35" data-i18n="nav.view">Ansicht</span>' +
+              extrasHtml +
+            "</div>"
+          : "") +
+        '<div class="mt-1 pt-2 border-t border-white/5">' +
+          '<div class="px-4 py-1 text-[10px] font-mono uppercase tracking-widest text-white/35" data-i18n="nav.groupAccount">Konto</div>' +
+          // Wrapper carries the hidden toggle so we never fight Tailwind's
+          // .block / .hidden ordering on the anchor itself.
+          '<div id="nav-mobile-dash-wrap" class="hidden">' +
+            '<a href="/dashboard" data-i18n="nav.dashboard" class="block px-4 py-3 rounded-lg text-sm transition ' +
+              (on("/dashboard") ? "text-neon-500 bg-white/5" : "text-white/85 hover:bg-white/5") + '">Dashboard</a>' +
+          "</div>" +
+          '<div class="flex items-center gap-2 px-4 py-2">' +
+            '<span class="text-[10px] font-mono uppercase tracking-widest text-white/35 mr-1" data-i18n="nav.language">Sprache</span>' +
+            '<button type="button" data-lang-switch="de" class="lang-btn text-xs px-2.5 py-1 rounded border border-white/10 text-white/60 hover:text-white transition">DE</button>' +
+            '<button type="button" data-lang-switch="en" class="lang-btn text-xs px-2.5 py-1 rounded border border-white/10 text-white/60 hover:text-white transition">EN</button>' +
+          "</div>" +
         "</div>" +
       "</nav>" +
     "</div>" +
@@ -160,7 +203,24 @@
 
   mount.removeAttribute("data-brand");
   mount.removeAttribute("data-nav-extra");
-  mount.innerHTML = html;
+  mount.innerHTML = shell;
+
+  // ---------- Zone B filling ----------
+  var primary = document.getElementById("nav-primary");
+  var mobileLinks = document.getElementById("nav-mobile-links");
+  var dashWrap = document.getElementById("nav-mobile-dash-wrap");
+
+  function fillLinks(loggedIn) {
+    primary.innerHTML = primaryHtml(loggedIn);
+    mobileLinks.innerHTML = mobileLinksHtml(loggedIn);
+    dashWrap.classList.toggle("hidden", !loggedIn);
+    // Freshly built nodes carry data-i18n but no translation yet.
+    if (window.DDI18n && window.DDI18n.apply) {
+      window.DDI18n.apply(primary);
+      window.DDI18n.apply(mobileLinks);
+    }
+  }
+  fillLinks(false);
 
   // ---------- interactions ----------
   function setBurger(open) {
@@ -173,13 +233,14 @@
     if (c) c.classList.toggle("hidden", !open);
   }
 
+  // Delegated on document so refilling Zone B never loses these handlers.
   document.addEventListener("click", function (e) {
-    // Daten dropdown (desktop)
-    var wrap = document.querySelector("[data-daten]");
+    // Verdienen dropdown (desktop)
+    var wrap = document.querySelector("[data-earn]");
     if (wrap) {
-      var menu = wrap.querySelector("[data-daten-menu]");
-      if (e.target.closest("[data-daten-btn]")) menu.classList.toggle("hidden");
-      else if (!e.target.closest("[data-daten-menu]")) menu.classList.add("hidden");
+      var menu = wrap.querySelector("[data-earn-menu]");
+      if (e.target.closest("[data-earn-btn]")) menu.classList.toggle("hidden");
+      else if (!e.target.closest("[data-earn-menu]")) menu.classList.add("hidden");
     }
     // Hamburger (mobile)
     var mm = document.getElementById("mobile-menu");
