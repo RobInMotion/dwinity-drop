@@ -132,10 +132,10 @@ Umbau zu einer neuvermessbaren Leiste:
 
 - Zwei Datenlisten statt einer: `PRODUCTS` (Drop, Chat, Vault) und `EARN`
   (Markt, Umfragen, Rewards, Rang).
-- Der komplette Aufbau wandert in eine Funktion `render(loggedIn)`, die
-  `mount.innerHTML` setzt. Beim ersten Lauf synchron mit `loggedIn = false`,
-  damit `auth.js` und `wallet-balance.js` ihre Anker (`#wallet-btn`,
-  `#wallet-balance`) wie bisher vorfinden.
+- **Zwei-Zonen-Aufbau (siehe 3.2), das Kernstück:** Das Gerüst — Logo, rechter
+  Konto-Cluster, mobiler Sprach- und „Ansicht"-Block — wird **genau einmal**
+  synchron gebaut. Nur die reinen Link-Listen `#nav-primary` (Desktop) und
+  `#nav-mobile-links` (Handy) werden bei Zustandswechsel neu gefüllt.
 - `data-brand` wird nicht mehr ausgewertet; der Markenname ist fest.
 - `data-nav-extra` wird nicht mehr ausgewertet.
 - Die `Dash`-Pille entfällt.
@@ -143,23 +143,48 @@ Umbau zu einer neuvermessbaren Leiste:
 - Die Klick-Behandlung (Dropdown, Hamburger) hängt bereits an `document` und
   arbeitet über `closest()` — sie übersteht ein Neu-Rendern ohne Änderung.
 
-### 3.2 Neu-Rendern bei Zustandswechsel
+### 3.2 Neu-Rendern bei Zustandswechsel — die Zwei-Zonen-Regel
 
-`nav.js` hört auf `dwinity:wallet-changed` und rendert neu, wenn sich der
-eingeloggte Zustand tatsächlich geändert hat (sonst würde jedes Ereignis das
-Wallet-Menü neu aufbauen und die von `auth.js` eingefügten Blöcke verwerfen).
+**Die Leiste darf niemals ein Element neu bauen, an dem ein fremdes Skript
+direkt einen Listener hängen hat.** Drei Stellen im Code binden direkt an
+Elemente statt über Delegation, und würden von einem Neu-Rendern zerstört:
 
-Ablauf nach einem Neu-Render:
+| Stelle | Element | Folge beim Neu-Bauen |
+|---|---|---|
+| `auth.js:454` | `#wallet-btn` | Wallet-Knopf reagiert auf keinen Klick mehr |
+| `auth.js:466` | `#wallet-menu-logout` | „Trennen" tot |
+| `pro-mode.js:52` | `[data-pro-mode-toggle]` | Pro-Mode-Schalter tot (Guard `dataset.wired` läuft nur einmal beim Start) |
 
-1. `nav.js` rendert die Leiste neu — das Wallet-Menü ist wieder leer.
-2. `nav.js` verschickt `dwinity:nav-rendered`.
-3. `auth.js` hört darauf, holt seine Element-Referenzen neu und ruft
-   `renderLoggedIn(lastMe)` erneut auf.
+Dazu kommen die von `auth.js` dynamisch eingefügten Blöcke im Wallet-Menü
+(Anzeigename, Tarif, Egress, Rang), die ein Neu-Rendern verwerfen würde.
 
-Ohne diesen Rückweg wären Tarif-Block, Egress-Balken und Anzeigename nach dem
-Login weg. `auth.js` hält seine Referenzen (`btn`, `label`, `dot`, `menuAddr`,
-`menuPro`) heute als Konstanten beim Start fest — die müssen in eine Funktion
-`grabRefs()` wandern, die bei `dwinity:nav-rendered` erneut läuft.
+Daraus folgt die Aufteilung:
+
+**Zone A — Gerüst, genau einmal gebaut, danach unangetastet:**
+Logo · rechter Cluster (`DE|EN`, `#wallet-balance`, `#wallet-btn`,
+`#wallet-menu`) · im Handy-Menü der „Ansicht"-Block mit den seiten-eigenen
+Bedienelementen, der Dashboard-Link und die Sprach-Zeile.
+
+**Zone B — Link-Listen, bei Zustandswechsel neu gefüllt:**
+`#nav-primary` (Desktop-Links) und `#nav-mobile-links` (Gruppen PRODUKTE und
+VERDIENEN). Beide enthalten **ausschließlich `<a>`-Elemente und den
+Verdienen-Aufklapp-Knopf** — alles davon wird bereits über Delegation an
+`document` behandelt und übersteht ein Neu-Füllen unbeschadet.
+
+**Der Dashboard-Link im Handy-Menü** ist die eine Ausnahme, die zustandsabhängig
+ist, aber in Zone A liegt. Er wird deshalb nicht neu gebaut, sondern nur
+ein-/ausgeblendet: `dashLink.classList.toggle("hidden", !loggedIn)`.
+
+Damit braucht `auth.js` **keinen Rückweg und keine neuen Referenzen** — der
+gesamte Konto-Bereich wird nie angefasst. `auth.js` ändert sich nur an der
+einen Stelle aus 3.3.
+
+Nach jedem Neu-Füllen von Zone B muss `window.DDI18n.apply(container)` laufen
+(`i18n.js:2201`, nimmt einen Teilbaum entgegen), sonst stehen die frischen
+Links auf Deutsch, wenn EN aktiv ist.
+
+`nav.js` hört dafür auf `dwinity:wallet-changed` und füllt nur dann neu, wenn
+sich der eingeloggte Zustand tatsächlich geändert hat.
 
 ### 3.3 `auth.js` — Ereignis beim Sitzungs-Wiederherstellen
 
@@ -170,6 +195,11 @@ Heute wird `dwinity:wallet-changed` nur nach einem frischen Login verschickt
 Die Leiste bliebe damit auf „ausgeloggt" stehen. Also: das Ereignis auch dort
 verschicken. Das ist eine Zeile und hilft nebenbei `chat-index.js`, `rank.js`,
 `surveys.js`, `panic.js` und `vault.js`, die alle darauf hören.
+
+Dasselbe Loch besteht in der Gegenrichtung: `logout()` (Zeile 425–433) ruft
+`renderLoggedOut()` auf, ohne das Ereignis zu verschicken — die Leiste bliebe
+nach dem Trennen auf „eingeloggt" stehen. Auch dort wird es verschickt, mit
+`detail = { address: null }`.
 
 Risiko: diese Seiten booten dadurch beim Seitenladen einmal zusätzlich. Vor der
 Umsetzung ist je Seite zu prüfen, dass ihr `boot()` mehrfach aufrufbar ist
@@ -213,9 +243,10 @@ Kein Testrahmen im Frontend; geprüft wird im Browser, Desktop und Handybreite.
 1. **Ausgeloggt, jede der 9 Seiten:** Leiste zeigt Drop · Chat · Vault · Preise.
    Logo überall „Dead Drop". Vault führt auf `/vault`.
 2. **Wallet verbinden:** Leiste wechselt ohne Neuladen auf Drop · Chat · Vault ·
-   Verdienen ▾. Wallet-Menü zeigt danach weiterhin Adresse, Anzeigename,
-   Tarif-Block, Egress-Balken, Dashboard und Rang. **Das ist der kritische Punkt
-   von 3.2** — hier bricht es, wenn der Rückweg fehlt.
+   Verdienen ▾. **Kritischer Punkt aus 3.2** — direkt danach prüfen:
+   Wallet-Knopf lässt sich noch auf- und zuklappen, „Trennen" funktioniert,
+   Wallet-Menü zeigt weiterhin Adresse, Anzeigename, Tarif-Block, Egress-Balken,
+   Dashboard und Rang, und auf `vault.html` schaltet der Pro-Mode-Knopf noch.
 3. **Neu laden mit bestehender Sitzung:** Leiste steht sofort auf „eingeloggt".
 4. **Trennen:** Leiste fällt auf den ausgeloggten Zustand zurück.
 5. **Aktive Seite** wird in beiden Zuständen hervorgehoben, auch als Eintrag im
