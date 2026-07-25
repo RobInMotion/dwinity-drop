@@ -7,10 +7,11 @@
 html, body { overflow-x: hidden; }
 
 /* Die Kante der Gestaltung — eine Zahl fuer die ganze Seite.
-   Nicht scharf und nicht weich: entgratet. Unter 2px sieht man auf grossen
-   Flaechen nichts, ab 6px kippt es zurueck ins freundliche Standard-Design.
+   Nicht scharf und nicht weich: gebrochen. Unter 2px sieht man auf grossen
+   Flaechen nichts, ab 6px kippt es sichtbar ins freundliche Standard-Design
+   zurueck. 5px ist der Punkt kurz davor.
    Wer die Rundung aendern will, aendert HIER und sonst nirgends. */
-:root { --dd-kante: 3px; }
+:root { --dd-kante: 5px; }
 
 /* ---------- Seiten-Grundlagen ----------
    Diese fünf Regeln standen wortgleich in bis zu zwölf Seiten-<style>-Blöcken.
