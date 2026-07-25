@@ -608,6 +608,7 @@
     roomNameEl.textContent = roomMeta.name || t("room.defaultName", "Room");
     roomMembersEl.textContent = roomMeta.member_count + " " + (roomMeta.member_count === 1 ? t("room.memberOne", "Member") : t("room.memberMany", "Members"));
     updateExpiry();
+    if (expiryTimer) clearInterval(expiryTimer);   // boot() kann erneut laufen
     expiryTimer = setInterval(updateExpiry, 30_000);
 
     // Creator-only delete control
@@ -668,13 +669,22 @@
       }
     }
 
-    sendBtn.addEventListener("click", doSend);
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        doSend();
-      }
-    });
+    // Einmal verdrahten. Heute laeuft boot() nie zweimal vollstaendig durch —
+    // ausgeloggt bricht es oben am Gate ab, bevor hier etwas angehaengt wird.
+    // Bekaeme diese Seite aber je eine Kopfleiste, wuerde auth.js beim Laden
+    // ein wallet-changed schicken, boot() liefe erneut, und ein Klick auf
+    // "Senden" wuerde die Nachricht doppelt verschicken. Derselbe Riegel wie
+    // in chat-index.js und rank.js.
+    if (!boot._wired) {
+      boot._wired = true;
+      sendBtn.addEventListener("click", doSend);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          doSend();
+        }
+      });
+    }
 
     // Pending Drop-share-link from /upload-flow → prefill + flash button
     try {

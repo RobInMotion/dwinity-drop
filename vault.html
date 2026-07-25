@@ -20,15 +20,15 @@
 <link rel="stylesheet" href="/wrapped.css" />
 <link rel="stylesheet" href="/dwinity-shared.css" />
 <style>
-  .card { padding: 1.25rem; border-radius: 0.75rem; background: #0A0B10; border: 1px solid rgba(255,255,255,0.08); }
+  .card { padding: 1.25rem; border-radius: var(--dd-kante); background: #0A0B10; border: 1px solid rgba(255,255,255,0.08); }
   .card-hover { transition: border-color .15s, transform .15s; }
   .card-hover:hover { border-color: rgba(0,255,157,0.4); transform: translateY(-1px); }
-  .source-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; background: rgba(0,255,157,0.08); color: #00FF9D; }
-  .pill { display:inline-block; padding:0.125rem 0.5rem; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  .source-icon { width: 2.5rem; height: 2.5rem; border-radius: var(--dd-kante); display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; background: rgba(0,255,157,0.08); color: #00FF9D; }
+  .pill { display:inline-block; padding:0.125rem 0.5rem; border-radius: var(--dd-kante); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; }
   .pill-pending { background: rgba(250,204,21,0.1); color: #facc15; }
   .pill-parsed  { background: rgba(0,255,157,0.1);  color: #00FF9D; }
   .pill-failed  { background: rgba(248,113,113,0.1); color: #f87171; }
-  .dropzone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 0.75rem; padding: 2rem; text-align:center; transition: all .15s; }
+  .dropzone { border: 2px dashed rgba(255,255,255,0.15); border-radius: var(--dd-kante); padding: 2rem; text-align:center; transition: all .15s; }
   .dropzone.over { border-color: #00FF9D; background: rgba(0,255,157,0.05); }</style>
 </head>
 <body class="text-white/90 font-sans">

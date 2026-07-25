@@ -6,6 +6,12 @@
    The nav is position:fixed (not sticky), so this can't break nav stickiness. */
 html, body { overflow-x: hidden; }
 
+/* Die Kante der Gestaltung — eine Zahl fuer die ganze Seite.
+   Nicht scharf und nicht weich: entgratet. Unter 2px sieht man auf grossen
+   Flaechen nichts, ab 6px kippt es zurueck ins freundliche Standard-Design.
+   Wer die Rundung aendern will, aendert HIER und sonst nirgends. */
+:root { --dd-kante: 3px; }
+
 /* ---------- Seiten-Grundlagen ----------
    Diese fünf Regeln standen wortgleich in bis zu zwölf Seiten-<style>-Blöcken.
    Jede Kopie war eine Stelle, an der die Gestaltung auseinanderlaufen konnte —
@@ -33,6 +39,27 @@ body { background: #05060A; }
 }
 
 .text-glow { text-shadow: 0 0 24px rgba(0,255,157,0.35); }
+
+/* Strichsymbole. Die Grundgroesse steht in :where(), zaehlt bei der Gewichtung
+   also null — ein w-4/h-4 im Markup gewinnt immer, ein Symbol ohne
+   Groessenklasse faellt trotzdem nicht auseinander. Vorher setzte diese Regel
+   auf zwei Seiten hart 1em und machte die Groessenklassen daneben wirkungslos,
+   auf der dritten nicht: dieselben Symbole waren je nach Seite anders gross. */
+:where(.ic) { width: 1em; height: 1em; }
+.ic {
+  fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+  vertical-align: -0.14em;
+}
+
+/* Kennzahlen-Kaertchen (Pro+, Guthaben). Admin hat eine eigene, dunklere
+   Fassung und behaelt sie. */
+.stat-card {
+  padding: 1rem 1.25rem;
+  background: #0A0B10;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--dd-kante);
+}
 
 /* ---------- language switcher ---------- */
 .lang-btn.is-active {
@@ -324,12 +351,8 @@ summary:focus-visible,
    übersehen kann: leuchten beim Zeigen, eindrücken beim Klicken. */
 
 /* ---------- 1. Kanten ----------
-   Nicht scharf und nicht weich: eine entgratete Kante. Unter 2px sieht man
-   auf grossen Flaechen nichts, ab 6px kippt es zurueck ins freundliche
-   Standard-Design. Der Wert steht bewusst nur an DIESER einen Stelle —
-   wer ihn aendern will, aendert eine Zahl. */
-:root { --dd-kante: 3px; }
-
+   Nicht scharf und nicht weich: eine entgratete Kante. Der Wert steht als
+   --dd-kante ganz oben in dieser Datei. */
 .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl,
 .rounded-full { border-radius: var(--dd-kante); }
 
