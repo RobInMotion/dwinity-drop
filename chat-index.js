@@ -214,14 +214,20 @@
     renderPendingShareBanner();
     await loadRooms();
 
-    createBtn.addEventListener("click", openModal);
-    createCancel.addEventListener("click", closeModal);
-    createSubmit.addEventListener("click", submitCreate);
-    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
-    nameInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitCreate(); });
+    // Wire the static controls once — boot() re-runs on every wallet-changed
+    // (including session restore on page load), and stacking these would make
+    // one click submit the create-room form twice.
+    if (!boot._wired) {
+      boot._wired = true;
+      createBtn.addEventListener("click", openModal);
+      createCancel.addEventListener("click", closeModal);
+      createSubmit.addEventListener("click", submitCreate);
+      modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+      nameInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitCreate(); });
 
-    // Refresh room list every 60s (cheap, just metadata)
-    setInterval(loadRooms, 60_000);
+      // Refresh room list every 60s (cheap, just metadata)
+      setInterval(loadRooms, 60_000);
+    }
   }
 
   window.addEventListener("dwinity:pro-updated", boot);

@@ -313,6 +313,10 @@
     const me = res.me;
     if (me && me.address) renderLoggedIn(me);
     else renderLoggedOut();
+    // Tell page-scripts the state is known. A fresh login dispatches this too
+    // (see connect()); without it here, a page loaded with a live session would
+    // leave nav.js and friends stuck in their logged-out rendering.
+    window.dispatchEvent(new CustomEvent("dwinity:wallet-changed", { detail: me }));
     return me;
   }
 
@@ -430,6 +434,9 @@
       try { await window.dwinityWC.disconnect(); } catch {}
     }
     renderLoggedOut();
+    // Same reason as in refreshMe(): nav.js and the page scripts need to hear
+    // about the way back out, not just the way in.
+    window.dispatchEvent(new CustomEvent("dwinity:wallet-changed", { detail: { address: null } }));
   }
 
   // --- Global triggers (work on ALL pages, with or without header) ---
