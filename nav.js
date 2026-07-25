@@ -220,7 +220,18 @@
       window.DDI18n.apply(mobileLinks);
     }
   }
+  var loggedInNow = false;
   fillLinks(false);
+
+  // auth.js announces every login, session restore and logout here. Refill only
+  // on a real transition — the event also fires for tier changes, and refilling
+  // on each of those would be wasted work.
+  window.addEventListener("dwinity:wallet-changed", function (e) {
+    var li = !!(e && e.detail && e.detail.address);
+    if (li === loggedInNow) return;
+    loggedInNow = li;
+    fillLinks(li);
+  });
 
   // ---------- interactions ----------
   function setBurger(open) {
