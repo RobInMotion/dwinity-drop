@@ -342,6 +342,19 @@
     );
   }
 
+  // personal_sign takes hex-encoded data per EIP-191. MetaMask still accepts a
+  // raw UTF-8 string, but ethers-backed wallets (WalletConnect, Rabby, Coinbase)
+  // push the parameter through getBytes() and reject anything that is not 0x-hex
+  // with "invalid BytesLike value". Encoding here works for every wallet.
+  function utf8ToHex(str) {
+    const bytes = new TextEncoder().encode(str);
+    let out = "0x";
+    for (let i = 0; i < bytes.length; i++) {
+      out += bytes[i].toString(16).padStart(2, "0");
+    }
+    return out;
+  }
+
   async function connect(opts) {
     opts = opts || {};
     const forceWC = !!opts.walletConnect;
@@ -386,7 +399,7 @@
 
       const signature = await provider.request({
         method: "personal_sign",
-        params: [message, address],
+        params: [utf8ToHex(message), address],
       });
 
       // Pick up pending ref-code (set by ref-capture.js) to attribute referral
